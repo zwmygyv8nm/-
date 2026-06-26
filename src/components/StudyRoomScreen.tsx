@@ -34,11 +34,12 @@ interface Props {
   goal: string;
   characterId: string;
   studyRoomBg?: "classroom" | "gradient";
+  locationName?: string; // 旅モード時に地点名を表示
   onComplete: (minutes: number) => void;
   onExit: () => void;
 }
 
-export default function StudyRoomScreen({ goal, characterId, studyRoomBg = "classroom", onComplete, onExit }: Props) {
+export default function StudyRoomScreen({ goal, characterId, studyRoomBg = "classroom", locationName, onComplete, onExit }: Props) {
   /* ── Timer state ── */
   const [selectedMinutes, setSelectedMinutes] = useState(25);
   const [customMinutes, setCustomMinutes]     = useState("");
@@ -195,8 +196,15 @@ export default function StudyRoomScreen({ goal, characterId, studyRoomBg = "clas
 
       {/* ── 上部バー ── */}
       <div className="absolute top-1 left-0 right-0 z-20 flex items-center justify-between px-4 pt-2 pb-1">
-        <div className="text-white/50 text-xs font-mono tabular-nums select-none">
-          {started && !finished ? `経過 ${elapsedStr}` : ""}
+        <div className="flex items-center gap-2">
+          {locationName && (
+            <span className="text-white/70 text-xs bg-white/15 px-2 py-0.5 rounded-full">
+              🗺 {locationName}
+            </span>
+          )}
+          <span className="text-white/50 text-xs font-mono tabular-nums select-none">
+            {started && !finished ? `経過 ${elapsedStr}` : ""}
+          </span>
         </div>
         <button
           onClick={onExit}

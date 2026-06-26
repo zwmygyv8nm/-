@@ -12,12 +12,18 @@ import {
   addLog,
   addStudyMinutes,
   saveSettings,
+  getTravelProgress,
+  addTravelMinutes,
+  setTravelLocation,
   SchoolProgress,
   AppSettings,
+  TravelProgress,
   StudyLog,
+  TRAVEL_LOCATIONS,
+  BackgroundMode,
 } from "@/lib/storage";
 import { TEMPLATE_LIST } from "@/components/Background";
-import { BookOpen, BarChart2, Settings, Home, LogIn, ChevronRight, Star } from "lucide-react";
+import { BookOpen, BarChart2, Settings, Home, LogIn, ChevronRight, Star, MapPin, CheckCircle2 } from "lucide-react";
 
 type Screen = "gate" | "room" | "log" | "complete" | "stats" | "settings";
 
@@ -34,14 +40,17 @@ export default function App() {
   const [logContent, setLogContent] = useState("");
   const [newDecos, setNewDecos] = useState<string[]>([]);
   const [customBgFile, setCustomBgFile] = useState<string>("");
+  const [travelProgress, setTravelProgress] = useState<TravelProgress | null>(null);
+  const [newlyUnlockedLocation, setNewlyUnlockedLocation] = useState<string | null>(null);
 
   useEffect(() => {
     setProgress(getProgress());
     setSettings(getSettings());
     setLogs(getLogs());
+    setTravelProgress(getTravelProgress());
   }, []);
 
-  if (!progress || !settings) return null;
+  if (!progress || !settings || !travelProgress) return null;
 
   const isNight = settings.templateBg === "night";
 
@@ -60,19 +69,29 @@ export default function App() {
 
   const handleSaveLog = () => {
     const today = new Date().toDateString();
-    addLog({
-      date: today,
-      subject: logSubject,
-      duration: completedMinutes,
-      content: logContent,
-      goal,
-    });
+    addLog({ date: today, subject: logSubject, duration: completedMinutes, content: logContent, goal });
+
     const prevDecos = [...progress.unlockedDecos];
     const newProgress = addStudyMinutes(completedMinutes);
     const gained = newProgress.unlockedDecos.filter((d) => !prevDecos.includes(d));
     setProgress(newProgress);
     setLogs(getLogs());
     setNewDecos(gained);
+
+    // 旅モード：地点ごとの累計分数を更新、60分で次地点解放
+    if (settings.backgroundMode === "travel") {
+      const { progress: tp, newlyUnlockedId } = addTravelMinutes(travelProgress.currentLocationId, completedMinutes);
+      setTravelProgress(tp);
+      if (newlyUnlockedId) {
+        const loc = TRAVEL_LOCATIONS.find((l) => l.id === newlyUnlockedId);
+        setNewlyUnlockedLocation(loc?.name ?? newlyUnlockedId);
+      } else {
+        setNewlyUnlockedLocation(null);
+      }
+    } else {
+      setNewlyUnlockedLocation(null);
+    }
+
     setScreen("complete");
   };
 
@@ -86,6 +105,7 @@ export default function App() {
     setLogContent("");
     setCompletedMinutes(0);
     setNewDecos([]);
+    setNewlyUnlockedLocation(null);
     setScreen("gate");
   };
 
@@ -126,7 +146,7 @@ export default function App() {
 
         {/* ── GATE SCREEN ── */}
         {screen === "gate" && (
-          <div className="animate-slide-up flex flex-col gap-8">
+          <div className="animate-slide-up flex flex-col gap-6">
             <div className="text-center">
               <h1 className={`text-2xl font-bold mb-1 ${isNight ? "text-white" : "text-gray-800"}`}>
                 今日も登校しよう！
@@ -140,8 +160,8 @@ export default function App() {
             <div className="grid grid-cols-3 gap-3">
               {[
                 { label: "総勉強時間", value: `${progress.totalMinutes}分`, icon: "⏱" },
-                { label: "連続登校", value: `${progress.streakDays}日`, icon: "🔥" },
-                { label: "デコ数", value: `${progress.unlockedDecos.length}個`, icon: "✨" },
+                { label: "連続登校",   value: `${progress.streakDays}日`,   icon: "🔥" },
+                { label: "デコ数",     value: `${progress.unlockedDecos.length}個`, icon: "✨" },
               ].map((s) => (
                 <div key={s.label} className={`rounded-2xl p-3 text-center ${isNight ? "bg-indigo-900/50 text-white" : "bg-white/70 text-gray-800"} shadow-sm`}>
                   <div className="text-xl">{s.icon}</div>
@@ -151,10 +171,24 @@ export default function App() {
               ))}
             </div>
 
-            {/* Character */}
-            <div className="flex justify-center">
-              <Character id={settings.characterId} mood="idle" size="lg" />
-            </div>
+            {/* 旅モード：今日の登校先カード */}
+            {settings.backgroundMode === "travel" ? (
+              <TravelGateCard
+                travelProgress={travelProgress}
+                isNight={isNight}
+                onSelectLocation={(id) => {
+                  const tp = setTravelLocation(id);
+                  setTravelProgress(tp);
+                }}
+              />
+            ) : (
+              <>
+                <div className="flex justify-center">
+                  <Character id={settings.characterId} mood="idle" size="lg" />
+                </div>
+                <DecoRoom unlockedDecos={progress.unlockedDecos} totalMinutes={progress.totalMinutes} />
+              </>
+            )}
 
             {/* Goal input */}
             <div className={`rounded-2xl p-4 shadow-sm ${isNight ? "bg-indigo-900/50" : "bg-white/80"}`}>
@@ -174,30 +208,33 @@ export default function App() {
               />
             </div>
 
-            {/* Deco room preview */}
-            <DecoRoom unlockedDecos={progress.unlockedDecos} totalMinutes={progress.totalMinutes} />
-
             {/* Attend button */}
             <button
               onClick={handleAttend}
               className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
             >
               <LogIn size={20} />
-              登校する
+              {settings.backgroundMode === "travel" ? "この自習室に入る" : "登校する"}
             </button>
           </div>
         )}
 
         {/* ── STUDY ROOM (全画面没入モード) ── */}
-        {screen === "room" && (
-          <StudyRoomScreen
-            goal={goal}
-            characterId={settings.characterId}
-            studyRoomBg={settings.studyRoomBg}
-            onComplete={handleTimerComplete}
-            onExit={() => setScreen("gate")}
-          />
-        )}
+        {screen === "room" && (() => {
+          const travelLoc = settings.backgroundMode === "travel"
+            ? TRAVEL_LOCATIONS.find((l) => l.id === travelProgress.currentLocationId)
+            : undefined;
+          return (
+            <StudyRoomScreen
+              goal={goal}
+              characterId={settings.characterId}
+              studyRoomBg={settings.backgroundMode === "travel" ? "gradient" : settings.studyRoomBg}
+              locationName={travelLoc ? `${travelLoc.name}（${travelLoc.prefecture}）` : undefined}
+              onComplete={handleTimerComplete}
+              onExit={() => setScreen("gate")}
+            />
+          );
+        })()}
 
         {/* ── LOG SCREEN ── */}
         {screen === "log" && (
@@ -273,6 +310,19 @@ export default function App() {
             </div>
 
             <Character id={settings.characterId} mood="happy" size="lg" />
+
+            {/* 旅モード：新地点解放メッセージ */}
+            {newlyUnlockedLocation && (
+              <div className={`w-full rounded-2xl p-5 shadow-sm border-2 border-emerald-300 ${isNight ? "bg-emerald-900/30" : "bg-emerald-50"}`}>
+                <div className="text-3xl mb-2 text-center">🗺</div>
+                <h3 className={`font-bold text-center mb-1 ${isNight ? "text-emerald-300" : "text-emerald-700"}`}>
+                  次の自習室が開きました！
+                </h3>
+                <p className={`text-sm text-center ${isNight ? "text-emerald-400" : "text-emerald-600"}`}>
+                  {newlyUnlockedLocation} の自習室へ行けます
+                </p>
+              </div>
+            )}
 
             {newDecos.length > 0 && (
               <div className={`w-full rounded-2xl p-5 shadow-sm ${isNight ? "bg-indigo-900/50" : "bg-white/80"}`}>
@@ -447,6 +497,12 @@ function SettingsScreen({
     { id: "kuma", name: "くまっち", emoji: "🐻" },
   ];
 
+  const MODES: { id: BackgroundMode; label: string; desc: string; emoji: string; disabled?: boolean }[] = [
+    { id: "standard", label: "標準自習室",     emoji: "🏫", desc: "完成された一人称自習室で、机に勉強の痕跡を残します" },
+    { id: "travel",   label: "旅する自習室",   emoji: "🗺",  desc: "全国の自習室に登校しながら、勉強時間で旅を進めます" },
+    { id: "original", label: "オリジナル自習室", emoji: "🖼", desc: "志望校や自分の机など、好きな画像を背景にできます", disabled: true },
+  ];
+
   return (
     <div className="animate-slide-up flex flex-col gap-6">
       <div className="flex items-center gap-3">
@@ -454,9 +510,48 @@ function SettingsScreen({
         <h2 className={`text-xl font-bold ${isNight ? "text-white" : "text-gray-800"}`}>設定</h2>
       </div>
 
-      {/* Background */}
+      {/* 自習室モード */}
       <div className={`rounded-2xl p-5 shadow-sm ${isNight ? "bg-indigo-900/50" : "bg-white/80"}`}>
-        <h3 className={`font-bold mb-4 ${isNight ? "text-white" : "text-gray-800"}`}>🖼 背景</h3>
+        <h3 className={`font-bold mb-4 ${isNight ? "text-white" : "text-gray-800"}`}>🗺 自習室モード</h3>
+        <div className="flex flex-col gap-2">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              disabled={m.disabled}
+              onClick={() => !m.disabled && setLocal((prev) => ({ ...prev, backgroundMode: m.id }))}
+              className={`w-full px-4 py-3 rounded-xl text-left transition-all border-2 ${
+                m.disabled
+                  ? isNight
+                    ? "border-indigo-800 bg-indigo-900/30 opacity-50 cursor-not-allowed"
+                    : "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
+                  : local.backgroundMode === m.id
+                  ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                  : isNight
+                  ? "border-indigo-700 bg-indigo-800/40 text-indigo-200 hover:border-indigo-500"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-indigo-300"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-sm">
+                  {m.emoji} {m.label}
+                </span>
+                {m.disabled && (
+                  <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">近日公開</span>
+                )}
+              </div>
+              <p className={`text-xs mt-0.5 leading-relaxed ${
+                isNight ? "text-indigo-400" : "text-gray-400"
+              }`}>
+                {m.desc}
+              </p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Background（ホーム画面の背景テーマ） */}
+      <div className={`rounded-2xl p-5 shadow-sm ${isNight ? "bg-indigo-900/50" : "bg-white/80"}`}>
+        <h3 className={`font-bold mb-4 ${isNight ? "text-white" : "text-gray-800"}`}>🖼 ホーム背景</h3>
         <div className="grid grid-cols-2 gap-2 mb-4">
           {TEMPLATE_LIST.map((t) => (
             <button
@@ -475,32 +570,6 @@ function SettingsScreen({
           ))}
         </div>
 
-      </div>
-
-      {/* Study Room Background */}
-      <div className={`rounded-2xl p-5 shadow-sm ${isNight ? "bg-indigo-900/50" : "bg-white/80"}`}>
-        <h3 className={`font-bold mb-4 ${isNight ? "text-white" : "text-gray-800"}`}>📚 自習室の背景</h3>
-        <div className="flex gap-2">
-          {([
-            { id: "classroom", label: "放課後の教室", emoji: "🏫" },
-            { id: "gradient", label: "シンプル夕暮れ", emoji: "🌇" },
-          ] as const).map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => setLocal((prev) => ({ ...prev, studyRoomBg: opt.id }))}
-              className={`flex-1 py-3 px-3 rounded-xl text-sm font-medium transition-all border-2 ${
-                (local.studyRoomBg ?? "classroom") === opt.id
-                  ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                  : isNight
-                  ? "border-indigo-700 bg-indigo-800/40 text-indigo-200 hover:border-indigo-500"
-                  : "border-gray-200 bg-white text-gray-600 hover:border-indigo-300"
-              }`}
-            >
-              <div className="text-xl mb-1">{opt.emoji}</div>
-              {opt.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Character */}
@@ -526,12 +595,152 @@ function SettingsScreen({
         </div>
       </div>
 
+      {/* 標準モード時のみ自習室背景を表示 */}
+      {local.backgroundMode === "standard" && (
+        <div className={`rounded-2xl p-5 shadow-sm ${isNight ? "bg-indigo-900/50" : "bg-white/80"}`}>
+          <h3 className={`font-bold mb-4 ${isNight ? "text-white" : "text-gray-800"}`}>📚 自習室の背景</h3>
+          <div className="flex gap-2">
+            {([
+              { id: "classroom", label: "放課後の教室", emoji: "🏫" },
+              { id: "gradient",  label: "シンプル夕暮れ", emoji: "🌇" },
+            ] as const).map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => setLocal((prev) => ({ ...prev, studyRoomBg: opt.id }))}
+                className={`flex-1 py-3 px-3 rounded-xl text-sm font-medium transition-all border-2 ${
+                  (local.studyRoomBg ?? "classroom") === opt.id
+                    ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                    : isNight
+                    ? "border-indigo-700 bg-indigo-800/40 text-indigo-200 hover:border-indigo-500"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-indigo-300"
+                }`}
+              >
+                <div className="text-xl mb-1">{opt.emoji}</div>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <button
         onClick={() => onSave(local)}
         className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-lg shadow-lg transition-all hover:-translate-y-0.5"
       >
         保存する
       </button>
+    </div>
+  );
+}
+
+/* ── 旅モード：ゲート画面の地点カード ── */
+function TravelGateCard({
+  travelProgress,
+  isNight,
+  onSelectLocation,
+}: {
+  travelProgress: TravelProgress;
+  isNight: boolean;
+  onSelectLocation: (id: string) => void;
+}) {
+  const currentLoc = TRAVEL_LOCATIONS.find((l) => l.id === travelProgress.currentLocationId)
+    ?? TRAVEL_LOCATIONS[0];
+  const currentMin = travelProgress.locationStudyMinutes[currentLoc.id] ?? 0;
+  const progressPct = Math.min(100, (currentMin / currentLoc.requiredMinutes) * 100);
+  const isCompleted = travelProgress.completedLocationIds.includes(currentLoc.id);
+
+  return (
+    <div className={`rounded-2xl shadow-sm overflow-hidden ${isNight ? "bg-indigo-900/50" : "bg-white/80"}`}>
+      {/* 現在地点 */}
+      <div className={`p-4 border-b ${isNight ? "border-indigo-800/50" : "border-gray-100"}`}>
+        <p className={`text-xs font-bold tracking-widest mb-1 ${isNight ? "text-indigo-400" : "text-gray-400"}`}>
+          今日の登校先
+        </p>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h3 className={`text-lg font-bold ${isNight ? "text-white" : "text-gray-800"}`}>
+              <MapPin size={14} className="inline mr-1 mb-0.5" />
+              {currentLoc.name}
+              <span className={`text-xs font-normal ml-1 ${isNight ? "text-indigo-300" : "text-gray-400"}`}>
+                {currentLoc.prefecture}
+              </span>
+            </h3>
+            <p className={`text-xs mt-0.5 ${isNight ? "text-indigo-400" : "text-gray-400"}`}>
+              {currentLoc.description}
+            </p>
+          </div>
+          {isCompleted && (
+            <span className="shrink-0 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+              ✓ 完了
+            </span>
+          )}
+        </div>
+        {/* 進捗バー */}
+        <div className="mt-3">
+          <div className="flex justify-between text-xs mb-1">
+            <span className={isNight ? "text-indigo-400" : "text-gray-400"}>
+              {currentMin}/{currentLoc.requiredMinutes}分
+            </span>
+            <span className={isNight ? "text-indigo-400" : "text-gray-400"}>
+              {isCompleted ? "登校完了！" : `あと${Math.max(0, currentLoc.requiredMinutes - currentMin)}分`}
+            </span>
+          </div>
+          <div className={`w-full rounded-full h-2 ${isNight ? "bg-indigo-800" : "bg-gray-200"}`}>
+            <div
+              className={`h-2 rounded-full transition-all duration-700 ${isCompleted ? "bg-emerald-500" : "bg-indigo-500"}`}
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 地点一覧 */}
+      <div className="p-4">
+        <p className={`text-xs font-bold tracking-widest mb-3 ${isNight ? "text-indigo-400" : "text-gray-400"}`}>
+          全国登校ログ
+        </p>
+        <div className="flex flex-col gap-1.5">
+          {TRAVEL_LOCATIONS.map((loc) => {
+            const isUnlocked  = travelProgress.unlockedLocationIds.includes(loc.id);
+            const isDone      = travelProgress.completedLocationIds.includes(loc.id);
+            const isCurrent   = travelProgress.currentLocationId === loc.id;
+            const locMin      = travelProgress.locationStudyMinutes[loc.id] ?? 0;
+
+            return (
+              <button
+                key={loc.id}
+                disabled={!isUnlocked}
+                onClick={() => isUnlocked && onSelectLocation(loc.id)}
+                className={`flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
+                  !isUnlocked
+                    ? isNight ? "opacity-30 cursor-not-allowed" : "opacity-30 cursor-not-allowed"
+                    : isCurrent
+                    ? isNight ? "bg-indigo-700/60 ring-1 ring-indigo-500" : "bg-indigo-50 ring-1 ring-indigo-400"
+                    : isNight ? "hover:bg-indigo-800/40" : "hover:bg-gray-50"
+                }`}
+              >
+                <span className="text-lg">
+                  {isDone ? "✅" : isUnlocked ? "📍" : "🔒"}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <span className={`text-sm font-medium ${isNight ? "text-white" : "text-gray-800"}`}>
+                    {loc.name}
+                  </span>
+                  <span className={`text-xs ml-1 ${isNight ? "text-indigo-400" : "text-gray-400"}`}>
+                    {loc.prefecture}
+                  </span>
+                </div>
+                {isUnlocked && (
+                  <span className={`text-xs tabular-nums shrink-0 ${isNight ? "text-indigo-400" : "text-gray-400"}`}>
+                    {locMin}/{loc.requiredMinutes}分
+                  </span>
+                )}
+                {isDone && <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
