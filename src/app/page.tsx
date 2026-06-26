@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import Background from "@/components/Background";
 import Character from "@/components/Character";
-import Timer from "@/components/Timer";
 import DecoRoom from "@/components/DecoRoom";
+import StudyRoomScreen from "@/components/StudyRoomScreen";
 import {
   getLogs,
   getProgress,
@@ -188,29 +188,14 @@ export default function App() {
           </div>
         )}
 
-        {/* ── STUDY ROOM ── */}
+        {/* ── STUDY ROOM (全画面没入モード) ── */}
         {screen === "room" && (
-          <div className="animate-slide-up flex flex-col gap-8">
-            <div className={`rounded-2xl p-4 ${isNight ? "bg-indigo-900/50" : "bg-white/70"} shadow-sm`}>
-              <p className={`text-xs font-medium mb-1 ${isNight ? "text-indigo-300" : "text-gray-400"}`}>今日の目標</p>
-              <p className={`font-medium ${isNight ? "text-white" : "text-gray-800"}`}>{goal}</p>
-            </div>
-
-            <div className="flex justify-center">
-              <Character id={settings.characterId} mood="studying" size="md" />
-            </div>
-
-            <div className={`rounded-2xl p-6 shadow-sm ${isNight ? "bg-indigo-900/50" : "bg-white/80"}`}>
-              <Timer onComplete={handleTimerComplete} />
-            </div>
-
-            <button
-              onClick={() => setScreen("gate")}
-              className={`text-sm text-center ${isNight ? "text-indigo-400 hover:text-indigo-200" : "text-gray-400 hover:text-gray-600"} transition-all`}
-            >
-              ← 自習室を出る
-            </button>
-          </div>
+          <StudyRoomScreen
+            goal={goal}
+            characterId={settings.characterId}
+            onComplete={handleTimerComplete}
+            onExit={() => setScreen("gate")}
+          />
         )}
 
         {/* ── LOG SCREEN ── */}
