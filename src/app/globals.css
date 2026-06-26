@@ -43,6 +43,16 @@ body {
   animation: bounce-gentle 2.5s ease-in-out infinite;
 }
 
+/* キャラクターの書き書きアニメ */
+@keyframes writing-wiggle {
+  0%, 100% { transform: rotate(0deg) translateX(0); }
+  25%       { transform: rotate(-6deg) translateX(-2px); }
+  75%       { transform: rotate(4deg) translateX(2px); }
+}
+.animate-writing {
+  animation: writing-wiggle 0.55s ease-in-out infinite;
+}
+
 /* 教室グラデーション背景 */
 .classroom-bg {
   background:

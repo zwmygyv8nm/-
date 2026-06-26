@@ -417,8 +417,6 @@ export default function App() {
           <SettingsScreen
             settings={settings}
             isNight={isNight}
-            customBgFile={customBgFile}
-            onCustomBgChange={setCustomBgFile}
             onSave={(s) => { handleSettingsSave(s); setScreen("gate"); }}
             onBack={() => setScreen("gate")}
           />
@@ -433,15 +431,11 @@ export default function App() {
 function SettingsScreen({
   settings,
   isNight,
-  customBgFile,
-  onCustomBgChange,
   onSave,
   onBack,
 }: {
   settings: AppSettings;
   isNight: boolean;
-  customBgFile: string;
-  onCustomBgChange: (url: string) => void;
   onSave: (s: AppSettings) => void;
   onBack: () => void;
 }) {
@@ -452,14 +446,6 @@ function SettingsScreen({
     { id: "shiro", name: "しろうさぎ", emoji: "🐰" },
     { id: "kuma", name: "くまっち", emoji: "🐻" },
   ];
-
-  const handleFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    onCustomBgChange(url);
-    setLocal((prev) => ({ ...prev, backgroundType: "custom", customBgUrl: url }));
-  };
 
   return (
     <div className="animate-slide-up flex flex-col gap-6">
@@ -489,32 +475,6 @@ function SettingsScreen({
           ))}
         </div>
 
-        <div className={`border-t pt-4 ${isNight ? "border-indigo-800" : "border-gray-100"}`}>
-          <p className={`text-sm font-medium mb-2 ${isNight ? "text-indigo-200" : "text-gray-700"}`}>
-            自分の机写真を使う（任意）
-          </p>
-          <label className={`flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed cursor-pointer transition-all text-sm ${
-            local.backgroundType === "custom"
-              ? "border-indigo-400 bg-indigo-50 text-indigo-600"
-              : isNight
-              ? "border-indigo-700 text-indigo-400 hover:border-indigo-500"
-              : "border-gray-300 text-gray-400 hover:border-indigo-300"
-          }`}>
-            <input type="file" accept="image/*" className="hidden" onChange={handleFilePick} />
-            {local.backgroundType === "custom" && customBgFile ? "📸 写真が設定されました" : "📷 写真を選択"}
-          </label>
-          {local.backgroundType === "custom" && (
-            <button
-              onClick={() => {
-                onCustomBgChange("");
-                setLocal((prev) => ({ ...prev, backgroundType: "template" }));
-              }}
-              className={`mt-2 text-xs ${isNight ? "text-indigo-400" : "text-gray-400"} hover:underline`}
-            >
-              テンプレートに戻す
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Study Room Background */}
