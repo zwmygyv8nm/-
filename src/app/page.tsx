@@ -193,6 +193,7 @@ export default function App() {
           <StudyRoomScreen
             goal={goal}
             characterId={settings.characterId}
+            studyRoomBg={settings.studyRoomBg}
             onComplete={handleTimerComplete}
             onExit={() => setScreen("gate")}
           />
@@ -513,6 +514,32 @@ function SettingsScreen({
               テンプレートに戻す
             </button>
           )}
+        </div>
+      </div>
+
+      {/* Study Room Background */}
+      <div className={`rounded-2xl p-5 shadow-sm ${isNight ? "bg-indigo-900/50" : "bg-white/80"}`}>
+        <h3 className={`font-bold mb-4 ${isNight ? "text-white" : "text-gray-800"}`}>📚 自習室の背景</h3>
+        <div className="flex gap-2">
+          {([
+            { id: "classroom", label: "放課後の教室", emoji: "🏫" },
+            { id: "gradient", label: "シンプル夕暮れ", emoji: "🌇" },
+          ] as const).map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => setLocal((prev) => ({ ...prev, studyRoomBg: opt.id }))}
+              className={`flex-1 py-3 px-3 rounded-xl text-sm font-medium transition-all border-2 ${
+                (local.studyRoomBg ?? "classroom") === opt.id
+                  ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                  : isNight
+                  ? "border-indigo-700 bg-indigo-800/40 text-indigo-200 hover:border-indigo-500"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-indigo-300"
+              }`}
+            >
+              <div className="text-xl mb-1">{opt.emoji}</div>
+              {opt.label}
+            </button>
+          ))}
         </div>
       </div>
 

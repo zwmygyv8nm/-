@@ -31,11 +31,12 @@ const PRESETS = [
 interface Props {
   goal: string;
   characterId: string;
+  studyRoomBg?: "classroom" | "gradient";
   onComplete: (minutes: number) => void;
   onExit: () => void;
 }
 
-export default function StudyRoomScreen({ goal, characterId, onComplete, onExit }: Props) {
+export default function StudyRoomScreen({ goal, characterId, studyRoomBg = "classroom", onComplete, onExit }: Props) {
   /* ── Timer state ── */
   const [selectedMinutes, setSelectedMinutes] = useState(25);
   const [customMinutes, setCustomMinutes]     = useState("");
@@ -166,23 +167,21 @@ export default function StudyRoomScreen({ goal, characterId, onComplete, onExit 
       {/* 背景レイヤー: CSS グラデーション（常に最下層） */}
       <div className="absolute inset-0 classroom-bg" />
 
-      {/* デフォルト教室画像 / ユーザーカスタム画像 */}
+      {/* 教室画像レイヤー: カスタム画像 > 放課後の教室テンプレート > グラデのみ */}
       {bgSrc ? (
-        /* ユーザーが選んだ画像（localStorage） */
         <div
           className="absolute inset-0 bg-cover"
           style={{ backgroundImage: `url(${bgSrc})`, backgroundPosition: "center 70%" }}
         />
-      ) : (
-        /* public/classroom-bg.jpg をデフォルトとして表示、失敗時はグラデ表示 */
+      ) : studyRoomBg === "classroom" ? (
         <img
-          src="classroom-bg.jpg"
+          src="/-/classroom-bg.jpg"
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: "center 60%" }}
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
         />
-      )}
+      ) : null}
 
       {/* Dark vignette for readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/10 to-black/60 pointer-events-none" />

@@ -21,6 +21,7 @@ export interface AppSettings {
   templateBg: string;
   customBgUrl: string;
   characterId: string;
+  studyRoomBg: "classroom" | "gradient";
 }
 
 const LOGS_KEY = "jibun_study_logs";
@@ -125,17 +126,18 @@ export function getSettings(): AppSettings {
       templateBg: "classroom",
       customBgUrl: "",
       characterId: "neko",
+      studyRoomBg: "classroom" as const,
     };
   }
   const raw = localStorage.getItem(SETTINGS_KEY);
-  return raw
-    ? JSON.parse(raw)
-    : {
-        backgroundType: "template",
-        templateBg: "classroom",
-        customBgUrl: "",
-        characterId: "neko",
-      };
+  const defaults: AppSettings = {
+    backgroundType: "template",
+    templateBg: "classroom",
+    customBgUrl: "",
+    characterId: "neko",
+    studyRoomBg: "classroom",
+  };
+  return raw ? { ...defaults, ...(JSON.parse(raw) as Partial<AppSettings>) } : defaults;
 }
 
 export function saveSettings(settings: AppSettings): void {
