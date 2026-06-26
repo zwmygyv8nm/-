@@ -162,14 +162,27 @@ export default function StudyRoomScreen({ goal, characterId, onComplete, onExit 
   return (
     <div
       className="fixed inset-0 z-50 overflow-hidden"
-      style={
-        bgSrc
-          ? { backgroundImage: `url(${bgSrc})`, backgroundSize: "cover", backgroundPosition: "center 70%" }
-          : {}
-      }
     >
-      {/* CSS gradient background (when no custom image) */}
-      {!bgSrc && <div className="absolute inset-0 classroom-bg" />}
+      {/* 背景レイヤー: CSS グラデーション（常に最下層） */}
+      <div className="absolute inset-0 classroom-bg" />
+
+      {/* デフォルト教室画像 / ユーザーカスタム画像 */}
+      {bgSrc ? (
+        /* ユーザーが選んだ画像（localStorage） */
+        <div
+          className="absolute inset-0 bg-cover"
+          style={{ backgroundImage: `url(${bgSrc})`, backgroundPosition: "center 70%" }}
+        />
+      ) : (
+        /* public/classroom-bg.jpg をデフォルトとして表示、失敗時はグラデ表示 */
+        <img
+          src="classroom-bg.jpg"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: "center 60%" }}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
+      )}
 
       {/* Dark vignette for readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/10 to-black/60 pointer-events-none" />
