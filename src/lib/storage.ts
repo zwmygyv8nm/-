@@ -29,14 +29,17 @@ export interface AppSettings {
 
 /* ── 旅する自習室：地点データ ── */
 export const TRAVEL_LOCATIONS = [
-  { id: "kanazawa", name: "金沢",  prefecture: "石川県", description: "加賀百万石の城下町で集中する", requiredMinutes: 60 },
-  { id: "toyama",   name: "富山",  prefecture: "富山県", description: "立山連峰を望みながら学ぶ",   requiredMinutes: 60 },
-  { id: "fukui",    name: "福井",  prefecture: "福井県", description: "恐竜の里の静かな自習室",     requiredMinutes: 60 },
-  { id: "kyoto",    name: "京都",  prefecture: "京都府", description: "千年の都で机に向かう",       requiredMinutes: 60 },
-  { id: "tokyo",    name: "東京",  prefecture: "東京都", description: "日本の首都で集中タイム",     requiredMinutes: 60 },
+  { id: "start_room", name: "はじまりの自習室", area: "特別",   description: "旅のはじまり。ここから全国へ",       requiredMinutes: 60, mapX: 50, mapY: 55, isSpecial: true },
+  { id: "kanazawa",   name: "石川・金沢",   area: "北陸",   description: "加賀百万石の城下町で集中する",       requiredMinutes: 60, mapX: 37, mapY: 40 },
+  { id: "toyama",     name: "富山",        area: "北陸",   description: "立山連峰を望みながら学ぶ",           requiredMinutes: 60, mapX: 39, mapY: 37 },
+  { id: "fukui",      name: "福井",        area: "北陸",   description: "恐竜の里の静かな自習室",             requiredMinutes: 60, mapX: 36, mapY: 43 },
+  { id: "kyoto",      name: "京都",        area: "近畿",   description: "千年の都で机に向かう",               requiredMinutes: 60, mapX: 37, mapY: 47 },
+  { id: "tokyo",      name: "東京",        area: "関東",   description: "日本の首都で集中タイム",             requiredMinutes: 60, mapX: 55, mapY: 43 },
 ] as const;
 
 export type TravelLocationId = typeof TRAVEL_LOCATIONS[number]["id"];
+
+export type AppMode = "select" | "virtual" | "travel" | "original";
 
 export interface TravelProgress {
   currentLocationId: string;
@@ -144,8 +147,8 @@ export function saveSettings(settings: AppSettings): void {
 
 /* ── TravelProgress ── */
 const TRAVEL_DEFAULTS: TravelProgress = {
-  currentLocationId: "kanazawa",
-  unlockedLocationIds: ["kanazawa"],
+  currentLocationId: "start_room",
+  unlockedLocationIds: ["start_room"],
   completedLocationIds: [],
   locationStudyMinutes: {},
 };
@@ -165,6 +168,20 @@ export function setTravelLocation(locationId: string): TravelProgress {
   const progress = getTravelProgress();
   progress.currentLocationId = locationId;
   return saveTravelProgress(progress);
+}
+
+/* ── AppMode ── */
+const MODE_KEY = "jibun_selected_mode";
+
+export function getSavedMode(): AppMode | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem(MODE_KEY);
+  if (!raw) return null;
+  return raw as AppMode;
+}
+
+export function saveMode(mode: AppMode): void {
+  localStorage.setItem(MODE_KEY, mode);
 }
 
 export function addTravelMinutes(
