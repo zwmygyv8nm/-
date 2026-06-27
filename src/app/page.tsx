@@ -263,6 +263,10 @@ export default function App() {
         {screen === "room" && mode === "travel" && (() => {
           const travelLoc = TRAVEL_LOCATIONS.find((l) => l.id === travelProgress.currentLocationId)
             ?? TRAVEL_LOCATIONS[0];
+          const travelLocIdx = TRAVEL_LOCATIONS.indexOf(travelLoc);
+          const nextLoc = travelLocIdx >= 0 && travelLocIdx < TRAVEL_LOCATIONS.length - 1
+            ? TRAVEL_LOCATIONS[travelLocIdx + 1]
+            : undefined;
           return (
             <TravelStudyRoomScreen
               goal={goal}
@@ -273,6 +277,7 @@ export default function App() {
               locationBgImage={travelLoc.bgImage}
               locationStudyMinutes={travelProgress.locationStudyMinutes[travelLoc.id] ?? 0}
               locationRequiredMinutes={travelLoc.requiredMinutes}
+              locationNextName={nextLoc?.name}
               onComplete={handleTimerComplete}
               onExit={() => setScreen("gate")}
             />
