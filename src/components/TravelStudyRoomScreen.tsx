@@ -13,31 +13,75 @@ const PRESETS = [
 const DOT_COUNT = 12;
 
 /* ══════════════════════════════════════════
-   Layer 1: 背景画像 (blur toggle付き)
+   CSSキーフレーム定義（一括）
+   - bgZoom       : 背景がゆっくりズーム（勉強中の空気感）
+   - petBob       : ペットがゆっくり上下に揺れる
+   - petBounce    : 勉強開始時に一回だけ跳ねる
+   - stickySwing  : 付箋が左右に少し揺れる
+   - stampIn      : 完了スタンプがポンと押される
+══════════════════════════════════════════ */
+const ANIM_STYLES = `
+  @keyframes bgZoom {
+    0%, 100% { transform: scale(1.0); }
+    50%       { transform: scale(1.05); }
+  }
+  @keyframes petBob {
+    0%, 100% { transform: translateY(0px); }
+    50%      { transform: translateY(-7px); }
+  }
+  @keyframes petBounce {
+    0%   { transform: translateY(0px) scale(1); }
+    20%  { transform: translateY(-20px) scale(0.93); }
+    50%  { transform: translateY(0px) scale(1.06); }
+    70%  { transform: translateY(-9px) scale(0.97); }
+    100% { transform: translateY(0px) scale(1); }
+  }
+  @keyframes stickySwing {
+    0%, 100% { transform: rotate(-1.8deg); }
+    50%      { transform: rotate(1.8deg); }
+  }
+  @keyframes stampIn {
+    0%   { opacity: 0; transform: scale(2.8) rotate(-15deg); }
+    55%  { opacity: 1; transform: scale(0.88) rotate(4deg); }
+    78%  { transform: scale(1.10) rotate(-2deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+`;
+
+/* ══════════════════════════════════════════
+   Layer 1: 背景画像
+   blurEnabled=true  → blur+scale（静止）
+   blurEnabled=false → ゆっくりズームアニメ
 ══════════════════════════════════════════ */
 function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabled: boolean }) {
+  const zoomStyle = { animation: "bgZoom 42s ease-in-out infinite", transformOrigin: "center" };
+  const blurStyle = { filter: "blur(4px)", transform: "scale(1.06)", transformOrigin: "center" };
+
   if (bgImage) {
     return (
       <img
         className="absolute inset-0 w-full h-full object-cover"
         src={bgImage}
         alt=""
-        style={blurEnabled
-          ? { filter: "blur(4px)", transform: "scale(1.06)", transformOrigin: "center" }
-          : undefined}
+        style={blurEnabled ? blurStyle : zoomStyle}
       />
     );
   }
-  return <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-sky-800 to-teal-700" />;
+  return (
+    <div
+      className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-sky-800 to-teal-700"
+      style={blurEnabled ? blurStyle : zoomStyle}
+    />
+  );
 }
 
 /* ══════════════════════════════════════════
-   Layer 2: オーバーレイ（暗め＋暖色）
+   Layer 2: 背景オーバーレイ（暗め＋暖色）
 ══════════════════════════════════════════ */
 function BackgroundOverlay() {
   return (
     <div
-      className="absolute inset-0 pointer-events-none"
+      className="absolute inset-0 z-10 pointer-events-none"
       style={{
         background:
           "linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(10,5,0,0.10) 38%, rgba(30,15,5,0.38) 100%)",
@@ -48,7 +92,8 @@ function BackgroundOverlay() {
 
 /* ══════════════════════════════════════════
    Layer 3: 机前景画像 (z-15)
-   公通1枚: public/illustrations/desk/desk-foreground.png
+   机・ノート・ペン・筆箱・水筒・影を焼き込んだ共通1枚PNG
+   public/illustrations/desk/desk-foreground.png
 ══════════════════════════════════════════ */
 function DeskForegroundLayer() {
   return (
@@ -64,7 +109,135 @@ function DeskForegroundLayer() {
 }
 
 /* ══════════════════════════════════════════
-   Layer 4-UI: 上部HUD
+   Layer 4: 小物レイヤー (z-16)
+   付箋など「机前景に焼き込まない」小道具
+   将来：クリック可能な付箋、スタンプ演出など
+══════════════════════════════════════════ */
+function AccessoriesLayer() {
+  return (
+    <div className="absolute inset-0 z-[16] pointer-events-none">
+      {/* 付箋：ゆっくり左右に揺れる */}
+      <div
+        className="absolute"
+        style={{
+          left: "7%",
+          bottom: "28%",
+          animation: "stickySwing 5s ease-in-out infinite",
+          transformOrigin: "top center",
+        }}
+      >
+        <IllustrationImg
+          src="/-/illustrations/desk/sticky-note.png"
+          alt="付箋"
+          style={{ height: "clamp(52px,6vw,78px)", width: "auto", objectFit: "contain" }}
+          fallback={
+            <div
+              className="flex items-center justify-center shadow-lg"
+              style={{
+                width: "clamp(52px,6vw,76px)",
+                height: "clamp(52px,6vw,76px)",
+                background: "linear-gradient(135deg,#fda4af,#fb7185)",
+                borderRadius: 4,
+              }}
+            >
+              <p className="text-white font-bold text-center leading-snug select-none"
+                style={{ fontSize: "clamp(6px,0.65vw,8.5px)", padding: "5px" }}>
+                できたこと<br />つみあげよう<br />☺
+              </p>
+            </div>
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════
+   Layer 5: ペットレイヤー (z-17)
+   - 常にゆっくり上下に揺れる（petBob）
+   - 勉強開始時に一回だけ跳ねる（petBounce）
+   - timerStateに応じた吹き出しメッセージ
+══════════════════════════════════════════ */
+const CHAR_EMOJI: Record<string, string> = { neko: "🐱", shiro: "🐰", kuma: "🐻" };
+
+const CHAR_MSGS: Record<TimerState, string> = {
+  before:   "今日も\nがんばろう！",
+  running:  "集中して！",
+  paused:   "少し\n休憩中...",
+  finished: "お疲れ様！\n🎉",
+};
+
+function PetLayer({
+  characterId,
+  timerState,
+  justStarted,
+}: {
+  characterId: string;
+  timerState: TimerState;
+  justStarted: boolean;
+}) {
+  const emoji = CHAR_EMOJI[characterId] ?? "🐱";
+  const msg   = CHAR_MSGS[timerState];
+
+  const bobSpeed = timerState === "running" ? "2.4s" : "3.5s";
+  const petAnim  = justStarted
+    ? "petBounce 0.75s cubic-bezier(0.175,0.885,0.32,1.275) forwards"
+    : `petBob ${bobSpeed} ease-in-out infinite`;
+
+  return (
+    <div className="absolute z-[17] pointer-events-none" style={{ left: "17%", bottom: "16%" }}>
+      {/* 吹き出し */}
+      <div
+        className="bg-white/92 rounded-2xl rounded-bl-none shadow-lg text-center text-slate-700
+                   font-medium leading-snug whitespace-pre-line mb-1.5 mx-auto"
+        style={{
+          fontSize: "clamp(7.5px,0.82vw,10.5px)",
+          padding: "4px 8px",
+          maxWidth: "clamp(62px,7.5vw,96px)",
+        }}
+      >
+        {msg}
+      </div>
+      {/* キャラクター */}
+      <div style={{ animation: petAnim }}>
+        <IllustrationImg
+          src={`/-/illustrations/characters/${characterId}.png`}
+          alt={characterId}
+          style={{ height: "clamp(50px,6.5vw,92px)", width: "auto", objectFit: "contain" }}
+          fallback={
+            <div className="drop-shadow-lg" style={{ fontSize: "clamp(1.8rem,3.2vw,3.2rem)" }}>
+              {timerState === "finished" ? "🎉" : emoji}
+            </div>
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════
+   Layer 6: エフェクトレイヤー (z-18)
+   MVP: 空レイヤー（将来の場所別演出の受け皿）
+   将来例:
+     kanazawa  → 小さな桜が少し舞う
+     hokkaido  → 光の粒・ラベンダーの花びら
+     kyoto     → 紅葉・桜
+     okinawa   → 光・水しぶき粒子
+     snow_region → 小さな雪が静かに降る
+   実装方針: 背景写真内の木や草を動かさず、
+             静止画の上に重ねる粒子・花びらで空気感を出す
+══════════════════════════════════════════ */
+function EffectsLayer({
+  locationId: _locationId,
+}: {
+  locationId: string;
+}) {
+  // 将来ここに場所ごとの軽いCSS粒子アニメを追加
+  return null;
+}
+
+/* ══════════════════════════════════════════
+   Layer 7-UI: 上部HUD
    左:旅先カード / 中:タイマー+バー / 右:滞在時間
 ══════════════════════════════════════════ */
 function TravelTopHud({
@@ -281,6 +454,31 @@ function GoalPanel({ goal }: { goal: string }) {
 }
 
 /* ══════════════════════════════════════════
+   完了スタンプ演出 (z-25)
+   勉強終了時にポンと押されるアニメーション
+══════════════════════════════════════════ */
+function CompletionStamp() {
+  return (
+    <div
+      className="absolute z-[25] pointer-events-none"
+      style={{ top: "18%", left: "50%", transform: "translateX(-50%)" }}
+    >
+      <div style={{ animation: "stampIn 0.65s cubic-bezier(0.175,0.885,0.32,1.275) forwards" }}>
+        <div className="text-center">
+          <div className="drop-shadow-2xl" style={{ fontSize: "clamp(3.5rem,7vw,8rem)" }}>🎉</div>
+          <div
+            className="bg-emerald-500 text-white font-black tracking-[0.22em] rounded-xl shadow-2xl mt-2 mx-auto"
+            style={{ fontSize: "clamp(12px,1.4vw,18px)", padding: "clamp(6px,0.7vw,10px) clamp(16px,2vw,28px)" }}
+          >
+            COMPLETE!
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════
    タイマーコントロール（4状態）
 
    before   → [出発する]
@@ -435,7 +633,7 @@ interface Props {
 
 export default function TravelStudyRoomScreen({
   goal,
-  characterId: _characterId,
+  characterId,
   locationName,
   locationArea,
   locationDescription,
@@ -454,6 +652,7 @@ export default function TravelStudyRoomScreen({
   const [finished,        setFinished]        = useState(false);
   const [isPortrait,      setIsPortrait]      = useState(false);
   const [blurEnabled,     setBlurEnabled]     = useState(true);
+  const [justStarted,     setJustStarted]     = useState(false);
   const startSecondsRef = useRef(25 * 60);
   const intervalRef     = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -506,7 +705,13 @@ export default function TravelStudyRoomScreen({
     : "paused";
 
   /* ハンドラ */
-  const handleStart  = () => { startSecondsRef.current = secondsLeft; setStarted(true); setRunning(true); };
+  const handleStart = () => {
+    startSecondsRef.current = secondsLeft;
+    setStarted(true);
+    setRunning(true);
+    setJustStarted(true);
+    setTimeout(() => setJustStarted(false), 800);
+  };
   const handlePause  = () => setRunning(false);
   const handleResume = () => setRunning(true);
   const handleEnd    = useCallback(() => {
@@ -523,10 +728,13 @@ export default function TravelStudyRoomScreen({
   return (
     <div className="fixed inset-0 z-50 overflow-hidden select-none">
 
-      {/* ── Layer 1: 背景 ── */}
+      {/* CSSキーフレーム注入 */}
+      <style dangerouslySetInnerHTML={{ __html: ANIM_STYLES }} />
+
+      {/* ── Layer 1: 背景画像 ── */}
       <BackgroundLayer bgImage={locationBgImage} blurEnabled={blurEnabled} />
 
-      {/* ── Layer 2: オーバーレイ ── */}
+      {/* ── Layer 2: 背景オーバーレイ (z-10) ── */}
       <BackgroundOverlay />
 
       {/* ── 縦向き警告 (z-50) ── */}
@@ -540,12 +748,28 @@ export default function TravelStudyRoomScreen({
         </div>
       )}
 
-      {/* ── Layer 3: 机前景 (z-15) ── */}
+      {/* ── Layer 3: 机前景PNG (z-15) ── */}
       <DeskForegroundLayer />
 
-      {/* ── Layer 4: UI (z-20〜30) ── */}
+      {/* ── Layer 4: 小物レイヤー・付箋 (z-16) ── */}
+      <AccessoriesLayer />
 
-      {/* 右上コントロール */}
+      {/* ── Layer 5: ペット (z-17) ── */}
+      <PetLayer
+        characterId={characterId}
+        timerState={timerState}
+        justStarted={justStarted}
+      />
+
+      {/* ── Layer 6: エフェクト (z-18, 将来の場所別演出) ── */}
+      <EffectsLayer locationId={locationName} />
+
+      {/* ── Layer 7: UI (z-20〜30) ── */}
+
+      {/* 完了スタンプ (z-25) */}
+      {finished && <CompletionStamp />}
+
+      {/* 右上コントロール (z-30) */}
       <div className="absolute top-3 right-3 z-30 flex items-center gap-2">
         <button
           onClick={() => setBlurEnabled((b) => !b)}
