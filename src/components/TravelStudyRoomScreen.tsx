@@ -101,25 +101,30 @@ function BackgroundOverlay() {
    public/illustrations/desk/desk-foreground.png
 ══════════════════════════════════════════ */
 function DeskForegroundLayer() {
+  /* 透過PNGが用意されるまでの暫定: overflow:hidden で白背景部分を隠す */
   const [failed, setFailed] = useState(false);
   if (failed) return null;
   return (
-    <img
-      src="/-/illustrations/desk/desk-foreground.png"
-      alt=""
-      onError={() => setFailed(true)}
-      draggable={false}
+    <div
       style={{
         position: "absolute",
         bottom: 0,
         left: 0,
         width: "100%",
-        height: "auto",
-        display: "block",
+        height: "46vh",
+        overflow: "hidden",
         zIndex: 15,
         pointerEvents: "none",
       }}
-    />
+    >
+      <img
+        src="/-/illustrations/desk/desk-foreground.png"
+        alt=""
+        onError={() => setFailed(true)}
+        draggable={false}
+        style={{ position: "absolute", bottom: 0, width: "100%", height: "auto", display: "block" }}
+      />
+    </div>
   );
 }
 
