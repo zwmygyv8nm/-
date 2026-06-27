@@ -107,16 +107,16 @@ function DeskForegroundLayer() {
     <div
       style={{
         position: "absolute",
-        bottom: "-10vh",
+        bottom: "-4vh",
         left: 0,
         width: "100%",
-        height: "35vh",
+        height: "38vh",
         overflow: "hidden",
         zIndex: 15,
         pointerEvents: "none",
-        /* 上端をグラデーションでなだらかにフェード */
-        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 18%)",
-        maskImage: "linear-gradient(to bottom, transparent 0%, black 18%)",
+        /* アーチ上端をグラデーションでなだらかにフェード */
+        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
+        maskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
       }}
     >
       <img
@@ -568,70 +568,84 @@ function TimerControls({
         </div>
       )}
 
-      {/* ボタンエリア */}
-      <div
-        className="absolute z-20 flex gap-3 items-center"
-        style={{ bottom: "4%", left: "20%", right: "20%" }}
-      >
-        {state === "before" && (
+      {/* ── 開始前: 出発ボタン（中央、自然幅） ── */}
+      {state === "before" && (
+        <div className="absolute z-20 flex justify-center" style={{ bottom: "4%", left: 0, right: 0 }}>
           <button
             onClick={onStart}
-            className="flex-1 rounded-full font-black text-white bg-rose-400 hover:bg-rose-300 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
-            style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(13px,1.3vw,17px)" }}
+            className="rounded-full font-black text-white bg-rose-400 hover:bg-rose-300 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+            style={{
+              padding: "clamp(12px,1.4vw,16px) clamp(36px,6vw,72px)",
+              fontSize: "clamp(14px,1.4vw,18px)",
+            }}
           >
             <Play size={16} fill="white" strokeWidth={0} />
             出発する
           </button>
-        )}
+        </div>
+      )}
 
-        {state === "running" && (
-          <>
-            <button
-              onClick={onPause}
-              className="flex-1 rounded-full font-bold bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/20 shadow-lg flex items-center justify-center gap-1.5 transition-all"
-              style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
-            >
-              <Pause size={14} />一時停止
-            </button>
-            <button
-              onClick={onEnd}
-              className="flex-1 rounded-full font-black text-white bg-rose-400/85 hover:bg-rose-400 shadow-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
-              style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(13px,1.3vw,17px)" }}
-            >
-              <Square size={14} fill="white" strokeWidth={0} />終了する
-            </button>
-          </>
-        )}
+      {/* ── タイマー中: 一時停止 ＋ 終了 ── */}
+      {state === "running" && (
+        <div
+          className="absolute z-20 flex gap-3 items-center"
+          style={{ bottom: "4%", left: "20%", right: "20%" }}
+        >
+          <button
+            onClick={onPause}
+            className="flex-1 rounded-full font-bold bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/20 shadow-lg flex items-center justify-center gap-1.5 transition-all"
+            style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+          >
+            <Pause size={14} />一時停止
+          </button>
+          <button
+            onClick={onEnd}
+            className="flex-1 rounded-full font-black text-white bg-rose-400/85 hover:bg-rose-400 shadow-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
+            style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(13px,1.3vw,17px)" }}
+          >
+            <Square size={14} fill="white" strokeWidth={0} />終了する
+          </button>
+        </div>
+      )}
 
-        {state === "paused" && (
-          <>
-            <button
-              onClick={onResume}
-              className="flex-1 rounded-full font-bold bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/20 shadow-lg flex items-center justify-center gap-1.5 transition-all"
-              style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
-            >
-              <Play size={14} />再開する
-            </button>
-            <button
-              onClick={onEnd}
-              className="flex-1 rounded-full font-black text-white bg-rose-400/85 hover:bg-rose-400 shadow-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
-              style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(13px,1.3vw,17px)" }}
-            >
-              <Square size={14} fill="white" strokeWidth={0} />終了する
-            </button>
-          </>
-        )}
+      {/* ── 一時停止中: 再開 ＋ 終了 ── */}
+      {state === "paused" && (
+        <div
+          className="absolute z-20 flex gap-3 items-center"
+          style={{ bottom: "4%", left: "20%", right: "20%" }}
+        >
+          <button
+            onClick={onResume}
+            className="flex-1 rounded-full font-bold bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/20 shadow-lg flex items-center justify-center gap-1.5 transition-all"
+            style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+          >
+            <Play size={14} />再開する
+          </button>
+          <button
+            onClick={onEnd}
+            className="flex-1 rounded-full font-black text-white bg-rose-400/85 hover:bg-rose-400 shadow-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
+            style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(13px,1.3vw,17px)" }}
+          >
+            <Square size={14} fill="white" strokeWidth={0} />終了する
+          </button>
+        </div>
+      )}
 
-        {state === "finished" && (
+      {/* ── 完了: マップへ戻る ── */}
+      {state === "finished" && (
+        <div className="absolute z-20 flex justify-center" style={{ bottom: "4%", left: 0, right: 0 }}>
           <button
             onClick={onBackToMap}
-            className="flex-1 rounded-full font-black text-white bg-emerald-500 hover:bg-emerald-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
-            style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(13px,1.3vw,17px)" }}
+            className="rounded-full font-black text-white bg-emerald-500 hover:bg-emerald-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+            style={{
+              padding: "clamp(12px,1.4vw,16px) clamp(36px,6vw,72px)",
+              fontSize: "clamp(14px,1.4vw,18px)",
+            }}
           >
             マップへ戻る →
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 }
