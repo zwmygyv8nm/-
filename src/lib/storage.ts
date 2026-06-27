@@ -30,12 +30,12 @@ export interface AppSettings {
 /* ── 旅する自習室：地点データ ── */
 // mapX/mapY: % of image width/height for public/maps/japan-map.png (square ~1052×1052)
 export const TRAVEL_LOCATIONS = [
-  { id: "start_room", name: "はじまりの自習室", area: "特別",   description: "旅のはじまり。ここから全国へ",       requiredMinutes: 60, mapX: 64.1, mapY: 33.9, isSpecial: true },
-  { id: "kanazawa",   name: "石川・金沢",   area: "北陸",   description: "加賀百万石の城下町で集中する",       requiredMinutes: 60, mapX: 53.2, mapY: 51.9 },
-  { id: "toyama",     name: "富山",        area: "北陸",   description: "立山連峰を望みながら学ぶ",           requiredMinutes: 60, mapX: 58.7, mapY: 50.3 },
-  { id: "fukui",      name: "福井",        area: "北陸",   description: "恐竜の里の静かな自習室",             requiredMinutes: 60, mapX: 49.1, mapY: 58.2 },
-  { id: "kyoto",      name: "京都",        area: "近畿",   description: "千年の都で机に向かう",               requiredMinutes: 60, mapX: 54.1, mapY: 59.6 },
-  { id: "tokyo",      name: "東京",        area: "関東",   description: "日本の首都で集中タイム",             requiredMinutes: 60, mapX: 65.3, mapY: 46.4 },
+  { id: "start_room", name: "はじまりの自習室", area: "特別", description: "旅のはじまり。ここから全国へ",   requiredMinutes: 60, prefId: 4,  isSpecial: true },
+  { id: "kanazawa",   name: "石川・金沢",   area: "北陸",   description: "加賀百万石の城下町で集中する",   requiredMinutes: 60, prefId: 17 },
+  { id: "toyama",     name: "富山",        area: "北陸",   description: "立山連峰を望みながら学ぶ",       requiredMinutes: 60, prefId: 16 },
+  { id: "fukui",      name: "福井",        area: "北陸",   description: "恐竜の里の静かな自習室",         requiredMinutes: 60, prefId: 18 },
+  { id: "kyoto",      name: "京都",        area: "近畿",   description: "千年の都で机に向かう",           requiredMinutes: 60, prefId: 26 },
+  { id: "tokyo",      name: "東京",        area: "関東",   description: "日本の首都で集中タイム",         requiredMinutes: 60, prefId: 13 },
 ] as const;
 
 export type TravelLocationId = typeof TRAVEL_LOCATIONS[number]["id"];
