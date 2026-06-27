@@ -10,12 +10,12 @@ const CHAR_EMOJI: Record<string, string> = {
 };
 
 const TRAVEL_MESSAGES = [
-  "旅の途中でも、勉強は続く",
-  "集中してるね。すごいよ",
-  "ここに来てよかった",
-  "いい景色の中で学ぼう",
-  "少しずつ、確実に",
+  "今日も\n一緒にがんばろう！",
+  "集中してるね\nすごいよ",
+  "ここに来て\nよかったね",
+  "少しずつ\n確実に",
   "あとちょっとだよ",
+  "いい調子！",
 ];
 
 const PRESETS = [
@@ -26,31 +26,33 @@ const PRESETS = [
 
 const DOT_COUNT = 12;
 
-function Barcode() {
-  const pattern = [3,1,2,1,3,2,1,3,1,2,1,2,3,1,1,2,3,1,2,1,3,1,2,2,1,3,1,2,1,3];
+/* ── スタンプ ── */
+function TicketStamp() {
   return (
-    <div className="flex items-end gap-[1.5px] h-5">
-      {pattern.map((w, i) => (
-        <div
-          key={i}
-          className="bg-stone-500/60 rounded-[0.5px]"
-          style={{ width: w === 1 ? 1.5 : w === 2 ? 2.5 : 3.5, height: i % 5 === 0 ? "100%" : "72%" }}
-        />
-      ))}
+    <div className="relative w-10 h-10 opacity-75">
+      <div className="absolute inset-0 rounded-full border-2 border-rose-500" />
+      <div className="absolute inset-[3px] rounded-full border border-rose-400" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-rose-500 text-[5px] font-black tracking-[0.15em]">MY STUDY</span>
+        <span className="text-rose-500 text-[11px] leading-none">✈</span>
+        <span className="text-rose-500 text-[5px] font-black tracking-[0.1em]">JOURNEY</span>
+      </div>
     </div>
   );
 }
 
-function Stamp() {
+/* ── バーコード ── */
+function Barcode() {
+  const pattern = [3,1,2,1,3,2,1,3,1,2,1,2,3,1,1,2,3,1,2,1];
   return (
-    <div className="relative w-11 h-11 shrink-0 opacity-70">
-      <div className="absolute inset-0 rounded-full border-[2.5px] border-rose-600" />
-      <div className="absolute inset-[4px] rounded-full border border-rose-500" />
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-rose-600 text-[6px] font-black tracking-[0.15em]">STUDY</span>
-        <span className="text-rose-600 text-[13px] leading-none">✈</span>
-        <span className="text-rose-600 text-[6px] font-black tracking-[0.12em]">TRIP</span>
-      </div>
+    <div className="flex items-end gap-[1.5px] h-4">
+      {pattern.map((w, i) => (
+        <div
+          key={i}
+          className="bg-slate-400/60 rounded-[0.5px]"
+          style={{ width: w === 1 ? 1.5 : w === 2 ? 2.5 : 3.5, height: i % 4 === 0 ? "100%" : "70%" }}
+        />
+      ))}
     </div>
   );
 }
@@ -66,6 +68,7 @@ interface Props {
   locationRequiredMinutes: number;
   onComplete: (minutes: number) => void;
   onExit: () => void;
+  onViewNotes?: () => void;
 }
 
 export default function TravelStudyRoomScreen({
@@ -79,6 +82,7 @@ export default function TravelStudyRoomScreen({
   locationRequiredMinutes,
   onComplete,
   onExit,
+  onViewNotes,
 }: Props) {
   const [selectedMinutes, setSelectedMinutes] = useState(25);
   const [customMinutes,   setCustomMinutes]   = useState("");
@@ -133,14 +137,24 @@ export default function TravelStudyRoomScreen({
   const leftSecs    = secondsLeft % 60;
   const timeStr     = `${String(leftMins).padStart(2, "0")}:${String(leftSecs).padStart(2, "0")}`;
   const totalStayed = locationStudyMinutes + elapsedMins;
+  const remaining   = Math.max(0, locationRequiredMinutes - totalStayed);
+  const stayPct     = Math.min(100, (totalStayed / locationRequiredMinutes) * 100);
   const minsPerDot  = locationRequiredMinutes / DOT_COUNT;
   const filledDots  = Math.min(DOT_COUNT, Math.floor(totalStayed / minsPerDot));
   const emoji       = CHAR_EMOJI[characterId] ?? "🐱";
 
+  const charMsg = finished
+    ? "お疲れ様！\nちゃんと進んだね"
+    : running
+    ? TRAVEL_MESSAGES[msgIdx]
+    : started
+    ? "一時停止中…"
+    : "今日も\n一緒にがんばろう！";
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden select-none">
 
-      {/* ── 背景: 旅先画像 or グラデーション ── */}
+      {/* ── 背景: 全画面旅先画像 ── */}
       {locationBgImage ? (
         <img
           className="absolute inset-0 w-full h-full object-cover"
@@ -151,204 +165,241 @@ export default function TravelStudyRoomScreen({
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-sky-800 to-teal-700" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_28%,rgba(99,179,237,0.38),transparent)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_35%_at_18%_72%,rgba(129,230,217,0.18),transparent)]" />
         </div>
       )}
 
-      {/* ビネット: 上部と薄い下部のみ */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent via-45% to-black/25 pointer-events-none" />
+      {/* ビネット: 上下のみ、中央は透ける */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent via-40% to-black/60 pointer-events-none" />
 
-      {/* ── 退出ボタン (常に上右) ── */}
+      {/* ── 退出ボタン ── */}
       <button
         onClick={onExit}
-        className="absolute top-4 right-4 z-30 flex items-center gap-1 text-white/65 hover:text-white transition-colors text-xs bg-black/25 backdrop-blur-sm rounded-full px-3 py-1.5"
+        className="absolute top-3 right-3 z-30 text-white/55 hover:text-white bg-black/20 backdrop-blur-sm rounded-full p-2 transition-colors"
       >
-        <X size={12} />
-        退出
+        <X size={14} />
       </button>
 
-      {/* ════════════════════════════════
-          ── 開始前の画面 ──
-          ════════════════════════════════ */}
-      {!started && (
-        <>
-          {/* 中央：旅先名 ヒーロー表示 */}
+      {/* ════════════════════════════════════
+          ── 左上: 旅先カード ──
+          ════════════════════════════════════ */}
+      <div className="absolute top-4 left-4 z-20 max-w-[160px]">
+        <div className="bg-black/38 backdrop-blur-xl rounded-2xl px-3 py-2.5 ring-1 ring-white/12 shadow-xl">
+          <p className="text-white/45 text-[9px] tracking-[0.12em] flex items-center gap-0.5 mb-0.5">
+            <MapPin size={8} className="shrink-0" />
+            今日の旅先
+          </p>
+          <p className="text-white font-bold text-[15px] leading-tight">{locationName}</p>
+          <p className="text-white/35 text-[10px] mt-0.5">{locationArea}</p>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════
+          ── 中央上: タイマー + プログレス ──
+          ════════════════════════════════════ */}
+      <div className="absolute top-4 left-0 right-0 z-20 flex flex-col items-center pointer-events-none">
+        <p className="text-white/45 text-[10px] tracking-[0.25em] mb-2">◉ 集中タイム</p>
+        <p
+          className={`text-6xl font-black tabular-nums tracking-tight leading-none drop-shadow-2xl ${
+            finished ? "text-emerald-400" : "text-white"
+          }`}
+          style={{ textShadow: "0 2px 28px rgba(0,0,0,0.55)" }}
+        >
+          {finished ? "完了！" : timeStr}
+        </p>
+        {/* 横長プログレスバー */}
+        <div className="w-44 h-2 bg-white/20 rounded-full mt-3 overflow-hidden">
           <div
-            className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none"
-            style={{ paddingBottom: "220px" }}
-          >
-            <div className="flex items-center gap-1.5 mb-3">
-              <MapPin size={11} className="text-white/55" />
-              <p className="text-white/60 text-xs tracking-[0.38em] font-medium uppercase">{locationArea}</p>
+            className="h-full bg-emerald-400 rounded-full transition-all duration-1000 ease-linear"
+            style={{ width: `${stayPct}%` }}
+          />
+        </div>
+        {/* 進行ドット */}
+        <div className="flex items-center gap-[3px] mt-1.5">
+          {Array.from({ length: DOT_COUNT }).map((_, i) => (
+            <div
+              key={i}
+              className={`rounded-full transition-all duration-700 ${
+                i < filledDots
+                  ? "w-3 h-1.5 bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.55)]"
+                  : "w-2 h-1 bg-white/25"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════
+          ── 右上: 滞在時間カード ──
+          ════════════════════════════════════ */}
+      <div className="absolute top-4 right-4 z-20 max-w-[155px]">
+        <div className="bg-black/38 backdrop-blur-xl rounded-2xl px-3 py-2.5 ring-1 ring-white/12 shadow-xl text-right">
+          <p className="text-white/45 text-[9px] tracking-[0.12em] mb-0.5">滞在時間</p>
+          <p className="text-white font-bold text-2xl tabular-nums leading-tight">
+            {totalStayed}
+            <span className="text-white/40 font-normal text-sm"> / {locationRequiredMinutes}分</span>
+          </p>
+          <p className={`text-[10px] mt-0.5 ${remaining === 0 ? "text-emerald-400" : "text-emerald-400"}`}>
+            {remaining === 0 ? "到着完了！🎉" : `あと${remaining}分で次の旅先へ！`}
+          </p>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════
+          ── 左中: 旅メモカード (浮かせ・傾き) ──
+          ════════════════════════════════════ */}
+      <div className="absolute left-3 z-20" style={{ top: "40%" }}>
+        <div
+          className="bg-white/93 rounded-xl p-3 max-w-[140px] shadow-2xl ring-1 ring-black/5"
+          style={{ transform: "rotate(-2deg)" }}
+        >
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-slate-600 text-[10px] font-bold tracking-wide">旅メモ</p>
+            <span className="text-base leading-none">📷</span>
+          </div>
+          <p className="text-slate-600 text-[11px] leading-relaxed">{locationDescription}</p>
+          <p className="text-rose-400 text-sm mt-2">🌸</p>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════
+          ── 右中: STUDY TICKETカード ──
+          ════════════════════════════════════ */}
+      <div className="absolute right-3 z-20" style={{ top: "37%" }}>
+        <div
+          className="bg-white/93 rounded-xl overflow-hidden shadow-2xl ring-1 ring-black/5 max-w-[152px]"
+          style={{ transform: "rotate(1.5deg)" }}
+        >
+          {/* ピンクヘッダー帯 */}
+          <div className="bg-rose-400 px-3 py-1.5">
+            <p className="text-white font-black text-[10px] tracking-[0.22em]">STUDY TICKET</p>
+          </div>
+          <div className="px-3 pt-2.5 pb-3">
+            <p className="text-slate-700 font-bold text-[13px] leading-tight">{locationName} 行き</p>
+            <p className="text-slate-400 text-[10px] mt-0.5">{locationArea}</p>
+            <div className="h-px bg-slate-200/70 my-2 border-dashed border-slate-200" />
+            <p className="text-slate-500 text-[10px]">出発日：今日</p>
+            <p className="text-slate-500 text-[10px] mt-0.5">目的：{selectedMinutes}分集中すること！</p>
+            <div className="flex items-end justify-between mt-2.5">
+              <Barcode />
+              <TicketStamp />
             </div>
-            <h1
-              className="text-white text-5xl font-black tracking-wide drop-shadow-2xl"
-              style={{ textShadow: "0 2px 28px rgba(0,0,0,0.65)" }}
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════
+          ── 下中央: キャラ + 今日の目標ノート ──
+          ════════════════════════════════════ */}
+      <div className="absolute z-20 pointer-events-none" style={{ bottom: "108px", left: 0, right: 0 }}>
+        <div className="flex items-end justify-center gap-3 px-4">
+
+          {/* キャラ（旅の相棒） */}
+          <div className="flex flex-col items-center gap-1 shrink-0">
+            <div
+              className="bg-white/90 backdrop-blur-sm text-slate-700 text-[10px] font-medium px-2.5 py-1.5 rounded-xl rounded-bl-none shadow-lg max-w-[90px] text-center leading-snug whitespace-pre-line"
             >
-              {locationName}
-            </h1>
-            <p className="text-white/50 text-sm mt-3 max-w-[230px] text-center leading-relaxed drop-shadow-lg">
-              {locationDescription}
-            </p>
-          </div>
-
-          {/* 下部パネル: プリセット + 出発ボタン */}
-          <div className="absolute bottom-0 left-0 right-0 z-20">
-            <div className="bg-slate-900/82 backdrop-blur-2xl rounded-t-3xl px-4 pt-5 pb-8 ring-1 ring-white/8 shadow-2xl">
-              {/* 時間プリセット */}
-              <div className="flex gap-2 justify-center mb-5">
-                {PRESETS.map((p) => (
-                  <button
-                    key={p.label}
-                    onClick={() => handlePreset(p.minutes)}
-                    className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${
-                      selectedMinutes === p.minutes && !customMinutes
-                        ? "bg-white text-slate-800 shadow-lg"
-                        : "bg-white/10 text-white/70 hover:bg-white/18"
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-                <input
-                  type="number" min={1} max={300} value={customMinutes}
-                  onChange={(e) => handleCustom(e.target.value)}
-                  placeholder="自由"
-                  className="w-14 px-2 py-2 rounded-full text-sm bg-white/10 text-white text-center placeholder-white/30 focus:outline-none focus:bg-white/18"
-                />
-              </div>
-
-              {/* 出発するボタン — メインCTA */}
-              <button
-                onClick={handleStart}
-                className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-white rounded-2xl font-black text-lg shadow-xl shadow-emerald-900/50 transition-all flex items-center justify-center gap-2.5"
-              >
-                <span className="text-xl leading-none">✈</span>
-                出発する
-              </button>
+              {charMsg}
             </div>
-          </div>
-        </>
-      )}
-
-      {/* ════════════════════════════════
-          ── 勉強中の画面 ──
-          ════════════════════════════════ */}
-      {started && (
-        <>
-          {/* 上部: タイマー (左) + 旅先＋進行 (右) */}
-          <div className="absolute top-4 left-4 right-16 z-20 flex items-start gap-2">
-
-            {/* タイマーカード */}
-            <div className="bg-slate-900/72 backdrop-blur-xl rounded-2xl px-4 pt-3 pb-3 ring-1 ring-white/10 shadow-xl shrink-0">
-              <p className="text-white/35 text-[9px] tracking-[0.15em] font-bold uppercase mb-0.5">タイマー</p>
-              <p className={`text-4xl font-black tabular-nums tracking-tight leading-none ${finished ? "text-emerald-400" : "text-white"}`}>
-                {finished ? "完了" : timeStr}
-              </p>
-              <p className="text-white/35 text-[10px] mt-1.5">
-                {running ? "集中中…" : finished ? "お疲れ様！" : "停止中"}
-              </p>
-            </div>
-
-            {/* 旅先 + 進行ドットカード */}
-            <div className="flex-1 bg-slate-900/72 backdrop-blur-xl rounded-2xl px-3 pt-3 pb-3 ring-1 ring-white/10 shadow-xl min-w-0">
-              <p className="text-white/35 text-[9px] tracking-[0.12em] font-bold uppercase mb-0.5">今日の旅先</p>
-              <p className="text-white font-bold text-sm leading-tight truncate">{locationName}</p>
-              {/* 進行ドット */}
-              <div className="flex items-center gap-[3px] mt-2">
-                {Array.from({ length: DOT_COUNT }).map((_, i) => (
-                  <div key={i} className={`rounded-full transition-all duration-700 ${
-                    i < filledDots
-                      ? "w-3.5 h-1.5 bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.55)]"
-                      : "w-2.5 h-1 bg-white/18"
-                  }`} />
-                ))}
-              </div>
-              <p className="text-white/35 text-[9px] mt-1.5 tabular-nums">
-                {totalStayed}
-                <span className="text-white/22"> / {locationRequiredMinutes}分滞在</span>
-              </p>
-            </div>
-          </div>
-
-          {/* 旅の相棒 — 左下、底パネルの上に浮かせる */}
-          <div className="absolute bottom-[210px] left-4 z-20 flex items-end gap-2 pointer-events-none">
             <div className="text-4xl drop-shadow-2xl">
               {finished ? "🎉" : emoji}
             </div>
-            <div className="bg-white/88 backdrop-blur-sm text-slate-700 text-[11px] font-medium px-3 py-2 rounded-2xl rounded-bl-none shadow-lg max-w-[130px] leading-snug mb-1">
-              {finished
-                ? "お疲れ様！\nちゃんと進んだね"
-                : running
-                ? TRAVEL_MESSAGES[msgIdx]
-                : "一時停止中…"}
-            </div>
           </div>
 
-          {/* 下部パネル — 高さを抑える */}
-          <div className="absolute bottom-0 left-0 right-0 z-20">
-            <div className="bg-slate-900/82 backdrop-blur-2xl rounded-t-3xl px-4 pt-4 pb-6 ring-1 ring-white/8 shadow-2xl">
-
-              {/* 3カード横スクロール (コンパクト) */}
-              <div className="flex gap-2.5 overflow-x-auto mb-3 -mx-1 px-1 pb-1 scrollbar-hide snap-x snap-mandatory">
-
-                {/* STUDY TICKET */}
-                <div className="bg-[#f5ece0] rounded-xl p-3 min-w-[148px] snap-start shrink-0 shadow ring-1 ring-stone-200/70">
-                  <p className="text-[8px] font-black tracking-[0.25em] text-stone-400 mb-1.5">STUDY TICKET</p>
-                  <p className="text-stone-800 font-bold text-[13px] leading-tight">
-                    {locationName}&nbsp;<span className="text-stone-400 font-normal text-[11px]">行き</span>
-                  </p>
-                  <p className="text-stone-400 text-[10px] mt-0.5 mb-2">{selectedMinutes}分間の集中</p>
-                  <div className="flex items-end justify-between">
-                    <Barcode />
-                    <Stamp />
-                  </div>
-                </div>
-
-                {/* 今日の目標 */}
-                <div className="bg-amber-50 rounded-xl p-3 min-w-[132px] snap-start shrink-0 shadow ring-1 ring-amber-100">
-                  <div className="flex items-center gap-1 mb-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                    <p className="text-[9px] font-bold text-amber-700 tracking-wide">今日の目標</p>
-                  </div>
-                  <p className="text-stone-700 text-[12px] leading-snug break-words">{goal || "（未設定）"}</p>
-                  {finished && <p className="mt-2 text-emerald-600 text-[10px] font-black">✓ 達成！</p>}
-                </div>
-
-                {/* 旅メモ */}
-                <div className="bg-sky-50 rounded-xl p-3 min-w-[148px] snap-start shrink-0 shadow ring-1 ring-sky-100">
-                  <div className="flex items-center gap-1 mb-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0" />
-                    <p className="text-[9px] font-bold text-sky-700 tracking-wide">旅メモ</p>
-                  </div>
-                  <p className="text-slate-600 text-[11px] leading-relaxed">{locationDescription}</p>
-                </div>
-              </div>
-
-              {/* コントロールボタン */}
-              <div className="flex gap-2.5">
-                {/* 一時停止 / 再開 — メイン */}
-                <button
-                  onClick={handlePause}
-                  className="flex-1 py-3 bg-white/10 hover:bg-white/18 active:scale-[0.98] text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-1.5 ring-1 ring-white/12"
-                >
-                  {running
-                    ? <><Pause size={15} />一時停止</>
-                    : <><Play size={15} />再開</>}
-                </button>
-                {/* 終了 — 補助 */}
-                <button
-                  onClick={handleComplete}
-                  className="px-5 py-3 bg-white/5 hover:bg-white/12 active:scale-[0.98] text-white/50 hover:text-white/80 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1.5 ring-1 ring-white/8"
-                >
-                  <Square size={13} fill="currentColor" strokeWidth={0} />
-                  終了
-                </button>
-              </div>
-            </div>
+          {/* 今日の目標ノート */}
+          <div
+            className="bg-amber-50/95 rounded-xl px-4 py-3 shadow-2xl ring-1 ring-amber-200/60 flex-1 max-w-[200px]"
+            style={{ transform: "rotate(0.5deg)" }}
+          >
+            <p className="text-amber-700 text-[11px] font-black mb-1.5 flex items-center gap-1">
+              今日の目標 <span>⭐</span>
+            </p>
+            <p className="text-slate-600 text-[12px] leading-snug break-words">
+              {goal || "（目標を入力しよう）"}
+            </p>
+            {finished && (
+              <p className="mt-2 text-emerald-600 text-[11px] font-black">✓ 達成！</p>
+            )}
           </div>
-        </>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════
+          ── 時間プリセット（スタート前のみ、中央） ──
+          ════════════════════════════════════ */}
+      {!started && (
+        <div className="absolute z-20 flex gap-2 justify-center" style={{ bottom: "82px", left: 0, right: 0 }}>
+          {PRESETS.map((p) => (
+            <button
+              key={p.label}
+              onClick={() => handlePreset(p.minutes)}
+              className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all ${
+                selectedMinutes === p.minutes && !customMinutes
+                  ? "bg-white text-slate-700 shadow-md"
+                  : "bg-black/30 backdrop-blur text-white/75 hover:bg-black/45"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+          <input
+            type="number" min={1} max={300} value={customMinutes}
+            onChange={(e) => handleCustom(e.target.value)}
+            placeholder="自由"
+            className="w-14 px-2 py-1.5 rounded-full text-sm bg-black/30 backdrop-blur text-white text-center placeholder-white/35 focus:outline-none focus:bg-black/45"
+          />
+        </div>
       )}
+
+      {/* ════════════════════════════════════
+          ── 下部3ボタン（浮かせ、パネルなし） ──
+          ════════════════════════════════════ */}
+      <div className="absolute bottom-7 left-4 right-4 z-20 flex gap-2.5 items-center">
+
+        {/* 左: 一時停止 / 再開 */}
+        <button
+          onClick={started ? handlePause : undefined}
+          disabled={!started}
+          className={`flex-1 py-3.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
+            started
+              ? "bg-slate-800/65 backdrop-blur-md hover:bg-slate-700/70 text-white shadow-lg"
+              : "bg-slate-800/30 backdrop-blur text-white/25 cursor-default"
+          }`}
+        >
+          {started
+            ? running
+              ? <><Pause size={14} />一時停止</>
+              : <><Play size={14} />再開</>
+            : <><Pause size={14} />一時停止</>}
+        </button>
+
+        {/* 中央: 集中スタート！/ 終了する（ピンク、メインCTA） */}
+        {!started ? (
+          <button
+            onClick={handleStart}
+            className="flex-[1.4] py-4 bg-rose-400 hover:bg-rose-300 active:scale-[0.97] text-white rounded-full font-black text-base shadow-2xl shadow-rose-900/40 transition-all flex items-center justify-center gap-2"
+          >
+            <Play size={17} fill="white" strokeWidth={0} />
+            集中スタート！
+          </button>
+        ) : (
+          <button
+            onClick={handleComplete}
+            className="flex-[1.4] py-4 bg-rose-400/75 hover:bg-rose-400 active:scale-[0.97] text-white rounded-full font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-1.5"
+          >
+            <Square size={14} fill="white" strokeWidth={0} />
+            終了する
+          </button>
+        )}
+
+        {/* 右: 旅ノート */}
+        <button
+          onClick={onViewNotes ?? onExit}
+          className="flex-1 py-3.5 bg-slate-800/65 backdrop-blur-md hover:bg-slate-700/70 text-white/80 hover:text-white rounded-full text-sm font-bold transition-all flex items-center justify-center gap-1 shadow-lg"
+        >
+          旅ノート
+          <span className="text-xs">→</span>
+        </button>
+      </div>
     </div>
   );
 }
