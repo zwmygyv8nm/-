@@ -19,21 +19,26 @@ function getLocState(locId: string, tp: TravelProgress, isSpecial: boolean): Loc
   return "locked";
 }
 
+// Green-map palette — base land is always green; game states use accents
+const BASE_GREEN        = "#afd96e";  // all-prefecture base (matches original PNG hue)
+const BASE_GREEN_STROKE = "#72a83e";  // prefecture border
+const UNAVAIL_GREEN     = "#c8e8a0";  // future / not-yet-in-game prefecture
+
 const FILL: Record<LocState, string> = {
-  special_current: "#fbbf24",
-  special:         "#fde68a",
-  current:         "#6366f1",
-  completed:       "#10b981",
-  unlocked:        "#c7d2fe",
-  locked:          "#e0e7ef",
+  special_current: "#facc15",   // gold star location
+  special:         "#fde68a",   // unlocked star location
+  current:         "#f97316",   // orange — current destination
+  completed:       "#22c55e",   // bright green — done
+  unlocked:        BASE_GREEN,  // available, same green
+  locked:          BASE_GREEN,  // locked, same green (opacity differs)
 };
 const STROKE: Record<LocState, string> = {
-  special_current: "#d97706",
-  special:         "#f59e0b",
-  current:         "#4338ca",
-  completed:       "#059669",
-  unlocked:        "#818cf8",
-  locked:          "#cbd5e1",
+  special_current: "#b45309",
+  special:         "#d97706",
+  current:         "#c2410c",
+  completed:       "#15803d",
+  unlocked:        BASE_GREEN_STROKE,
+  locked:          BASE_GREEN_STROKE,
 };
 
 interface Props {
@@ -77,7 +82,7 @@ export default function TravelMapView({ travelProgress, onSelectLocation, isNigh
   return (
     <div className="flex flex-col gap-3">
       {/* SVG map */}
-      <div className={`rounded-2xl overflow-hidden border ${isNight ? "border-indigo-800/40 bg-indigo-950/40" : "border-gray-200 bg-slate-50"}`}>
+      <div className={`rounded-2xl overflow-hidden border ${isNight ? "border-green-900/60 bg-green-950/30" : "border-green-200 bg-green-50"}`}>
         <svg
           viewBox={JAPAN_VIEWBOX}
           className="w-full h-auto"
@@ -91,10 +96,11 @@ export default function TravelMapView({ travelProgress, onSelectLocation, isNigh
             const state: LocState = loc
               ? getLocState(loc.id, travelProgress, "isSpecial" in loc && (loc as { isSpecial?: boolean }).isSpecial === true)
               : "locked";
-            const fill   = FILL[state];
-            const stroke = isSelected ? "#1e1b4b" : STROKE[state];
-            const sw     = isSelected ? 2.5 : hasLoc ? 1.2 : 0.6;
-            const opacity = state === "locked" && !hasLoc ? 0.55 : 1;
+
+            // All prefectures are green; only game-location states get accent colours
+            const fill   = hasLoc ? FILL[state] : UNAVAIL_GREEN;
+            const stroke = isSelected ? "#14532d" : (hasLoc ? STROKE[state] : BASE_GREEN_STROKE);
+            const sw     = isSelected ? 2.5 : 0.8;
 
             return (
               <path
@@ -103,11 +109,10 @@ export default function TravelMapView({ travelProgress, onSelectLocation, isNigh
                 fill={fill}
                 stroke={stroke}
                 strokeWidth={sw}
-                opacity={opacity}
-                style={{ cursor: "pointer", transition: "fill 0.15s, opacity 0.15s" }}
+                style={{ cursor: "pointer", transition: "filter 0.12s" }}
                 onClick={() => setSelectedPrefId(isSelected ? null : prefId)}
-                onMouseEnter={(e) => { (e.target as SVGPathElement).style.opacity = "0.82"; }}
-                onMouseLeave={(e) => { (e.target as SVGPathElement).style.opacity = String(opacity); }}
+                onMouseEnter={(e) => { (e.target as SVGPathElement).style.filter = "brightness(1.15)"; }}
+                onMouseLeave={(e) => { (e.target as SVGPathElement).style.filter = ""; }}
               >
                 <title>{pref.nameJa}</title>
               </path>
@@ -117,18 +122,18 @@ export default function TravelMapView({ travelProgress, onSelectLocation, isNigh
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1 px-1">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 px-1">
         {(
           [
-            ["special_current", "現在地(特別)"],
-            ["current",         "現在地"],
-            ["completed",       "完了"],
-            ["unlocked",        "解放済"],
-            ["locked",          "未解放"],
-          ] as [LocState, string][]
-        ).map(([state, label]) => (
-          <span key={state} className="flex items-center gap-1 text-[10px]" style={{ color: isNight ? "#a5b4fc" : "#6b7280" }}>
-            <span className="inline-block w-3 h-3 rounded-sm border" style={{ background: FILL[state], borderColor: STROKE[state] }} />
+            [FILL.special_current, STROKE.special_current, "現在地(特別)"],
+            [FILL.current,         STROKE.current,         "現在地"],
+            [FILL.completed,       STROKE.completed,       "完了"],
+            [BASE_GREEN,           BASE_GREEN_STROKE,      "解放済 / 未解放"],
+            [UNAVAIL_GREEN,        BASE_GREEN_STROKE,      "近日公開"],
+          ] as [string, string, string][]
+        ).map(([bg, border, label]) => (
+          <span key={label} className="flex items-center gap-1 text-[10px]" style={{ color: isNight ? "#86efac" : "#4b7a30" }}>
+            <span className="inline-block w-3 h-3 rounded-sm border" style={{ background: bg, borderColor: border }} />
             {label}
           </span>
         ))}
