@@ -34,11 +34,11 @@ const GHOST_STROKE = "#c8c8c8";
 
 interface Props {
   travelProgress: TravelProgress;
-  onSelectLocation: (id: string) => void;
+  onDepart: (id: string) => void;
   isNight: boolean;
 }
 
-export default function TravelMapView({ travelProgress, onSelectLocation, isNight }: Props) {
+export default function TravelMapView({ travelProgress, onDepart, isNight }: Props) {
   const [selectedPrefId, setSelectedPrefId] = useState<number | null>(() => {
     const cur = TRAVEL_LOCATIONS.find(l => l.id === travelProgress.currentLocationId);
     return cur?.prefId ?? null;
@@ -202,16 +202,16 @@ return (
                 <p className={`text-xs ${isNight ? "text-gray-500" : "text-gray-400"}`}>
                   🔒 前の自習室を {selectedRequired} 分達成すると開放されます
                 </p>
-              ) : isCurrentSelected ? (
-                <p className={`text-xs font-medium ${isNight ? "text-indigo-400" : "text-indigo-500"}`}>
-                  → 下の「この自習室に入る」から勉強を始められます
-                </p>
               ) : (
                 <button
-                  onClick={() => { onSelectLocation(selectedLoc.id); }}
-                  className="w-full py-2 rounded-xl text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                  onClick={() => onDepart(selectedLoc.id)}
+                  className={`w-full py-2 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-1.5 ${
+                    isCurrentSelected
+                      ? "bg-emerald-500 hover:bg-emerald-400 text-white"
+                      : "bg-indigo-600 hover:bg-indigo-500 text-white"
+                  }`}
                 >
-                  ここに移動する
+                  {isCurrentSelected ? "✈️ ここへ出発する" : "✈️ ここへ出発する"}
                 </button>
               )}
             </>

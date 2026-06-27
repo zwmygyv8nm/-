@@ -9,8 +9,7 @@ interface Props {
   travelProgress: TravelProgress;
   goal: string;
   onGoalChange: (g: string) => void;
-  onSelectLocation: (id: string) => void;
-  onStart: () => void;
+  onDepart: (id: string) => void;
   isNight: boolean;
 }
 
@@ -18,8 +17,7 @@ export default function TravelModeScreen({
   travelProgress,
   goal,
   onGoalChange,
-  onSelectLocation,
-  onStart,
+  onDepart,
   isNight,
 }: Props) {
   const [view, setView] = useState<"map" | "list">("map");
@@ -104,9 +102,7 @@ export default function TravelModeScreen({
       {view === "map" && (
         <TravelMapView
           travelProgress={travelProgress}
-          onSelectLocation={(id) => {
-            onSelectLocation(id);
-          }}
+          onDepart={onDepart}
           isNight={isNight}
         />
       )}
@@ -130,7 +126,7 @@ export default function TravelModeScreen({
                   <button
                     key={loc.id}
                     disabled={!isUnlocked}
-                    onClick={() => isUnlocked && onSelectLocation(loc.id)}
+                    onClick={() => isUnlocked && onDepart(loc.id)}
                     className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all ${
                       !isUnlocked
                         ? "opacity-30 cursor-not-allowed"
@@ -193,13 +189,13 @@ export default function TravelModeScreen({
         />
       </div>
 
-      {/* Start button */}
+      {/* Start button — depart from current location */}
       <button
-        onClick={onStart}
-        className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+        onClick={() => onDepart(currentLoc.id)}
+        className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
       >
         <LogIn size={20} />
-        この自習室に入る
+        {currentLoc.name} へ出発する
       </button>
     </div>
   );

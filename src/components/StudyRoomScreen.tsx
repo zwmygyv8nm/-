@@ -34,12 +34,13 @@ interface Props {
   goal: string;
   characterId: string;
   studyRoomBg?: "classroom" | "gradient";
-  locationName?: string; // 旅モード時に地点名を表示
+  locationName?: string;
+  locationBgImage?: string; // 旅モード：地点ごとのフリー画像（将来実装）
   onComplete: (minutes: number) => void;
   onExit: () => void;
 }
 
-export default function StudyRoomScreen({ goal, characterId, studyRoomBg = "classroom", locationName, onComplete, onExit }: Props) {
+export default function StudyRoomScreen({ goal, characterId, studyRoomBg = "classroom", locationName, locationBgImage, onComplete, onExit }: Props) {
   /* ── Timer state ── */
   const [selectedMinutes, setSelectedMinutes] = useState(25);
   const [customMinutes, setCustomMinutes]     = useState("");
@@ -166,11 +167,11 @@ export default function StudyRoomScreen({ goal, characterId, studyRoomBg = "clas
       {/* 背景: CSSグラデーション（最下層） */}
       <div className="absolute inset-0 classroom-bg" />
 
-      {/* 背景画像 */}
-      {bgSrc ? (
+      {/* 背景画像 — 優先順位: 旅モード地点画像 > カスタム > デフォルト */}
+      {(locationBgImage ?? bgSrc) ? (
         <div
           className="absolute inset-0 bg-cover"
-          style={{ backgroundImage: `url(${bgSrc})`, backgroundPosition: "center 70%" }}
+          style={{ backgroundImage: `url(${locationBgImage ?? bgSrc})`, backgroundPosition: "center 60%" }}
         />
       ) : studyRoomBg === "classroom" ? (
         <img

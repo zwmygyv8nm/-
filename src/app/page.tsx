@@ -7,6 +7,7 @@ import DecoRoom from "@/components/DecoRoom";
 import StudyRoomScreen from "@/components/StudyRoomScreen";
 import ModeSelectScreen from "@/components/ModeSelectScreen";
 import TravelModeScreen from "@/components/TravelModeScreen";
+import DepartureModal from "@/components/DepartureModal";
 import {
   getLogs,
   getProgress,
@@ -46,6 +47,7 @@ export default function App() {
   const [newDecos, setNewDecos]       = useState<string[]>([]);
   const [travelProgress, setTravelProgress] = useState<TravelProgress | null>(null);
   const [newlyUnlockedLocation, setNewlyUnlockedLocation] = useState<string | null>(null);
+  const [departureTarget, setDepartureTarget] = useState<string | null>(null);
 
   useEffect(() => {
     setProgress(getProgress());
@@ -77,6 +79,24 @@ export default function App() {
       alert("今日の目標を書いてから入室しよう！");
       return;
     }
+    setScreen("room");
+  };
+
+  // 旅モード：地点を選んで出発モーダルを表示
+  const handleDepart = (locationId: string) => {
+    if (!goal.trim()) {
+      alert("今日の目標を書いてから出発しよう！");
+      return;
+    }
+    setDepartureTarget(locationId);
+  };
+
+  // 出発確定：地点を設定してタイマー開始
+  const handleDepartConfirm = () => {
+    if (!departureTarget) return;
+    const tp = setTravelLocation(departureTarget);
+    setTravelProgress(tp);
+    setDepartureTarget(null);
     setScreen("room");
   };
 
@@ -174,11 +194,7 @@ export default function App() {
             travelProgress={travelProgress}
             goal={goal}
             onGoalChange={setGoal}
-            onSelectLocation={(id) => {
-              const tp = setTravelLocation(id);
-              setTravelProgress(tp);
-            }}
-            onStart={handleAttend}
+            onDepart={handleDepart}
             isNight={isNight}
           />
         )}
@@ -254,6 +270,7 @@ export default function App() {
               characterId={settings.characterId}
               studyRoomBg={mode === "travel" ? "gradient" : settings.studyRoomBg}
               locationName={travelLoc ? `${travelLoc.name}（${travelLoc.area}）` : undefined}
+              locationBgImage={travelLoc?.bgImage}
               onComplete={handleTimerComplete}
               onExit={() => setScreen("gate")}
             />
@@ -492,6 +509,20 @@ export default function App() {
         )}
 
       </main>
+
+      {/* 出発確認モーダル（旅モード） */}
+      {departureTarget && (() => {
+        const loc = TRAVEL_LOCATIONS.find((l) => l.id === departureTarget);
+        if (!loc) return null;
+        return (
+          <DepartureModal
+            location={loc}
+            isNight={isNight}
+            onConfirm={handleDepartConfirm}
+            onCancel={() => setDepartureTarget(null)}
+          />
+        );
+      })()}
     </Background>
   );
 }
