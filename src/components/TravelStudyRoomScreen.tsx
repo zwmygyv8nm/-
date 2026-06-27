@@ -97,11 +97,14 @@ function BackgroundOverlay() {
 ══════════════════════════════════════════ */
 function DeskForegroundLayer() {
   return (
-    <div className="absolute bottom-0 left-0 w-full z-[15] pointer-events-none">
+    <div
+      className="absolute bottom-0 left-0 w-full z-[15] pointer-events-none overflow-hidden"
+      style={{ height: "46vh" }}
+    >
       <IllustrationImg
         src="/-/illustrations/desk/desk-foreground.png"
         alt=""
-        style={{ width: "100%", height: "auto", display: "block" }}
+        style={{ position: "absolute", bottom: 0, width: "100%", height: "auto", display: "block" }}
         fallback={<></>}
       />
     </div>
@@ -121,7 +124,7 @@ function AccessoriesLayer() {
         className="absolute"
         style={{
           left: "7%",
-          bottom: "28%",
+          bottom: "20%",
           animation: "stickySwing 5s ease-in-out infinite",
           transformOrigin: "top center",
         }}
@@ -185,7 +188,7 @@ function PetLayer({
     : `petBob ${bobSpeed} ease-in-out infinite`;
 
   return (
-    <div className="absolute z-[17] pointer-events-none" style={{ left: "17%", bottom: "16%" }}>
+    <div className="absolute z-[17] pointer-events-none" style={{ left: "17%", bottom: "14%" }}>
       {/* 吹き出し */}
       <div
         className="bg-white/92 rounded-2xl rounded-bl-none shadow-lg text-center text-slate-700
@@ -436,7 +439,7 @@ function GoalPanel({ goal }: { goal: string }) {
   return (
     <div
       className="absolute z-20"
-      style={{ bottom: "22%", left: "50%", transform: "translateX(-50%)", width: "clamp(200px,24vw,340px)" }}
+      style={{ bottom: "20%", left: "50%", transform: "translateX(-50%)", width: "clamp(200px,24vw,340px)" }}
     >
       <div
         className="bg-amber-50/92 rounded-2xl shadow-xl ring-1 ring-amber-200/40 px-4 py-3"
@@ -517,7 +520,7 @@ function TimerControls({
       {state === "before" && (
         <div
           className="absolute z-20 flex gap-2 items-center"
-          style={{ bottom: "20%", left: "50%", transform: "translateX(-50%)" }}
+          style={{ bottom: "11%", left: "50%", transform: "translateX(-50%)" }}
         >
           {PRESETS.map((p) => (
             <button
@@ -651,7 +654,7 @@ export default function TravelStudyRoomScreen({
   const [started,         setStarted]         = useState(false);
   const [finished,        setFinished]        = useState(false);
   const [isPortrait,      setIsPortrait]      = useState(false);
-  const [blurEnabled,     setBlurEnabled]     = useState(true);
+  const [blurEnabled,     setBlurEnabled]     = useState(false);
   const [justStarted,     setJustStarted]     = useState(false);
   const startSecondsRef = useRef(25 * 60);
   const intervalRef     = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -726,7 +729,7 @@ export default function TravelStudyRoomScreen({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden select-none">
+    <div className="fixed inset-0 z-50 overflow-hidden select-none bg-slate-800">
 
       {/* CSSキーフレーム注入 */}
       <style dangerouslySetInnerHTML={{ __html: ANIM_STYLES }} />
