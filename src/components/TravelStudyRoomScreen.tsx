@@ -257,7 +257,7 @@ export default function TravelStudyRoomScreen({
       <div className="absolute left-6 z-20" style={{ top: "27%" }}>
         <div
           className="bg-white/93 rounded-xl p-3 shadow-2xl ring-1 ring-black/5"
-          style={{ transform: "rotate(-2deg)", width: "clamp(130px, 14vw, 190px)" }}
+          style={{ width: "clamp(130px, 14vw, 190px)" }}
         >
           <div className="flex items-center justify-between mb-1.5">
             <p className="text-slate-600 text-[10px] font-bold tracking-wide">旅メモ</p>
@@ -274,7 +274,7 @@ export default function TravelStudyRoomScreen({
       <div className="absolute right-6 z-20" style={{ top: "24%" }}>
         <div
           className="bg-white/93 rounded-xl overflow-hidden shadow-2xl ring-1 ring-black/5"
-          style={{ transform: "rotate(1.5deg)", width: "clamp(140px, 15vw, 200px)" }}
+          style={{ width: "clamp(140px, 15vw, 200px)" }}
         >
           <div className="bg-rose-400 px-3 py-1.5">
             <p className="text-white font-black tracking-[0.22em]" style={{ fontSize: "clamp(9px, 1vw, 12px)" }}>
@@ -327,7 +327,6 @@ export default function TravelStudyRoomScreen({
         <div
           className="bg-amber-50/95 rounded-2xl shadow-2xl ring-1 ring-amber-200/60"
           style={{
-            transform: "rotate(0.5deg)",
             padding: "clamp(10px, 1.2vw, 16px)",
             width: "clamp(160px, 18vw, 280px)",
           }}
@@ -352,7 +351,7 @@ export default function TravelStudyRoomScreen({
       {!started && (
         <div
           className="absolute z-20 flex gap-2 items-center"
-          style={{ bottom: "21%", left: "38%", right: "5%" }}
+          style={{ bottom: "21%", left: "50%", transform: "translateX(-50%)" }}
         >
           {PRESETS.map((p) => (
             <button
@@ -381,7 +380,7 @@ export default function TravelStudyRoomScreen({
       {/* 3ボタン — 右ゾーン下段 */}
       <div
         className="absolute z-20 flex gap-3 items-center"
-        style={{ bottom: "6%", left: "36%", right: "5%" }}
+        style={{ bottom: "6%", left: "28%", right: "5%" }}
       >
         {/* 左: 一時停止 / 再開 */}
         <button
