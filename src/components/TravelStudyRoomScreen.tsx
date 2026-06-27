@@ -104,22 +104,29 @@ function DeskForegroundLayer() {
   const [failed, setFailed] = useState(false);
   if (failed) return null;
   return (
-    <img
-      src="/-/illustrations/desk/desk-foreground-fotor-bg-remover-20260627213034.png"
-      alt=""
-      onError={() => setFailed(true)}
-      draggable={false}
+    <div
       style={{
         position: "absolute",
         bottom: 0,
         left: 0,
         width: "100%",
-        height: "auto",
-        display: "block",
+        height: "35vh",
+        overflow: "hidden",
         zIndex: 15,
         pointerEvents: "none",
+        /* 上端をグラデーションでなだらかにフェード */
+        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 18%)",
+        maskImage: "linear-gradient(to bottom, transparent 0%, black 18%)",
       }}
-    />
+    >
+      <img
+        src="/-/illustrations/desk/desk-foreground-fotor-bg-remover-20260627213034.png"
+        alt=""
+        onError={() => setFailed(true)}
+        draggable={false}
+        style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "auto", display: "block" }}
+      />
+    </div>
   );
 }
 
