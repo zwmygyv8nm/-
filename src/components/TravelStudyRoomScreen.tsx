@@ -198,33 +198,37 @@ export default function TravelStudyRoomScreen({
           ════════════════════════════════════ */}
       <div className="absolute top-4 left-0 right-0 z-20 flex flex-col items-center pointer-events-none">
         <p className="text-white/45 text-[10px] tracking-[0.25em] mb-2">◉ 集中タイム</p>
-        <p
-          className={`text-6xl font-black tabular-nums tracking-tight leading-none drop-shadow-2xl ${
-            finished ? "text-emerald-400" : "text-white"
-          }`}
-          style={{ textShadow: "0 2px 28px rgba(0,0,0,0.55)" }}
-        >
-          {finished ? "完了！" : timeStr}
-        </p>
-        {/* 横長プログレスバー */}
-        <div className="w-44 h-2 bg-white/20 rounded-full mt-3 overflow-hidden">
-          <div
-            className="h-full bg-emerald-400 rounded-full transition-all duration-1000 ease-linear"
-            style={{ width: `${stayPct}%` }}
-          />
-        </div>
-        {/* 進行ドット */}
-        <div className="flex items-center gap-[3px] mt-1.5">
-          {Array.from({ length: DOT_COUNT }).map((_, i) => (
-            <div
-              key={i}
-              className={`rounded-full transition-all duration-700 ${
-                i < filledDots
-                  ? "w-3 h-1.5 bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.55)]"
-                  : "w-2 h-1 bg-white/25"
-              }`}
-            />
-          ))}
+        {/* タイマー + バー・ドットを横並び */}
+        <div className="flex items-center gap-4">
+          <p
+            className={`text-6xl font-black tabular-nums tracking-tight leading-none drop-shadow-2xl ${
+              finished ? "text-emerald-400" : "text-white"
+            }`}
+            style={{ textShadow: "0 2px 28px rgba(0,0,0,0.55)" }}
+          >
+            {finished ? "完了！" : timeStr}
+          </p>
+          {/* 右側: プログレスバー + ドット */}
+          <div className="flex flex-col gap-1.5 pt-0.5">
+            <div className="w-36 h-2 bg-white/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-emerald-400 rounded-full transition-all duration-1000 ease-linear"
+                style={{ width: `${stayPct}%` }}
+              />
+            </div>
+            <div className="flex items-center gap-[3px]">
+              {Array.from({ length: DOT_COUNT }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`rounded-full transition-all duration-700 ${
+                    i < filledDots
+                      ? "w-3 h-1.5 bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.55)]"
+                      : "w-2 h-1 bg-white/25"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
