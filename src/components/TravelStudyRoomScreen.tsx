@@ -316,7 +316,7 @@ function TravelTopHud({
       </div>
 
       {/* 右上: 滞在時間 */}
-      <div className="absolute top-4 right-10 z-20" style={{ width: "clamp(150px,17vw,240px)" }}>
+      <div className="absolute z-20" style={{ top: "clamp(44px,5.5vh,60px)", right: "clamp(120px,10vw,160px)", width: "clamp(150px,17vw,240px)" }}>
         <div
           className="rounded-2xl shadow-xl px-3 py-2.5"
           style={{ background: "rgba(255,252,245,0.48)", backdropFilter: "blur(16px)" }}
@@ -520,7 +520,7 @@ function TimerControls({
       {state === "before" && (
         <div
           className="absolute z-20 flex gap-2 items-center"
-          style={{ bottom: "11%", left: "50%", transform: "translateX(-50%)" }}
+          style={{ bottom: "14%", left: "50%", transform: "translateX(-50%)" }}
         >
           {PRESETS.map((p) => (
             <button
