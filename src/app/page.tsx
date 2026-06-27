@@ -7,6 +7,7 @@ import DecoRoom from "@/components/DecoRoom";
 import StudyRoomScreen from "@/components/StudyRoomScreen";
 import ModeSelectScreen from "@/components/ModeSelectScreen";
 import TravelModeScreen from "@/components/TravelModeScreen";
+import TravelStudyRoomScreen from "@/components/TravelStudyRoomScreen";
 import DepartureModal from "@/components/DepartureModal";
 import {
   getLogs,
@@ -260,22 +261,36 @@ export default function App() {
         )}
 
         {/* ── STUDY ROOM (全画面没入モード) ── */}
-        {screen === "room" && (() => {
-          const travelLoc = mode === "travel"
-            ? TRAVEL_LOCATIONS.find((l) => l.id === travelProgress.currentLocationId)
-            : undefined;
+        {/* ── 旅モード自習室 ── */}
+        {screen === "room" && mode === "travel" && (() => {
+          const travelLoc = TRAVEL_LOCATIONS.find((l) => l.id === travelProgress.currentLocationId)
+            ?? TRAVEL_LOCATIONS[0];
           return (
-            <StudyRoomScreen
+            <TravelStudyRoomScreen
               goal={goal}
               characterId={settings.characterId}
-              studyRoomBg={mode === "travel" ? "gradient" : settings.studyRoomBg}
-              locationName={travelLoc ? `${travelLoc.name}（${travelLoc.area}）` : undefined}
-              locationBgImage={travelLoc?.bgImage}
+              locationName={travelLoc.name}
+              locationArea={travelLoc.area}
+              locationDescription={travelLoc.description}
+              locationBgImage={travelLoc.bgImage}
+              locationStudyMinutes={travelProgress.locationStudyMinutes[travelLoc.id] ?? 0}
+              locationRequiredMinutes={travelLoc.requiredMinutes}
               onComplete={handleTimerComplete}
               onExit={() => setScreen("gate")}
             />
           );
         })()}
+
+        {/* ── バーチャルモード自習室 ── */}
+        {screen === "room" && mode !== "travel" && (
+          <StudyRoomScreen
+            goal={goal}
+            characterId={settings.characterId}
+            studyRoomBg={settings.studyRoomBg}
+            onComplete={handleTimerComplete}
+            onExit={() => setScreen("gate")}
+          />
+        )}
 
         {/* ── LOG SCREEN ── */}
         {screen === "log" && (
