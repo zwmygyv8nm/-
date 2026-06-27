@@ -2,12 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Pause, Play, Square, X, MapPin } from "lucide-react";
-
-const CHAR_EMOJI: Record<string, string> = {
-  neko:  "🐱",
-  shiro: "🐰",
-  kuma:  "🐻",
-};
+import DeskLayer from "./DeskLayer";
 
 const TRAVEL_MESSAGES = [
   "今日も\n一緒にがんばろう！",
@@ -143,7 +138,6 @@ export default function TravelStudyRoomScreen({
   const stayPct     = Math.min(100, (totalStayed / locationRequiredMinutes) * 100);
   const minsPerDot  = locationRequiredMinutes / DOT_COUNT;
   const filledDots  = Math.min(DOT_COUNT, Math.floor(totalStayed / minsPerDot));
-  const emoji       = CHAR_EMOJI[characterId] ?? "🐱";
   const charMsg     = finished ? "お疲れ様！\nちゃんと進んだね"
     : running  ? TRAVEL_MESSAGES[msgIdx]
     : started  ? "一時停止中…"
@@ -162,8 +156,8 @@ export default function TravelStudyRoomScreen({
         </div>
       )}
 
-      {/* ビネット: 上部 + 下部のみ（中央は景色を見せる） */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent via-40% to-black/72 pointer-events-none" />
+      {/* ビネット: 上部のみ（机レイヤーが下部を覆う） */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent via-40% to-black/20 pointer-events-none" />
 
       {/* ════════════════════════════════════
           縦向き警告オーバーレイ（16:9横長前提）
@@ -300,58 +294,15 @@ export default function TravelStudyRoomScreen({
       </div>
 
       {/* ════════════════════════════════════
-          下部デスクエリア（16:9基準 下35%）
-          左ゾーン: キャラ + 今日の目標
-          右ゾーン: プリセット + ボタン
+          机レイヤー（DeskLayer）
           ════════════════════════════════════ */}
+      <DeskLayer goal={goal} characterId={characterId} charMsg={charMsg} finished={finished} />
 
-      {/* キャラ + 今日の目標ノート — 左下 */}
-      <div
-        className="absolute z-20 flex items-end gap-3"
-        style={{ bottom: "22%", left: "5%" }}
-      >
-        {/* キャラ (旅の相棒) */}
-        <div className="flex flex-col items-center gap-1.5 shrink-0">
-          <div
-            className="bg-white/90 backdrop-blur-sm text-slate-700 font-medium rounded-2xl rounded-bl-none shadow-lg text-center whitespace-pre-line leading-snug"
-            style={{ fontSize: "clamp(10px, 1.1vw, 13px)", padding: "6px 10px", maxWidth: "clamp(80px, 9vw, 120px)" }}
-          >
-            {charMsg}
-          </div>
-          <div className="drop-shadow-2xl" style={{ fontSize: "clamp(2rem, 3.5vw, 3.5rem)" }}>
-            {finished ? "🎉" : emoji}
-          </div>
-        </div>
-
-        {/* 今日の目標ノート */}
-        <div
-          className="bg-amber-50/95 rounded-2xl shadow-2xl ring-1 ring-amber-200/60"
-          style={{
-            padding: "clamp(10px, 1.2vw, 16px)",
-            width: "clamp(160px, 18vw, 280px)",
-          }}
-        >
-          <p className="text-amber-700 font-black flex items-center gap-1 mb-2"
-            style={{ fontSize: "clamp(10px, 1.1vw, 13px)" }}>
-            今日の目標 <span>⭐</span>
-          </p>
-          <p className="text-slate-600 leading-snug break-words"
-            style={{ fontSize: "clamp(11px, 1.2vw, 14px)" }}>
-            {goal || "（目標を入力しよう）"}
-          </p>
-          {finished && (
-            <p className="mt-2 text-emerald-600 font-black" style={{ fontSize: "clamp(9px, 1vw, 12px)" }}>
-              ✓ 達成！
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* 時間プリセット（スタート前のみ）— 右ゾーン上段 */}
+      {/* 時間プリセット（スタート前のみ）*/}
       {!started && (
         <div
           className="absolute z-20 flex gap-2 items-center"
-          style={{ bottom: "21%", left: "50%", transform: "translateX(-50%)" }}
+          style={{ bottom: "37%", left: "50%", transform: "translateX(-50%)" }}
         >
           {PRESETS.map((p) => (
             <button
@@ -377,10 +328,10 @@ export default function TravelStudyRoomScreen({
         </div>
       )}
 
-      {/* 3ボタン — 右ゾーン下段 */}
+      {/* 3ボタン */}
       <div
         className="absolute z-20 flex gap-3 items-center"
-        style={{ bottom: "6%", left: "28%", right: "5%" }}
+        style={{ bottom: "8%", left: "28%", right: "5%" }}
       >
         {/* 左: 一時停止 / 再開 */}
         <button
@@ -398,7 +349,7 @@ export default function TravelStudyRoomScreen({
             : <><Pause size={14} />一時停止</>}
         </button>
 
-        {/* 中央: 集中スタート！/ 終了する (ピンク・メインCTA) */}
+        {/* 中央: 集中スタート！/ 終了する */}
         <button
           onClick={!started ? handleStart : handleComplete}
           className={`flex-[1.6] rounded-full font-black text-white shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2 ${
