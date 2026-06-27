@@ -98,33 +98,28 @@ function BackgroundOverlay() {
 /* ══════════════════════════════════════════
    Layer 3: 机前景画像 (z-15)
    机・ノート・ペン・筆箱・水筒・影を焼き込んだ共通1枚PNG
-   public/illustrations/desk/desk-foreground.png
+   public/illustrations/desk/desk-foreground-fotor-bg-remover-20260627213034.png
 ══════════════════════════════════════════ */
 function DeskForegroundLayer() {
-  /* 透過PNGが用意されるまでの暫定: overflow:hidden で白背景部分を隠す */
   const [failed, setFailed] = useState(false);
   if (failed) return null;
   return (
-    <div
+    <img
+      src="/-/illustrations/desk/desk-foreground-fotor-bg-remover-20260627213034.png"
+      alt=""
+      onError={() => setFailed(true)}
+      draggable={false}
       style={{
         position: "absolute",
         bottom: 0,
         left: 0,
         width: "100%",
-        height: "46vh",
-        overflow: "hidden",
+        height: "auto",
+        display: "block",
         zIndex: 15,
         pointerEvents: "none",
       }}
-    >
-      <img
-        src="/-/illustrations/desk/desk-foreground.png"
-        alt=""
-        onError={() => setFailed(true)}
-        draggable={false}
-        style={{ position: "absolute", bottom: 0, width: "100%", height: "auto", display: "block" }}
-      />
-    </div>
+    />
   );
 }
 
