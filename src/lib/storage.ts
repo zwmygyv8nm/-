@@ -147,9 +147,11 @@ export function saveSettings(settings: AppSettings): void {
 }
 
 /* ── TravelProgress ── */
+const ALWAYS_UNLOCKED = ["start_room", "kanazawa"];
+
 const TRAVEL_DEFAULTS: TravelProgress = {
   currentLocationId: "start_room",
-  unlockedLocationIds: ["start_room"],
+  unlockedLocationIds: [...ALWAYS_UNLOCKED],
   completedLocationIds: [],
   locationStudyMinutes: {},
 };
@@ -157,7 +159,16 @@ const TRAVEL_DEFAULTS: TravelProgress = {
 export function getTravelProgress(): TravelProgress {
   if (typeof window === "undefined") return { ...TRAVEL_DEFAULTS };
   const raw = localStorage.getItem(TRAVEL_KEY);
-  return raw ? { ...TRAVEL_DEFAULTS, ...(JSON.parse(raw) as Partial<TravelProgress>) } : { ...TRAVEL_DEFAULTS };
+  const base: TravelProgress = raw
+    ? { ...TRAVEL_DEFAULTS, ...(JSON.parse(raw) as Partial<TravelProgress>) }
+    : { ...TRAVEL_DEFAULTS };
+  // 常時解放の地点を確実に含める（既存ユーザーも対象）
+  for (const id of ALWAYS_UNLOCKED) {
+    if (!base.unlockedLocationIds.includes(id)) {
+      base.unlockedLocationIds = [...base.unlockedLocationIds, id];
+    }
+  }
+  return base;
 }
 
 export function saveTravelProgress(progress: TravelProgress): TravelProgress {
