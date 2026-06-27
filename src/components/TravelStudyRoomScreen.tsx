@@ -262,7 +262,7 @@ function TravelTopHud({
       <div className="absolute top-4 left-4 z-20" style={{ width: "clamp(160px, 18vw, 260px)" }}>
         <div
           className="rounded-2xl overflow-hidden shadow-xl"
-          style={{ background: "rgba(60,40,20,0.72)", backdropFilter: "blur(16px)" }}
+          style={{ background: "rgba(60,40,20,0.42)", backdropFilter: "blur(16px)" }}
         >
           <div className="px-3 pt-2.5 pb-3 relative">
             <div className="absolute top-2 right-2 text-white/20" style={{ fontSize: "clamp(28px,4vw,52px)", lineHeight: 1 }}>🗾</div>
@@ -316,7 +316,7 @@ function TravelTopHud({
       <div className="absolute top-4 right-10 z-20" style={{ width: "clamp(150px,17vw,240px)" }}>
         <div
           className="rounded-2xl shadow-xl px-3 py-2.5"
-          style={{ background: "rgba(255,252,245,0.82)", backdropFilter: "blur(16px)" }}
+          style={{ background: "rgba(255,252,245,0.48)", backdropFilter: "blur(16px)" }}
         >
           <p className="text-stone-400 text-[9px] tracking-[0.12em] mb-1">滞在時間</p>
           <div className="flex items-end justify-between">
