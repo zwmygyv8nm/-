@@ -96,17 +96,16 @@ function BackgroundOverlay() {
    public/illustrations/desk/desk-foreground.png
 ══════════════════════════════════════════ */
 function DeskForegroundLayer() {
+  /* ラッパー div を置かず img を直接 absolute 配置することで
+     余分な stacking context を作らず、背景が透明ピクセル越しに見える */
   return (
-    /* コンテナを画面全体に広げることで overflow clip をなくし、
-       机の縁の透明ピクセルが背景に正しく合成されるようにする */
-    <div className="absolute inset-0 z-[15] pointer-events-none">
-      <IllustrationImg
-        src="/-/illustrations/desk/desk-foreground.png"
-        alt=""
-        style={{ position: "absolute", bottom: 0, width: "100%", height: "auto", display: "block" }}
-        fallback={<></>}
-      />
-    </div>
+    <IllustrationImg
+      src="/-/illustrations/desk/desk-foreground.png"
+      alt=""
+      className="absolute bottom-0 left-0 z-[15] w-full pointer-events-none"
+      style={{ height: "auto", display: "block" }}
+      fallback={<></>}
+    />
   );
 }
 
