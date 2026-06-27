@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Pause, Play, Square, X } from "lucide-react";
-import DeskLayer from "./DeskLayer";
 
 const TRAVEL_MESSAGES = [
   "今日も\n一緒にがんばろう！",
@@ -268,9 +267,6 @@ export default function TravelStudyRoomScreen({
           </div>
         </div>
       </div>
-
-      {/* ── 机アイテム ── */}
-      <DeskLayer goal={goal} characterId={characterId} charMsg={charMsg} finished={finished} />
 
       {/* ── 時間プリセット（スタート前のみ、中央下） ── */}
       {!started && (
