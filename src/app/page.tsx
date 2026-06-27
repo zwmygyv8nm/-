@@ -272,6 +272,7 @@ export default function App() {
               goal={goal}
               characterId={settings.characterId}
               locationName={travelLoc.name}
+              locationEnglishName={travelLoc.englishName}
               locationArea={travelLoc.area}
               locationDescription={travelLoc.description}
               locationBgImage={travelLoc.bgImage}

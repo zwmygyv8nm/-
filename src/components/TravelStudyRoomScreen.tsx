@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Pause, Play, Square, X, MapPin } from "lucide-react";
+import { Pause, Play, Square, X, MapPin, BookOpen } from "lucide-react";
 import IllustrationImg from "./IllustrationImg";
 
 const PRESETS = [
@@ -12,13 +12,10 @@ const PRESETS = [
 
 const DOT_COUNT = 12;
 
+type TimerState = "before" | "running" | "paused" | "finished";
+
 /* ══════════════════════════════════════════
    CSSキーフレーム定義（一括）
-   - bgZoom       : 背景がゆっくりズーム（勉強中の空気感）
-   - petBob       : ペットがゆっくり上下に揺れる
-   - petBounce    : 勉強開始時に一回だけ跳ねる
-   - stickySwing  : 付箋が左右に少し揺れる
-   - stampIn      : 完了スタンプがポンと押される
 ══════════════════════════════════════════ */
 const ANIM_STYLES = `
   @keyframes bgZoom {
@@ -50,8 +47,6 @@ const ANIM_STYLES = `
 
 /* ══════════════════════════════════════════
    Layer 1: 背景画像
-   blurEnabled=true  → blur+scale（静止）
-   blurEnabled=false → ゆっくりズームアニメ
 ══════════════════════════════════════════ */
 function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabled: boolean }) {
   const [imgFailed, setImgFailed] = useState(false);
@@ -59,8 +54,6 @@ function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabl
   const blurStyle = { filter: "blur(4px)", transform: "scale(1.06)", transformOrigin: "center" };
   const activeStyle = blurEnabled ? blurStyle : zoomStyle;
 
-  /* z-0 を明示して描画順を確定させる。
-     透明ピクセルを持つ desk(z-15) の後ろに必ず回るようにする。 */
   if (bgImage && !imgFailed) {
     return (
       <img
@@ -81,7 +74,7 @@ function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabl
 }
 
 /* ══════════════════════════════════════════
-   Layer 2: 背景オーバーレイ（暗め＋暖色）
+   Layer 2: 背景オーバーレイ
 ══════════════════════════════════════════ */
 function BackgroundOverlay() {
   return (
@@ -89,7 +82,7 @@ function BackgroundOverlay() {
       className="absolute inset-0 z-10 pointer-events-none"
       style={{
         background:
-          "linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(10,5,0,0.10) 38%, rgba(30,15,5,0.38) 100%)",
+          "linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(10,5,0,0.08) 40%, rgba(20,10,0,0.30) 100%)",
       }}
     />
   );
@@ -97,8 +90,6 @@ function BackgroundOverlay() {
 
 /* ══════════════════════════════════════════
    Layer 3: 机前景画像 (z-15)
-   机・ノート・ペン・筆箱・水筒・影を焼き込んだ共通1枚PNG
-   public/illustrations/desk/desk-foreground-fotor-bg-remover-20260627213034.png
 ══════════════════════════════════════════ */
 function DeskForegroundLayer() {
   const [failed, setFailed] = useState(false);
@@ -114,7 +105,6 @@ function DeskForegroundLayer() {
         overflow: "hidden",
         zIndex: 15,
         pointerEvents: "none",
-        /* アーチ上端をグラデーションでなだらかにフェード */
         WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
         maskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
       }}
@@ -132,18 +122,16 @@ function DeskForegroundLayer() {
 
 /* ══════════════════════════════════════════
    Layer 4: 小物レイヤー (z-16)
-   付箋など「机前景に焼き込まない」小道具
-   将来：クリック可能な付箋、スタンプ演出など
+   ピンクの付箋：机の上・右寄り
 ══════════════════════════════════════════ */
 function AccessoriesLayer() {
   return (
     <div className="absolute inset-0 z-[16] pointer-events-none">
-      {/* 付箋：ゆっくり左右に揺れる */}
       <div
         className="absolute"
         style={{
-          left: "7%",
-          bottom: "20%",
+          right: "6%",
+          bottom: "16%",
           animation: "stickySwing 5s ease-in-out infinite",
           transformOrigin: "top center",
         }}
@@ -156,15 +144,15 @@ function AccessoriesLayer() {
             <div
               className="flex items-center justify-center shadow-lg"
               style={{
-                width: "clamp(52px,6vw,76px)",
-                height: "clamp(52px,6vw,76px)",
+                width: "clamp(88px,9vw,120px)",
+                height: "clamp(64px,7vw,88px)",
                 background: "linear-gradient(135deg,#fda4af,#fb7185)",
-                borderRadius: 4,
+                borderRadius: 6,
               }}
             >
-              <p className="text-white font-bold text-center leading-snug select-none"
-                style={{ fontSize: "clamp(6px,0.65vw,8.5px)", padding: "5px" }}>
-                できたこと<br />つみあげよう<br />☺
+              <p className="text-white font-bold text-center leading-snug select-none whitespace-pre-line"
+                style={{ fontSize: "clamp(8px,0.8vw,10px)", padding: "6px 8px" }}>
+                {"できたことを\nつみあげていこう！"}
               </p>
             </div>
           }
@@ -176,15 +164,12 @@ function AccessoriesLayer() {
 
 /* ══════════════════════════════════════════
    Layer 5: ペットレイヤー (z-17)
-   - 常にゆっくり上下に揺れる（petBob）
-   - 勉強開始時に一回だけ跳ねる（petBounce）
-   - timerStateに応じた吹き出しメッセージ
 ══════════════════════════════════════════ */
-const CHAR_EMOJI: Record<string, string> = { neko: "🐱", shiro: "🐰", kuma: "🐻" };
+const CHAR_EMOJI: Record<string, string> = { neko: "🐱", shiro: "🐤", kuma: "🐻" };
 
 const CHAR_MSGS: Record<TimerState, string> = {
-  before:   "今日も\nがんばろう！",
-  running:  "集中して！",
+  before:   "今日も\n一緒にがんばろう！",
+  running:  "集中して！\nファイト！",
   paused:   "少し\n休憩中...",
   finished: "お疲れ様！\n🎉",
 };
@@ -198,7 +183,7 @@ function PetLayer({
   timerState: TimerState;
   justStarted: boolean;
 }) {
-  const emoji = CHAR_EMOJI[characterId] ?? "🐱";
+  const emoji = CHAR_EMOJI[characterId] ?? "🐤";
   const msg   = CHAR_MSGS[timerState];
 
   const bobSpeed = timerState === "running" ? "2.4s" : "3.5s";
@@ -207,15 +192,15 @@ function PetLayer({
     : `petBob ${bobSpeed} ease-in-out infinite`;
 
   return (
-    <div className="absolute z-[17] pointer-events-none" style={{ left: "17%", bottom: "14%" }}>
+    <div className="absolute z-[17] pointer-events-none" style={{ left: "16%", bottom: "20%" }}>
       {/* 吹き出し */}
       <div
-        className="bg-white/92 rounded-2xl rounded-bl-none shadow-lg text-center text-slate-700
+        className="bg-white/93 rounded-2xl rounded-bl-none shadow-lg text-center text-slate-700
                    font-medium leading-snug whitespace-pre-line mb-1.5 mx-auto"
         style={{
-          fontSize: "clamp(7.5px,0.82vw,10.5px)",
-          padding: "4px 8px",
-          maxWidth: "clamp(62px,7.5vw,96px)",
+          fontSize: "clamp(8px,0.85vw,11px)",
+          padding: "5px 10px",
+          maxWidth: "clamp(72px,8.5vw,110px)",
         }}
       >
         {msg}
@@ -225,9 +210,9 @@ function PetLayer({
         <IllustrationImg
           src={`/-/illustrations/characters/${characterId}.png`}
           alt={characterId}
-          style={{ height: "clamp(50px,6.5vw,92px)", width: "auto", objectFit: "contain" }}
+          style={{ height: "clamp(52px,7vw,96px)", width: "auto", objectFit: "contain" }}
           fallback={
-            <div className="drop-shadow-lg" style={{ fontSize: "clamp(1.8rem,3.2vw,3.2rem)" }}>
+            <div className="drop-shadow-lg" style={{ fontSize: "clamp(2rem,3.5vw,3.5rem)" }}>
               {timerState === "finished" ? "🎉" : emoji}
             </div>
           }
@@ -239,36 +224,22 @@ function PetLayer({
 
 /* ══════════════════════════════════════════
    Layer 6: エフェクトレイヤー (z-18)
-   MVP: 空レイヤー（将来の場所別演出の受け皿）
-   将来例:
-     kanazawa  → 小さな桜が少し舞う
-     hokkaido  → 光の粒・ラベンダーの花びら
-     kyoto     → 紅葉・桜
-     okinawa   → 光・水しぶき粒子
-     snow_region → 小さな雪が静かに降る
-   実装方針: 背景写真内の木や草を動かさず、
-             静止画の上に重ねる粒子・花びらで空気感を出す
 ══════════════════════════════════════════ */
-function EffectsLayer({
-  locationId: _locationId,
-}: {
-  locationId: string;
-}) {
-  // 将来ここに場所ごとの軽いCSS粒子アニメを追加
+function EffectsLayer({ locationId: _locationId }: { locationId: string }) {
   return null;
 }
 
 /* ══════════════════════════════════════════
    Layer 7-UI: 上部HUD
-   左:旅先カード / 中:タイマー+バー / 右:滞在時間
+   左: 旅先カード / 中: タイマー / 右: 滞在時間
 ══════════════════════════════════════════ */
 function TravelTopHud({
-  locationName, locationArea, locationNextName,
+  locationName, locationEnglishName, locationNextName,
   timeStr, finished,
   totalStayed, locationRequiredMinutes, remaining, stayPct, filledDots,
 }: {
   locationName: string;
-  locationArea: string;
+  locationEnglishName?: string;
   locationNextName?: string;
   timeStr: string;
   finished: boolean;
@@ -280,44 +251,51 @@ function TravelTopHud({
 }) {
   return (
     <>
-      {/* 左上: 今日の旅先 */}
-      <div className="absolute top-4 left-4 z-20" style={{ width: "clamp(160px, 18vw, 260px)" }}>
+      {/* 左上: 今日の旅先カード */}
+      <div className="absolute top-4 left-4 z-20" style={{ width: "clamp(160px,19vw,270px)" }}>
         <div
-          className="rounded-2xl overflow-hidden shadow-xl"
-          style={{ background: "rgba(60,40,20,0.42)", backdropFilter: "blur(16px)" }}
+          className="rounded-2xl shadow-xl px-3 pt-2.5 pb-3 relative overflow-hidden"
+          style={{ background: "rgba(255,253,248,0.82)", backdropFilter: "blur(18px)" }}
         >
-          <div className="px-3 pt-2.5 pb-3 relative">
-            <div className="absolute top-2 right-2 text-white/20" style={{ fontSize: "clamp(28px,4vw,52px)", lineHeight: 1 }}>🗾</div>
-            <p className="text-white/50 text-[9px] tracking-[0.15em] flex items-center gap-1 mb-1">
-              <MapPin size={8} /> 今日の旅先
+          <div
+            className="absolute top-1 right-1 text-stone-200 pointer-events-none select-none"
+            style={{ fontSize: "clamp(32px,4.5vw,56px)", lineHeight: 1 }}
+          >🗾</div>
+          <p className="text-stone-400 text-[9px] tracking-[0.15em] flex items-center gap-1 mb-1">
+            <MapPin size={8} /> 今日の旅先
+          </p>
+          <p className="text-stone-800 font-black leading-tight" style={{ fontSize: "clamp(14px,1.8vw,24px)" }}>
+            {locationName}
+          </p>
+          {locationEnglishName && (
+            <p className="text-stone-400 mt-0.5" style={{ fontSize: "clamp(8px,0.85vw,11px)" }}>
+              {locationEnglishName}
             </p>
-            <p className="text-white font-black leading-tight" style={{ fontSize: "clamp(14px,1.6vw,22px)" }}>
-              {locationName}
-            </p>
-            <p className="text-white/40 mt-0.5" style={{ fontSize: "clamp(9px,0.9vw,12px)" }}>{locationArea}</p>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* 中央上: タイマー + 進行バー + ドット */}
-      <div className="absolute top-4 left-0 right-0 z-20 flex flex-col items-center pointer-events-none">
-        <p className="text-white/50 text-[10px] tracking-[0.25em] mb-2">◉ 集中タイム</p>
-        <div className="flex items-center gap-4">
+      {/* 中央上: タイマー */}
+      <div className="absolute top-3 left-0 right-0 z-20 flex flex-col items-center pointer-events-none">
+        {/* 数字 + プログレスバー */}
+        <div className="flex items-center gap-5">
           <p
             className={`font-black tabular-nums tracking-tight leading-none drop-shadow-2xl ${
               finished ? "text-emerald-400" : "text-white"
             }`}
-            style={{ fontSize: "clamp(2.5rem,5vw,4rem)", textShadow: "0 2px 28px rgba(0,0,0,0.55)" }}
+            style={{ fontSize: "clamp(2.8rem,5.5vw,4.5rem)", textShadow: "0 2px 28px rgba(0,0,0,0.60)" }}
           >
             {finished ? "完了！" : timeStr}
           </p>
-          <div className="flex flex-col gap-1.5">
-            <div className="h-2 bg-white/20 rounded-full overflow-hidden" style={{ width: "clamp(100px,12vw,180px)" }}>
+          <div className="flex flex-col gap-2">
+            {/* メインプログレスバー */}
+            <div className="h-2.5 bg-white/20 rounded-full overflow-hidden" style={{ width: "clamp(140px,16vw,240px)" }}>
               <div
                 className="h-full bg-emerald-400 rounded-full transition-all duration-1000 ease-linear"
                 style={{ width: `${stayPct}%` }}
               />
             </div>
+            {/* ドットインジケーター */}
             <div className="flex items-center gap-[3px]">
               {Array.from({ length: DOT_COUNT }).map((_, i) => (
                 <div
@@ -332,17 +310,19 @@ function TravelTopHud({
             </div>
           </div>
         </div>
+        {/* ラベル */}
+        <p className="text-white/50 text-[10px] tracking-[0.25em] mt-1.5">⊙ 集中タイム</p>
       </div>
 
-      {/* 右上: 滞在時間 */}
-      <div className="absolute z-20" style={{ top: "clamp(44px,5.5vh,60px)", right: "clamp(120px,10vw,160px)", width: "clamp(150px,17vw,240px)" }}>
+      {/* 右上: 滞在時間カード */}
+      <div className="absolute z-20" style={{ top: "clamp(12px,1.5vh,20px)", right: "clamp(16px,2vw,24px)", width: "clamp(160px,18vw,250px)" }}>
         <div
           className="rounded-2xl shadow-xl px-3 py-2.5"
-          style={{ background: "rgba(255,252,245,0.48)", backdropFilter: "blur(16px)" }}
+          style={{ background: "rgba(255,253,248,0.82)", backdropFilter: "blur(18px)" }}
         >
           <p className="text-stone-400 text-[9px] tracking-[0.12em] mb-1">滞在時間</p>
           <div className="flex items-end justify-between">
-            <p className="text-stone-700 font-black tabular-nums leading-tight" style={{ fontSize: "clamp(20px,2.4vw,34px)" }}>
+            <p className="text-stone-800 font-black tabular-nums leading-tight" style={{ fontSize: "clamp(22px,2.6vw,36px)" }}>
               {totalStayed}
               <span className="text-stone-400 font-normal" style={{ fontSize: "clamp(11px,1.1vw,15px)" }}>
                 {" "}/ {locationRequiredMinutes}分
@@ -350,7 +330,16 @@ function TravelTopHud({
             </p>
             <span style={{ fontSize: "clamp(16px,2vw,26px)" }}>🚌</span>
           </div>
-          <p className="text-emerald-500 font-bold mt-1" style={{ fontSize: "clamp(9px,0.9vw,12px)" }}>
+          {/* 点線プログレス */}
+          <div className="flex gap-[2px] my-1.5">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div
+                key={i}
+                className={`h-0.5 flex-1 rounded-full ${i < Math.round(stayPct / 10) ? "bg-emerald-400" : "bg-stone-200"}`}
+              />
+            ))}
+          </div>
+          <p className="text-emerald-500 font-bold" style={{ fontSize: "clamp(9px,0.9vw,12px)" }}>
             {remaining === 0
               ? "到着完了！🎉"
               : `あと${remaining}分で${locationNextName ?? "次の旅先"}へ！`}
@@ -366,10 +355,10 @@ function TravelTopHud({
 ══════════════════════════════════════════ */
 function TravelMemo({ description }: { description: string }) {
   return (
-    <div className="absolute left-5 z-20" style={{ top: "26%" }}>
+    <div className="absolute left-5 z-20" style={{ top: "24%" }}>
       <div
         className="relative rounded-2xl shadow-2xl"
-        style={{ width: "clamp(130px,14vw,195px)", background: "rgba(255,253,248,0.93)", backdropFilter: "blur(8px)" }}
+        style={{ width: "clamp(140px,15vw,210px)", background: "rgba(255,253,248,0.93)", backdropFilter: "blur(8px)" }}
       >
         {/* マスキングテープ */}
         <div
@@ -381,7 +370,7 @@ function TravelMemo({ description }: { description: string }) {
             <p className="text-stone-500 text-[10px] font-bold tracking-wide">旅メモ</p>
             <span className="text-base leading-none">📷</span>
           </div>
-          <p className="text-stone-600 leading-relaxed" style={{ fontSize: "clamp(10px,1.1vw,13px)" }}>
+          <p className="text-stone-600 leading-relaxed whitespace-pre-line" style={{ fontSize: "clamp(10px,1.1vw,13px)" }}>
             {description}
           </p>
           <p className="text-rose-300 text-sm mt-2">🌸</p>
@@ -396,19 +385,19 @@ function TravelMemo({ description }: { description: string }) {
 ══════════════════════════════════════════ */
 function StudyTicket({
   locationName,
-  locationArea,
+  locationEnglishName,
   selectedMinutes,
 }: {
   locationName: string;
-  locationArea: string;
+  locationEnglishName?: string;
   selectedMinutes: number;
 }) {
   const pattern = [3,1,2,1,3,2,1,3,1,2,1,2,3,1,1,2,3,1,2,1];
   return (
-    <div className="absolute right-5 z-20" style={{ top: "23%" }}>
+    <div className="absolute right-5 z-20" style={{ top: "22%" }}>
       <div
         className="rounded-2xl overflow-hidden shadow-2xl"
-        style={{ width: "clamp(145px,16vw,215px)", background: "rgba(255,253,248,0.93)", backdropFilter: "blur(8px)" }}
+        style={{ width: "clamp(150px,17vw,230px)", background: "rgba(255,253,248,0.93)", backdropFilter: "blur(8px)" }}
       >
         <div className="px-3 py-2" style={{ background: "#f472b6" }}>
           <p className="text-white font-black tracking-[0.2em]" style={{ fontSize: "clamp(9px,1vw,12px)" }}>
@@ -416,10 +405,12 @@ function StudyTicket({
           </p>
         </div>
         <div className="px-3 pt-2.5 pb-3">
-          <p className="text-stone-700 font-bold leading-tight" style={{ fontSize: "clamp(12px,1.3vw,16px)" }}>
+          <p className="text-stone-700 font-bold leading-tight" style={{ fontSize: "clamp(12px,1.4vw,18px)" }}>
             {locationName} 行き
           </p>
-          <p className="text-stone-400 mt-0.5" style={{ fontSize: "clamp(9px,0.9vw,11px)" }}>{locationArea}</p>
+          {locationEnglishName && (
+            <p className="text-stone-400 mt-0.5" style={{ fontSize: "clamp(8px,0.8vw,10px)" }}>{locationEnglishName}</p>
+          )}
           <div className="h-px bg-stone-200 my-2" />
           <p className="text-stone-500" style={{ fontSize: "clamp(9px,0.9vw,11px)" }}>出発日：今日</p>
           <p className="text-stone-500 mt-0.5" style={{ fontSize: "clamp(9px,0.9vw,11px)" }}>
@@ -440,7 +431,7 @@ function StudyTicket({
               <div className="absolute inset-[3px] rounded-full border border-rose-300" />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-rose-400 text-[5px] font-black tracking-[0.12em]">MY STUDY</span>
-                <span className="text-rose-400 text-xs leading-none">✈</span>
+                <span className="text-rose-400 text-sm leading-none">🐱</span>
                 <span className="text-rose-400 text-[5px] font-black tracking-[0.08em]">JOURNEY</span>
               </div>
             </div>
@@ -452,32 +443,66 @@ function StudyTicket({
 }
 
 /* ══════════════════════════════════════════
-   今日の目標パネル（机付近・中央）
+   今日の目標パネル — ノート風（机の上・中央）
 ══════════════════════════════════════════ */
 function GoalPanel({ goal }: { goal: string }) {
+  const lines = goal ? goal.split("\n").filter(Boolean) : [];
   return (
     <div
       className="absolute z-20"
-      style={{ bottom: "20%", left: "50%", transform: "translateX(-50%)", width: "clamp(200px,24vw,340px)" }}
+      style={{ bottom: "20%", left: "50%", transform: "translateX(-50%)", width: "clamp(220px,28vw,400px)" }}
     >
       <div
-        className="bg-amber-50/92 rounded-2xl shadow-xl ring-1 ring-amber-200/40 px-4 py-3"
-        style={{ backdropFilter: "blur(8px)" }}
+        className="relative rounded-xl shadow-2xl overflow-hidden"
+        style={{ background: "#fffef5" }}
       >
-        <p className="text-amber-700 font-black flex items-center gap-1 mb-1.5" style={{ fontSize: "clamp(9px,1vw,12px)" }}>
-          今日の目標 ⭐
-        </p>
-        <p className="text-stone-700 font-medium leading-snug break-words" style={{ fontSize: "clamp(11px,1.2vw,15px)" }}>
-          {goal || "（目標を入力しよう）"}
-        </p>
+        {/* リング穴 */}
+        <div
+          className="absolute left-0 top-0 bottom-0 flex flex-col justify-around items-center"
+          style={{ width: "clamp(22px,2.5vw,32px)", background: "#f0ede2" }}
+        >
+          {[0,1,2,3].map((i) => (
+            <div
+              key={i}
+              className="rounded-full bg-white border border-stone-300 shadow-inner"
+              style={{ width: "clamp(10px,1.2vw,16px)", height: "clamp(10px,1.2vw,16px)" }}
+            />
+          ))}
+        </div>
+        {/* ノート本文 */}
+        <div style={{ marginLeft: "clamp(26px,3vw,38px)", padding: "clamp(10px,1.2vw,16px) clamp(12px,1.4vw,18px)" }}>
+          <p className="font-black text-amber-500 flex items-center gap-1 mb-2" style={{ fontSize: "clamp(11px,1.1vw,14px)" }}>
+            今日の目標 ⭐
+          </p>
+          <div className="space-y-1.5">
+            {lines.length > 0 ? lines.map((line, i) => (
+              <div key={i} className="flex items-start gap-2 pb-1.5 border-b border-stone-100">
+                <span className="text-stone-300 mt-0.5 shrink-0" style={{ fontSize: "clamp(10px,1vw,13px)" }}>□</span>
+                <p className="text-stone-600 leading-snug" style={{ fontSize: "clamp(10px,1.1vw,14px)" }}>{line}</p>
+              </div>
+            )) : (
+              <p className="text-stone-300 pb-1.5 border-b border-stone-100" style={{ fontSize: "clamp(10px,1.1vw,14px)" }}>
+                （目標を入力しよう）
+              </p>
+            )}
+          </div>
+          {/* ピンクのひとこと */}
+          <div
+            className="inline-block mt-2.5 px-2.5 py-1 rounded"
+            style={{ background: "#fda4af", transform: "rotate(-0.8deg)" }}
+          >
+            <p className="text-white font-bold" style={{ fontSize: "clamp(8px,0.85vw,11px)" }}>
+              コツコツいくよ～！
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
 /* ══════════════════════════════════════════
-   完了スタンプ演出 (z-25)
-   勉強終了時にポンと押されるアニメーション
+   完了スタンプ (z-25)
 ══════════════════════════════════════════ */
 function CompletionStamp() {
   return (
@@ -501,15 +526,11 @@ function CompletionStamp() {
 }
 
 /* ══════════════════════════════════════════
-   タイマーコントロール（4状態）
-
-   before   → [出発する]
-   running  → [一時停止] [終了する]
-   paused   → [再開する] [終了する]
-   finished → [マップへ戻る]
+   タイマーコントロール
+   3ボタン固定レイアウト:
+     [一時停止 / 再開]  [集中スタート！ / 終了 / マップへ]  [旅ノート]
+   プリセット(25/50/90分)は開始前のみ上に表示
 ══════════════════════════════════════════ */
-type TimerState = "before" | "running" | "paused" | "finished";
-
 function TimerControls({
   state,
   selectedMinutes,
@@ -521,6 +542,7 @@ function TimerControls({
   onResume,
   onEnd,
   onBackToMap,
+  onJournal,
 }: {
   state: TimerState;
   selectedMinutes: number;
@@ -532,120 +554,147 @@ function TimerControls({
   onResume: () => void;
   onEnd: () => void;
   onBackToMap: () => void;
+  onJournal: () => void;
 }) {
+  /* 時間プリセット（開始前のみ） */
+  const presetRow = state === "before" && (
+    <div
+      className="absolute z-20 flex gap-2 items-center"
+      style={{ bottom: "13%", left: "50%", transform: "translateX(-50%)" }}
+    >
+      {PRESETS.map((p) => (
+        <button
+          key={p.label}
+          onClick={() => onPreset(p.minutes)}
+          className={`px-4 py-1.5 rounded-full font-bold transition-all ${
+            selectedMinutes === p.minutes && !customMinutes
+              ? "bg-white text-stone-700 shadow-md"
+              : "bg-black/30 backdrop-blur text-white/75 hover:bg-black/45"
+          }`}
+          style={{ fontSize: "clamp(12px,1.1vw,15px)" }}
+        >
+          {p.label}
+        </button>
+      ))}
+      <input
+        type="number"
+        min={1}
+        max={300}
+        value={customMinutes}
+        onChange={(e) => onCustom(e.target.value)}
+        placeholder="自由"
+        className="rounded-full bg-black/30 backdrop-blur text-white text-center placeholder-white/35 focus:outline-none focus:bg-black/45"
+        style={{ width: "clamp(48px,5vw,64px)", padding: "6px 8px", fontSize: "clamp(12px,1.1vw,14px)" }}
+      />
+    </div>
+  );
+
+  /* ── 左ボタン ── */
+  const leftBtn = (() => {
+    if (state === "before") {
+      return (
+        <button
+          disabled
+          className="flex-1 rounded-full font-bold bg-stone-700/40 backdrop-blur text-white/35 flex items-center justify-center gap-1.5 cursor-default"
+          style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+        >
+          <Pause size={14} />一時停止
+        </button>
+      );
+    }
+    if (state === "running") {
+      return (
+        <button
+          onClick={onPause}
+          className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1.5 transition-all"
+          style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+        >
+          <Pause size={14} />一時停止
+        </button>
+      );
+    }
+    if (state === "paused") {
+      return (
+        <button
+          onClick={onResume}
+          className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1.5 transition-all"
+          style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+        >
+          <Play size={14} />再開する
+        </button>
+      );
+    }
+    /* finished */
+    return (
+      <button
+        onClick={onBackToMap}
+        className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1.5 transition-all"
+        style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+      >
+        ← マップへ戻る
+      </button>
+    );
+  })();
+
+  /* ── 中央ボタン（メインアクション） ── */
+  const centerBtn = (() => {
+    if (state === "before") {
+      return (
+        <button
+          onClick={onStart}
+          className="flex-[1.4] rounded-full font-black text-white bg-rose-400 hover:bg-rose-300 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+          style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(14px,1.4vw,18px)" }}
+        >
+          <Play size={17} fill="white" strokeWidth={0} />
+          集中スタート！
+        </button>
+      );
+    }
+    if (state === "running" || state === "paused") {
+      return (
+        <button
+          onClick={onEnd}
+          className="flex-[1.4] rounded-full font-black text-white bg-rose-400/90 hover:bg-rose-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+          style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(14px,1.4vw,18px)" }}
+        >
+          <Square size={15} fill="white" strokeWidth={0} />終了する
+        </button>
+      );
+    }
+    /* finished */
+    return (
+      <button
+        onClick={onBackToMap}
+        className="flex-[1.4] rounded-full font-black text-white bg-emerald-500 hover:bg-emerald-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+        style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(14px,1.4vw,18px)" }}
+      >
+        マップへ戻る →
+      </button>
+    );
+  })();
+
+  /* ── 右ボタン: 旅ノート（常に表示） ── */
+  const rightBtn = (
+    <button
+      onClick={onJournal}
+      className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1.5 transition-all"
+      style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+    >
+      <BookOpen size={14} />旅ノート
+    </button>
+  );
+
   return (
     <>
-      {/* プリセット（開始前のみ） */}
-      {state === "before" && (
-        <div
-          className="absolute z-20 flex gap-2 items-center"
-          style={{ bottom: "14%", left: "50%", transform: "translateX(-50%)" }}
-        >
-          {PRESETS.map((p) => (
-            <button
-              key={p.label}
-              onClick={() => onPreset(p.minutes)}
-              className={`px-4 py-1.5 rounded-full font-bold transition-all ${
-                selectedMinutes === p.minutes && !customMinutes
-                  ? "bg-white text-stone-700 shadow-md"
-                  : "bg-black/25 backdrop-blur text-white/75 hover:bg-black/40"
-              }`}
-              style={{ fontSize: "clamp(12px,1.1vw,15px)" }}
-            >
-              {p.label}
-            </button>
-          ))}
-          <input
-            type="number"
-            min={1}
-            max={300}
-            value={customMinutes}
-            onChange={(e) => onCustom(e.target.value)}
-            placeholder="自由"
-            className="rounded-full bg-black/25 backdrop-blur text-white text-center placeholder-white/35 focus:outline-none focus:bg-black/40"
-            style={{ width: "clamp(48px,5vw,64px)", padding: "6px 8px", fontSize: "clamp(12px,1.1vw,14px)" }}
-          />
-        </div>
-      )}
-
-      {/* ── 開始前: 出発ボタン（中央、自然幅） ── */}
-      {state === "before" && (
-        <div className="absolute z-20 flex justify-center" style={{ bottom: "4%", left: 0, right: 0 }}>
-          <button
-            onClick={onStart}
-            className="rounded-full font-black text-white bg-rose-400 hover:bg-rose-300 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
-            style={{
-              padding: "clamp(12px,1.4vw,16px) clamp(36px,6vw,72px)",
-              fontSize: "clamp(14px,1.4vw,18px)",
-            }}
-          >
-            <Play size={16} fill="white" strokeWidth={0} />
-            出発する
-          </button>
-        </div>
-      )}
-
-      {/* ── タイマー中: 一時停止 ＋ 終了 ── */}
-      {state === "running" && (
-        <div
-          className="absolute z-20 flex gap-3 items-center"
-          style={{ bottom: "4%", left: "20%", right: "20%" }}
-        >
-          <button
-            onClick={onPause}
-            className="flex-1 rounded-full font-bold bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/20 shadow-lg flex items-center justify-center gap-1.5 transition-all"
-            style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
-          >
-            <Pause size={14} />一時停止
-          </button>
-          <button
-            onClick={onEnd}
-            className="flex-1 rounded-full font-black text-white bg-rose-400/85 hover:bg-rose-400 shadow-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
-            style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(13px,1.3vw,17px)" }}
-          >
-            <Square size={14} fill="white" strokeWidth={0} />終了する
-          </button>
-        </div>
-      )}
-
-      {/* ── 一時停止中: 再開 ＋ 終了 ── */}
-      {state === "paused" && (
-        <div
-          className="absolute z-20 flex gap-3 items-center"
-          style={{ bottom: "4%", left: "20%", right: "20%" }}
-        >
-          <button
-            onClick={onResume}
-            className="flex-1 rounded-full font-bold bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border border-white/20 shadow-lg flex items-center justify-center gap-1.5 transition-all"
-            style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
-          >
-            <Play size={14} />再開する
-          </button>
-          <button
-            onClick={onEnd}
-            className="flex-1 rounded-full font-black text-white bg-rose-400/85 hover:bg-rose-400 shadow-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
-            style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(13px,1.3vw,17px)" }}
-          >
-            <Square size={14} fill="white" strokeWidth={0} />終了する
-          </button>
-        </div>
-      )}
-
-      {/* ── 完了: マップへ戻る ── */}
-      {state === "finished" && (
-        <div className="absolute z-20 flex justify-center" style={{ bottom: "4%", left: 0, right: 0 }}>
-          <button
-            onClick={onBackToMap}
-            className="rounded-full font-black text-white bg-emerald-500 hover:bg-emerald-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
-            style={{
-              padding: "clamp(12px,1.4vw,16px) clamp(36px,6vw,72px)",
-              fontSize: "clamp(14px,1.4vw,18px)",
-            }}
-          >
-            マップへ戻る →
-          </button>
-        </div>
-      )}
+      {presetRow}
+      <div
+        className="absolute z-20 flex gap-3 items-center"
+        style={{ bottom: "4%", left: "8%", right: "8%" }}
+      >
+        {leftBtn}
+        {centerBtn}
+        {rightBtn}
+      </div>
     </>
   );
 }
@@ -657,6 +706,7 @@ interface Props {
   goal: string;
   characterId: string;
   locationName: string;
+  locationEnglishName?: string;
   locationArea: string;
   locationDescription: string;
   locationBgImage?: string;
@@ -671,6 +721,7 @@ export default function TravelStudyRoomScreen({
   goal,
   characterId,
   locationName,
+  locationEnglishName,
   locationArea,
   locationDescription,
   locationBgImage,
@@ -740,7 +791,6 @@ export default function TravelStudyRoomScreen({
     ? "running"
     : "paused";
 
-  /* ハンドラ */
   const handleStart = () => {
     startSecondsRef.current = secondsLeft;
     setStarted(true);
@@ -787,7 +837,7 @@ export default function TravelStudyRoomScreen({
       {/* ── Layer 3: 机前景PNG (z-15) ── */}
       <DeskForegroundLayer />
 
-      {/* ── Layer 4: 小物レイヤー・付箋 (z-16) ── */}
+      {/* ── Layer 4: 小物・付箋 (z-16) ── */}
       <AccessoriesLayer />
 
       {/* ── Layer 5: ペット (z-17) ── */}
@@ -797,7 +847,7 @@ export default function TravelStudyRoomScreen({
         justStarted={justStarted}
       />
 
-      {/* ── Layer 6: エフェクト (z-18, 将来の場所別演出) ── */}
+      {/* ── Layer 6: エフェクト (z-18) ── */}
       <EffectsLayer locationId={locationName} />
 
       {/* ── Layer 7: UI (z-20〜30) ── */}
@@ -827,7 +877,7 @@ export default function TravelStudyRoomScreen({
 
       <TravelTopHud
         locationName={locationName}
-        locationArea={locationArea}
+        locationEnglishName={locationEnglishName}
         locationNextName={locationNextName}
         timeStr={timeStr}
         finished={finished}
@@ -842,7 +892,7 @@ export default function TravelStudyRoomScreen({
 
       <StudyTicket
         locationName={locationName}
-        locationArea={locationArea}
+        locationEnglishName={locationEnglishName}
         selectedMinutes={selectedMinutes}
       />
 
@@ -859,6 +909,7 @@ export default function TravelStudyRoomScreen({
         onResume={handleResume}
         onEnd={handleEnd}
         onBackToMap={handleEnd}
+        onJournal={onExit}
       />
 
     </div>
