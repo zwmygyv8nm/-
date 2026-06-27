@@ -229,24 +229,37 @@ interface DeskLayerProps {
   finished: boolean;
 }
 
+/* CSS fallback desk surface (used when desk-surface.png is not found) */
+function CSSDesk() {
+  return (
+    <div
+      className="absolute bottom-0 left-0 right-0 z-10 overflow-hidden"
+      style={{
+        height: "34%",
+        background: "linear-gradient(180deg, #8B5E3C 0%, #7A4F2D 40%, #6B3F1E 100%)",
+        boxShadow: "inset 0 6px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12)",
+      }}
+    >
+      <div className="absolute top-0 left-0 right-0 h-[3px]"
+        style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.18), rgba(255,255,255,0.08))" }} />
+      <WoodGrains />
+    </div>
+  );
+}
+
 export default function DeskLayer({ goal, characterId, charMsg, finished }: DeskLayerProps) {
   const emoji = CHAR_EMOJI[characterId] ?? "🐱";
 
   return (
     <>
-      {/* Desk surface */}
-      <div
-        className="absolute bottom-0 left-0 right-0 z-10 overflow-hidden"
-        style={{
-          height: "34%",
-          background: "linear-gradient(180deg, #8B5E3C 0%, #7A4F2D 40%, #6B3F1E 100%)",
-          boxShadow: "inset 0 6px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12)",
-        }}
-      >
-        <div className="absolute top-0 left-0 right-0 h-[3px]"
-          style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.18), rgba(255,255,255,0.08))" }} />
-        <WoodGrains />
-      </div>
+      {/* Desk surface image (transparent PNG, full-width, anchored to bottom) */}
+      <IllustrationImg
+        src="/-/illustrations/desk/desk-surface.png"
+        alt=""
+        className="absolute bottom-0 left-0 w-full z-10 pointer-events-none"
+        style={{ height: "auto", display: "block" }}
+        fallback={<CSSDesk />}
+      />
 
       {/* Desk items */}
       <WaterBottle />
