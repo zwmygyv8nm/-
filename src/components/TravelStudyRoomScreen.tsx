@@ -97,10 +97,9 @@ function BackgroundOverlay() {
 ══════════════════════════════════════════ */
 function DeskForegroundLayer() {
   return (
-    <div
-      className="absolute bottom-0 left-0 w-full z-[15] pointer-events-none overflow-hidden"
-      style={{ height: "46vh" }}
-    >
+    /* コンテナを画面全体に広げることで overflow clip をなくし、
+       机の縁の透明ピクセルが背景に正しく合成されるようにする */
+    <div className="absolute inset-0 z-[15] pointer-events-none">
       <IllustrationImg
         src="/-/illustrations/desk/desk-foreground.png"
         alt=""
