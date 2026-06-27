@@ -11,6 +11,7 @@ interface Props {
   onGoalChange: (g: string) => void;
   onDepart: (id: string) => void;
   isNight: boolean;
+  newlyUnlockedLocation?: string | null;
 }
 
 export default function TravelModeScreen({
@@ -19,6 +20,7 @@ export default function TravelModeScreen({
   onGoalChange,
   onDepart,
   isNight,
+  newlyUnlockedLocation,
 }: Props) {
   const [view, setView] = useState<"map" | "list">("map");
 
@@ -31,6 +33,18 @@ export default function TravelModeScreen({
 
   return (
     <div className="animate-slide-up flex flex-col gap-4">
+
+      {/* 新地点解放バナー */}
+      {newlyUnlockedLocation && (
+        <div className="rounded-2xl p-4 bg-emerald-500 text-white shadow-lg flex items-center gap-3">
+          <span className="text-2xl">🗺</span>
+          <div>
+            <p className="font-bold text-sm">新しい自習室が解放！</p>
+            <p className="text-xs text-emerald-100">{newlyUnlockedLocation} へ行けるようになりました</p>
+          </div>
+        </div>
+      )}
+
       {/* Section header */}
       <div className="flex items-center justify-between">
         <div>

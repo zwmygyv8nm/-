@@ -120,17 +120,14 @@ export default function App() {
     if (mode === "travel") {
       const { progress: tp, newlyUnlockedId } = addTravelMinutes(travelProgress.currentLocationId, completedMinutes);
       setTravelProgress(tp);
-      if (newlyUnlockedId) {
-        const loc = TRAVEL_LOCATIONS.find((l) => l.id === newlyUnlockedId);
-        setNewlyUnlockedLocation(loc?.name ?? newlyUnlockedId);
-      } else {
-        setNewlyUnlockedLocation(null);
-      }
+      setNewlyUnlockedLocation(newlyUnlockedId
+        ? (TRAVEL_LOCATIONS.find((l) => l.id === newlyUnlockedId)?.name ?? newlyUnlockedId)
+        : null);
+      setScreen("gate");
     } else {
       setNewlyUnlockedLocation(null);
+      setScreen("complete");
     }
-
-    setScreen("complete");
   };
 
   const handleSettingsSave = (newSettings: AppSettings) => {
@@ -197,6 +194,7 @@ export default function App() {
             onGoalChange={setGoal}
             onDepart={handleDepart}
             isNight={isNight}
+            newlyUnlockedLocation={newlyUnlockedLocation}
           />
         )}
 
