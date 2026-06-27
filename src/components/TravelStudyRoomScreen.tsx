@@ -54,23 +54,28 @@ const ANIM_STYLES = `
    blurEnabled=false → ゆっくりズームアニメ
 ══════════════════════════════════════════ */
 function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabled: boolean }) {
+  const [imgFailed, setImgFailed] = useState(false);
   const zoomStyle = { animation: "bgZoom 42s ease-in-out infinite", transformOrigin: "center" };
   const blurStyle = { filter: "blur(4px)", transform: "scale(1.06)", transformOrigin: "center" };
+  const activeStyle = blurEnabled ? blurStyle : zoomStyle;
 
-  if (bgImage) {
+  /* z-0 を明示して描画順を確定させる。
+     透明ピクセルを持つ desk(z-15) の後ろに必ず回るようにする。 */
+  if (bgImage && !imgFailed) {
     return (
       <img
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover z-0"
         src={bgImage}
         alt=""
-        style={blurEnabled ? blurStyle : zoomStyle}
+        style={activeStyle}
+        onError={() => setImgFailed(true)}
       />
     );
   }
   return (
     <div
-      className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-sky-800 to-teal-700"
-      style={blurEnabled ? blurStyle : zoomStyle}
+      className="absolute inset-0 z-0 bg-gradient-to-br from-indigo-900 via-sky-800 to-teal-700"
+      style={activeStyle}
     />
   );
 }
@@ -96,15 +101,24 @@ function BackgroundOverlay() {
    public/illustrations/desk/desk-foreground.png
 ══════════════════════════════════════════ */
 function DeskForegroundLayer() {
-  /* ラッパー div を置かず img を直接 absolute 配置することで
-     余分な stacking context を作らず、背景が透明ピクセル越しに見える */
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
   return (
-    <IllustrationImg
+    <img
       src="/-/illustrations/desk/desk-foreground.png"
       alt=""
-      className="absolute bottom-0 left-0 z-[15] w-full pointer-events-none"
-      style={{ height: "auto", display: "block" }}
-      fallback={<></>}
+      onError={() => setFailed(true)}
+      draggable={false}
+      style={{
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        width: "100%",
+        height: "auto",
+        display: "block",
+        zIndex: 15,
+        pointerEvents: "none",
+      }}
     />
   );
 }
