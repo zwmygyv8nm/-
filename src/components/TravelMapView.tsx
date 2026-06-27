@@ -79,11 +79,11 @@ export default function TravelMapView({ travelProgress, onSelectLocation, isNigh
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Map container */}
-      <div className="relative w-full" style={{ paddingBottom: "138.9%" }}>
-        {/* Japan SVG map */}
+      {/* Map container — square to match japan-map.png aspect ratio */}
+      <div className="relative w-full" style={{ paddingBottom: "100%" }}>
+        {/* Japan map image (place file at public/maps/japan-map.png) */}
         <img
-          src="/-/maps/japan-map.svg"
+          src="/-/maps/japan-map.png"
           alt="日本地図"
           className="absolute inset-0 w-full h-full object-contain rounded-xl"
           draggable={false}
