@@ -19,27 +19,18 @@ function getLocState(locId: string, tp: TravelProgress, isSpecial: boolean): Loc
   return "locked";
 }
 
-// Green-map palette — base land is always green; game states use accents
-const BASE_GREEN        = "#afd96e";  // all-prefecture base (matches original PNG hue)
-const BASE_GREEN_STROKE = "#72a83e";  // prefecture border
-const UNAVAIL_GREEN     = "#c8e8a0";  // future / not-yet-in-game prefecture
+// Palette: transparent until cleared, then green
+// Completed prefectures are permanently painted green.
+// Everything else is colorless — only outlines.
 
-const FILL: Record<LocState, string> = {
-  special_current: "#facc15",   // gold star location
-  special:         "#fde68a",   // unlocked star location
-  current:         "#f97316",   // orange — current destination
-  completed:       "#22c55e",   // bright green — done
-  unlocked:        BASE_GREEN,  // available, same green
-  locked:          BASE_GREEN,  // locked, same green (opacity differs)
-};
-const STROKE: Record<LocState, string> = {
-  special_current: "#b45309",
-  special:         "#d97706",
-  current:         "#c2410c",
-  completed:       "#15803d",
-  unlocked:        BASE_GREEN_STROKE,
-  locked:          BASE_GREEN_STROKE,
-};
+// Permanent green (completed / current-in-progress)
+const GREEN_FILL   = "#7fcf4a";
+const GREEN_STROKE = "#4a8c22";
+// Lighter tint for "unlocked but not done yet"
+const TINT_FILL    = "#d4efb0";
+const TINT_STROKE  = "#8ec254";
+// Faint outline only (locked / unavailable)
+const GHOST_STROKE = "#c8c8c8";
 
 interface Props {
   travelProgress: TravelProgress;
@@ -67,22 +58,12 @@ export default function TravelMapView({ travelProgress, onSelectLocation, isNigh
   const selectedRequired    = selectedLoc?.requiredMinutes ?? 60;
   const selectedPct         = Math.min(100, (selectedMin / selectedRequired) * 100);
 
-  function getPrefFill(prefId: number, hover: boolean): string {
-    const loc = prefToLoc.get(prefId);
-    if (!loc) return hover ? "#d1d5db" : "#e5e9ef";
-    const state = getLocState(loc.id, travelProgress, "isSpecial" in loc && (loc as { isSpecial?: boolean }).isSpecial === true);
-    if (selectedPrefId === prefId) {
-      // brighten selected
-      const base = FILL[state];
-      return base;
-    }
-    return hover ? FILL[state] : FILL[state] + "cc";
-  }
-
-  return (
+return (
     <div className="flex flex-col gap-3">
       {/* SVG map */}
-      <div className={`rounded-2xl overflow-hidden border ${isNight ? "border-green-900/60 bg-green-950/30" : "border-green-200 bg-green-50"}`}>
+      <div className={`rounded-2xl overflow-hidden border ${
+        isNight ? "border-green-900/40 bg-slate-900/60" : "border-gray-200 bg-white"
+      }`}>
         <svg
           viewBox={JAPAN_VIEWBOX}
           className="w-full h-auto"
@@ -92,15 +73,33 @@ export default function TravelMapView({ travelProgress, onSelectLocation, isNigh
             const prefId = Number(idStr);
             const loc = prefToLoc.get(prefId);
             const isSelected = selectedPrefId === prefId;
-            const hasLoc = loc != null;
             const state: LocState = loc
               ? getLocState(loc.id, travelProgress, "isSpecial" in loc && (loc as { isSpecial?: boolean }).isSpecial === true)
               : "locked";
 
-            // All prefectures are green; only game-location states get accent colours
-            const fill   = hasLoc ? FILL[state] : UNAVAIL_GREEN;
-            const stroke = isSelected ? "#14532d" : (hasLoc ? STROKE[state] : BASE_GREEN_STROKE);
-            const sw     = isSelected ? 2.5 : 0.8;
+            // Decide fill/stroke purely from completion state
+            // completed or special_current (current+special while in progress) → solid green
+            // current (in progress)   → solid green (you're working on it)
+            // unlocked (not started)  → very light tint
+            // everything else         → transparent, ghost outline only
+            let fill: string;
+            let stroke: string;
+            let sw: number;
+
+            if (state === "completed" || state === "special_current" || state === "current" || state === "special") {
+              fill   = GREEN_FILL;
+              stroke = isSelected ? "#1a4d08" : GREEN_STROKE;
+              sw     = isSelected ? 2.5 : 1.2;
+            } else if (state === "unlocked") {
+              fill   = TINT_FILL;
+              stroke = isSelected ? GREEN_STROKE : TINT_STROKE;
+              sw     = isSelected ? 2.0 : 0.8;
+            } else {
+              // locked / unavailable → transparent
+              fill   = "transparent";
+              stroke = isSelected ? TINT_STROKE : GHOST_STROKE;
+              sw     = isSelected ? 1.5 : 0.5;
+            }
 
             return (
               <path
@@ -109,10 +108,23 @@ export default function TravelMapView({ travelProgress, onSelectLocation, isNigh
                 fill={fill}
                 stroke={stroke}
                 strokeWidth={sw}
-                style={{ cursor: "pointer", transition: "filter 0.12s" }}
+                style={{ cursor: "pointer", transition: "fill 0.25s, stroke 0.25s" }}
                 onClick={() => setSelectedPrefId(isSelected ? null : prefId)}
-                onMouseEnter={(e) => { (e.target as SVGPathElement).style.filter = "brightness(1.15)"; }}
-                onMouseLeave={(e) => { (e.target as SVGPathElement).style.filter = ""; }}
+                onMouseEnter={(e) => {
+                  const el = e.target as SVGPathElement;
+                  if (fill === "transparent") {
+                    el.setAttribute("fill", TINT_FILL);
+                    el.setAttribute("stroke", TINT_STROKE);
+                  } else {
+                    el.style.filter = "brightness(1.12)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.target as SVGPathElement;
+                  el.setAttribute("fill", fill);
+                  el.setAttribute("stroke", stroke);
+                  el.style.filter = "";
+                }}
               >
                 <title>{pref.nameJa}</title>
               </path>
@@ -123,17 +135,13 @@ export default function TravelMapView({ travelProgress, onSelectLocation, isNigh
 
       {/* Legend */}
       <div className="flex flex-wrap gap-x-3 gap-y-1 px-1">
-        {(
-          [
-            [FILL.special_current, STROKE.special_current, "現在地(特別)"],
-            [FILL.current,         STROKE.current,         "現在地"],
-            [FILL.completed,       STROKE.completed,       "完了"],
-            [BASE_GREEN,           BASE_GREEN_STROKE,      "解放済 / 未解放"],
-            [UNAVAIL_GREEN,        BASE_GREEN_STROKE,      "近日公開"],
-          ] as [string, string, string][]
-        ).map(([bg, border, label]) => (
-          <span key={label} className="flex items-center gap-1 text-[10px]" style={{ color: isNight ? "#86efac" : "#4b7a30" }}>
-            <span className="inline-block w-3 h-3 rounded-sm border" style={{ background: bg, borderColor: border }} />
+        {([
+          [GREEN_FILL,    GREEN_STROKE, "クリア済 / 現在地"],
+          [TINT_FILL,     TINT_STROKE,  "解放済（未着手）"],
+          ["transparent", GHOST_STROKE, "未解放・近日公開"],
+        ] as [string, string, string][]).map(([bg, border, label]) => (
+          <span key={label} className="flex items-center gap-1 text-[10px]" style={{ color: isNight ? "#9ca3af" : "#6b7280" }}>
+            <span className="inline-block w-3 h-3 rounded-sm border" style={{ background: bg === "transparent" ? (isNight ? "#1e293b" : "#f8fafc") : bg, borderColor: border }} />
             {label}
           </span>
         ))}
