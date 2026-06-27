@@ -26,32 +26,27 @@ const PRESETS = [
 
 const DOT_COUNT = 12;
 
-/* ── スタンプ ── */
 function TicketStamp() {
   return (
-    <div className="relative w-10 h-10 opacity-75">
+    <div className="relative w-11 h-11 opacity-75">
       <div className="absolute inset-0 rounded-full border-2 border-rose-500" />
       <div className="absolute inset-[3px] rounded-full border border-rose-400" />
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-rose-500 text-[5px] font-black tracking-[0.15em]">MY STUDY</span>
-        <span className="text-rose-500 text-[11px] leading-none">✈</span>
+        <span className="text-rose-500 text-sm leading-none">✈</span>
         <span className="text-rose-500 text-[5px] font-black tracking-[0.1em]">JOURNEY</span>
       </div>
     </div>
   );
 }
 
-/* ── バーコード ── */
 function Barcode() {
   const pattern = [3,1,2,1,3,2,1,3,1,2,1,2,3,1,1,2,3,1,2,1];
   return (
     <div className="flex items-end gap-[1.5px] h-4">
       {pattern.map((w, i) => (
-        <div
-          key={i}
-          className="bg-slate-400/60 rounded-[0.5px]"
-          style={{ width: w === 1 ? 1.5 : w === 2 ? 2.5 : 3.5, height: i % 4 === 0 ? "100%" : "70%" }}
-        />
+        <div key={i} className="bg-slate-400/55 rounded-[0.5px]"
+          style={{ width: w === 1 ? 1.5 : w === 2 ? 2.5 : 3.5, height: i % 4 === 0 ? "100%" : "70%" }} />
       ))}
     </div>
   );
@@ -91,9 +86,19 @@ export default function TravelStudyRoomScreen({
   const [started,         setStarted]         = useState(false);
   const [finished,        setFinished]        = useState(false);
   const [msgIdx,          setMsgIdx]          = useState(0);
+  const [isPortrait,      setIsPortrait]      = useState(false);
   const startSecondsRef = useRef(25 * 60);
   const intervalRef     = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  /* ── 縦横検知 ── */
+  useEffect(() => {
+    const check = () => setIsPortrait(window.innerHeight > window.innerWidth * 0.8);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  /* ── タイマー ── */
   useEffect(() => {
     if (running) {
       intervalRef.current = setInterval(() => {
@@ -114,23 +119,20 @@ export default function TravelStudyRoomScreen({
     return () => clearInterval(t);
   }, [running]);
 
-  const handleStart = () => { startSecondsRef.current = secondsLeft; setStarted(true); setRunning(true); };
-  const handlePause = () => setRunning(r => !r);
+  const handleStart    = () => { startSecondsRef.current = secondsLeft; setStarted(true); setRunning(true); };
+  const handlePause    = () => setRunning(r => !r);
   const handleComplete = useCallback(() => {
     onComplete(Math.max(1, Math.round((startSecondsRef.current - secondsLeft) / 60)));
   }, [secondsLeft, onComplete]);
-
-  const handlePreset = (m: number) => {
-    if (started) return;
-    setSelectedMinutes(m); setSecondsLeft(m * 60); setCustomMinutes("");
-  };
-  const handleCustom = (val: string) => {
+  const handlePreset   = (m: number) => { if (started) return; setSelectedMinutes(m); setSecondsLeft(m * 60); setCustomMinutes(""); };
+  const handleCustom   = (val: string) => {
     if (started) return;
     setCustomMinutes(val);
     const n = parseInt(val);
     if (!isNaN(n) && n > 0 && n <= 300) { setSelectedMinutes(n); setSecondsLeft(n * 60); }
   };
 
+  /* ── 計算値 ── */
   const elapsedSec  = started ? startSecondsRef.current - secondsLeft : 0;
   const elapsedMins = Math.floor(elapsedSec / 60);
   const leftMins    = Math.floor(secondsLeft / 60);
@@ -142,25 +144,17 @@ export default function TravelStudyRoomScreen({
   const minsPerDot  = locationRequiredMinutes / DOT_COUNT;
   const filledDots  = Math.min(DOT_COUNT, Math.floor(totalStayed / minsPerDot));
   const emoji       = CHAR_EMOJI[characterId] ?? "🐱";
-
-  const charMsg = finished
-    ? "お疲れ様！\nちゃんと進んだね"
-    : running
-    ? TRAVEL_MESSAGES[msgIdx]
-    : started
-    ? "一時停止中…"
+  const charMsg     = finished ? "お疲れ様！\nちゃんと進んだね"
+    : running  ? TRAVEL_MESSAGES[msgIdx]
+    : started  ? "一時停止中…"
     : "今日も\n一緒にがんばろう！";
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden select-none">
 
-      {/* ── 背景: 全画面旅先画像 ── */}
+      {/* ── 背景: 旅先全画面画像 ── */}
       {locationBgImage ? (
-        <img
-          className="absolute inset-0 w-full h-full object-cover"
-          src={locationBgImage}
-          alt=""
-        />
+        <img className="absolute inset-0 w-full h-full object-cover" src={locationBgImage} alt="" />
       ) : (
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-sky-800 to-teal-700" />
@@ -168,49 +162,61 @@ export default function TravelStudyRoomScreen({
         </div>
       )}
 
-      {/* ビネット: 上下のみ、中央は透ける */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent via-40% to-black/60 pointer-events-none" />
+      {/* ビネット: 上部 + 下部のみ（中央は景色を見せる） */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent via-40% to-black/72 pointer-events-none" />
 
-      {/* ── 退出ボタン ── */}
+      {/* ════════════════════════════════════
+          縦向き警告オーバーレイ（16:9横長前提）
+          ════════════════════════════════════ */}
+      {isPortrait && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/88 backdrop-blur-md">
+          <p className="text-5xl mb-5">📱</p>
+          <p className="text-white text-xl font-bold mb-2">横向きにして使おう</p>
+          <p className="text-white/50 text-sm text-center px-8">
+            全国旅行モードは横長（16:9）画面用です。<br />
+            スマホは横向きにしてください。
+          </p>
+        </div>
+      )}
+
+      {/* ── 退出ボタン (常に右上) ── */}
       <button
         onClick={onExit}
-        className="absolute top-3 right-3 z-30 text-white/55 hover:text-white bg-black/20 backdrop-blur-sm rounded-full p-2 transition-colors"
+        className="absolute top-3 right-3 z-30 text-white/55 hover:text-white bg-black/22 backdrop-blur-sm rounded-full p-2 transition-colors"
       >
         <X size={14} />
       </button>
 
       {/* ════════════════════════════════════
-          ── 左上: 旅先カード ──
+          上部エリア（16:9基準 上18%）
           ════════════════════════════════════ */}
-      <div className="absolute top-4 left-4 z-20 max-w-[160px]">
-        <div className="bg-black/38 backdrop-blur-xl rounded-2xl px-3 py-2.5 ring-1 ring-white/12 shadow-xl">
+
+      {/* 左上: 旅先カード */}
+      <div className="absolute top-4 left-4 z-20" style={{ maxWidth: "22%" }}>
+        <div className="bg-black/40 backdrop-blur-xl rounded-2xl px-3 py-2.5 ring-1 ring-white/12 shadow-xl">
           <p className="text-white/45 text-[9px] tracking-[0.12em] flex items-center gap-0.5 mb-0.5">
-            <MapPin size={8} className="shrink-0" />
-            今日の旅先
+            <MapPin size={8} className="shrink-0" /> 今日の旅先
           </p>
-          <p className="text-white font-bold text-[15px] leading-tight">{locationName}</p>
+          <p className="text-white font-bold text-base leading-tight">{locationName}</p>
           <p className="text-white/35 text-[10px] mt-0.5">{locationArea}</p>
         </div>
       </div>
 
-      {/* ════════════════════════════════════
-          ── 中央上: タイマー + プログレス ──
-          ════════════════════════════════════ */}
+      {/* 中央上: タイマー + バー (右に) + ドット */}
       <div className="absolute top-4 left-0 right-0 z-20 flex flex-col items-center pointer-events-none">
         <p className="text-white/45 text-[10px] tracking-[0.25em] mb-2">◉ 集中タイム</p>
-        {/* タイマー + バー・ドットを横並び */}
         <div className="flex items-center gap-4">
           <p
-            className={`text-6xl font-black tabular-nums tracking-tight leading-none drop-shadow-2xl ${
+            className={`font-black tabular-nums tracking-tight leading-none drop-shadow-2xl ${
               finished ? "text-emerald-400" : "text-white"
             }`}
-            style={{ textShadow: "0 2px 28px rgba(0,0,0,0.55)" }}
+            style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)", textShadow: "0 2px 28px rgba(0,0,0,0.55)" }}
           >
             {finished ? "完了！" : timeStr}
           </p>
-          {/* 右側: プログレスバー + ドット */}
-          <div className="flex flex-col gap-1.5 pt-0.5">
-            <div className="w-36 h-2 bg-white/20 rounded-full overflow-hidden">
+          {/* 右: バー + ドット */}
+          <div className="flex flex-col gap-1.5">
+            <div className="h-2 bg-white/20 rounded-full overflow-hidden" style={{ width: "clamp(100px, 12vw, 180px)" }}>
               <div
                 className="h-full bg-emerald-400 rounded-full transition-all duration-1000 ease-linear"
                 style={{ width: `${stayPct}%` }}
@@ -218,72 +224,74 @@ export default function TravelStudyRoomScreen({
             </div>
             <div className="flex items-center gap-[3px]">
               {Array.from({ length: DOT_COUNT }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`rounded-full transition-all duration-700 ${
-                    i < filledDots
-                      ? "w-3 h-1.5 bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.55)]"
-                      : "w-2 h-1 bg-white/25"
-                  }`}
-                />
+                <div key={i} className={`rounded-full transition-all duration-700 ${
+                  i < filledDots
+                    ? "w-3 h-1.5 bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.55)]"
+                    : "w-2 h-1 bg-white/25"
+                }`} />
               ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* ════════════════════════════════════
-          ── 右上: 滞在時間カード ──
-          ════════════════════════════════════ */}
-      <div className="absolute top-4 right-4 z-20 max-w-[155px]">
-        <div className="bg-black/38 backdrop-blur-xl rounded-2xl px-3 py-2.5 ring-1 ring-white/12 shadow-xl text-right">
+      {/* 右上: 滞在時間カード */}
+      <div className="absolute top-4 right-10 z-20" style={{ maxWidth: "22%" }}>
+        <div className="bg-black/40 backdrop-blur-xl rounded-2xl px-3 py-2.5 ring-1 ring-white/12 shadow-xl text-right">
           <p className="text-white/45 text-[9px] tracking-[0.12em] mb-0.5">滞在時間</p>
-          <p className="text-white font-bold text-2xl tabular-nums leading-tight">
+          <p className="text-white font-bold text-xl tabular-nums leading-tight">
             {totalStayed}
             <span className="text-white/40 font-normal text-sm"> / {locationRequiredMinutes}分</span>
           </p>
-          <p className={`text-[10px] mt-0.5 ${remaining === 0 ? "text-emerald-400" : "text-emerald-400"}`}>
+          <p className="text-emerald-400 text-[10px] mt-0.5">
             {remaining === 0 ? "到着完了！🎉" : `あと${remaining}分で次の旅先へ！`}
           </p>
         </div>
       </div>
 
       {/* ════════════════════════════════════
-          ── 左中: 旅メモカード (浮かせ・傾き) ──
+          中央浮かびカード（景色エリア）
           ════════════════════════════════════ */}
-      <div className="absolute left-3 z-20" style={{ top: "40%" }}>
+
+      {/* 旅メモ — 左 27%付近 */}
+      <div className="absolute left-6 z-20" style={{ top: "27%" }}>
         <div
-          className="bg-white/93 rounded-xl p-3 max-w-[140px] shadow-2xl ring-1 ring-black/5"
-          style={{ transform: "rotate(-2deg)" }}
+          className="bg-white/93 rounded-xl p-3 shadow-2xl ring-1 ring-black/5"
+          style={{ transform: "rotate(-2deg)", width: "clamp(130px, 14vw, 190px)" }}
         >
           <div className="flex items-center justify-between mb-1.5">
             <p className="text-slate-600 text-[10px] font-bold tracking-wide">旅メモ</p>
-            <span className="text-base leading-none">📷</span>
+            <span className="text-sm leading-none">📷</span>
           </div>
-          <p className="text-slate-600 text-[11px] leading-relaxed">{locationDescription}</p>
+          <p className="text-slate-600 leading-relaxed" style={{ fontSize: "clamp(10px, 1.1vw, 13px)" }}>
+            {locationDescription}
+          </p>
           <p className="text-rose-400 text-sm mt-2">🌸</p>
         </div>
       </div>
 
-      {/* ════════════════════════════════════
-          ── 右中: STUDY TICKETカード ──
-          ════════════════════════════════════ */}
-      <div className="absolute right-3 z-20" style={{ top: "37%" }}>
+      {/* STUDY TICKET — 右 24%付近 */}
+      <div className="absolute right-6 z-20" style={{ top: "24%" }}>
         <div
-          className="bg-white/93 rounded-xl overflow-hidden shadow-2xl ring-1 ring-black/5 max-w-[152px]"
-          style={{ transform: "rotate(1.5deg)" }}
+          className="bg-white/93 rounded-xl overflow-hidden shadow-2xl ring-1 ring-black/5"
+          style={{ transform: "rotate(1.5deg)", width: "clamp(140px, 15vw, 200px)" }}
         >
-          {/* ピンクヘッダー帯 */}
           <div className="bg-rose-400 px-3 py-1.5">
-            <p className="text-white font-black text-[10px] tracking-[0.22em]">STUDY TICKET</p>
+            <p className="text-white font-black tracking-[0.22em]" style={{ fontSize: "clamp(9px, 1vw, 12px)" }}>
+              STUDY TICKET
+            </p>
           </div>
           <div className="px-3 pt-2.5 pb-3">
-            <p className="text-slate-700 font-bold text-[13px] leading-tight">{locationName} 行き</p>
-            <p className="text-slate-400 text-[10px] mt-0.5">{locationArea}</p>
-            <div className="h-px bg-slate-200/70 my-2 border-dashed border-slate-200" />
-            <p className="text-slate-500 text-[10px]">出発日：今日</p>
-            <p className="text-slate-500 text-[10px] mt-0.5">目的：{selectedMinutes}分集中すること！</p>
-            <div className="flex items-end justify-between mt-2.5">
+            <p className="text-slate-700 font-bold leading-tight" style={{ fontSize: "clamp(11px, 1.2vw, 14px)" }}>
+              {locationName} 行き
+            </p>
+            <p className="text-slate-400 mt-0.5" style={{ fontSize: "clamp(9px, 0.9vw, 11px)" }}>{locationArea}</p>
+            <div className="h-px bg-slate-200/70 my-2" />
+            <p className="text-slate-500" style={{ fontSize: "clamp(9px, 0.9vw, 11px)" }}>出発日：今日</p>
+            <p className="text-slate-500 mt-0.5" style={{ fontSize: "clamp(9px, 0.9vw, 11px)" }}>
+              目的：{selectedMinutes}分集中すること！
+            </p>
+            <div className="flex items-end justify-between mt-2">
               <Barcode />
               <TicketStamp />
             </div>
@@ -292,55 +300,70 @@ export default function TravelStudyRoomScreen({
       </div>
 
       {/* ════════════════════════════════════
-          ── 下中央: キャラ + 今日の目標ノート ──
+          下部デスクエリア（16:9基準 下35%）
+          左ゾーン: キャラ + 今日の目標
+          右ゾーン: プリセット + ボタン
           ════════════════════════════════════ */}
-      <div className="absolute z-20 pointer-events-none" style={{ bottom: "108px", left: 0, right: 0 }}>
-        <div className="flex items-end justify-center gap-3 px-4">
 
-          {/* キャラ（旅の相棒） */}
-          <div className="flex flex-col items-center gap-1 shrink-0">
-            <div
-              className="bg-white/90 backdrop-blur-sm text-slate-700 text-[10px] font-medium px-2.5 py-1.5 rounded-xl rounded-bl-none shadow-lg max-w-[90px] text-center leading-snug whitespace-pre-line"
-            >
-              {charMsg}
-            </div>
-            <div className="text-4xl drop-shadow-2xl">
-              {finished ? "🎉" : emoji}
-            </div>
-          </div>
-
-          {/* 今日の目標ノート */}
+      {/* キャラ + 今日の目標ノート — 左下 */}
+      <div
+        className="absolute z-20 flex items-end gap-3"
+        style={{ bottom: "22%", left: "5%" }}
+      >
+        {/* キャラ (旅の相棒) */}
+        <div className="flex flex-col items-center gap-1.5 shrink-0">
           <div
-            className="bg-amber-50/95 rounded-xl px-4 py-3 shadow-2xl ring-1 ring-amber-200/60 flex-1 max-w-[200px]"
-            style={{ transform: "rotate(0.5deg)" }}
+            className="bg-white/90 backdrop-blur-sm text-slate-700 font-medium rounded-2xl rounded-bl-none shadow-lg text-center whitespace-pre-line leading-snug"
+            style={{ fontSize: "clamp(10px, 1.1vw, 13px)", padding: "6px 10px", maxWidth: "clamp(80px, 9vw, 120px)" }}
           >
-            <p className="text-amber-700 text-[11px] font-black mb-1.5 flex items-center gap-1">
-              今日の目標 <span>⭐</span>
-            </p>
-            <p className="text-slate-600 text-[12px] leading-snug break-words">
-              {goal || "（目標を入力しよう）"}
-            </p>
-            {finished && (
-              <p className="mt-2 text-emerald-600 text-[11px] font-black">✓ 達成！</p>
-            )}
+            {charMsg}
           </div>
+          <div className="drop-shadow-2xl" style={{ fontSize: "clamp(2rem, 3.5vw, 3.5rem)" }}>
+            {finished ? "🎉" : emoji}
+          </div>
+        </div>
+
+        {/* 今日の目標ノート */}
+        <div
+          className="bg-amber-50/95 rounded-2xl shadow-2xl ring-1 ring-amber-200/60"
+          style={{
+            transform: "rotate(0.5deg)",
+            padding: "clamp(10px, 1.2vw, 16px)",
+            width: "clamp(160px, 18vw, 280px)",
+          }}
+        >
+          <p className="text-amber-700 font-black flex items-center gap-1 mb-2"
+            style={{ fontSize: "clamp(10px, 1.1vw, 13px)" }}>
+            今日の目標 <span>⭐</span>
+          </p>
+          <p className="text-slate-600 leading-snug break-words"
+            style={{ fontSize: "clamp(11px, 1.2vw, 14px)" }}>
+            {goal || "（目標を入力しよう）"}
+          </p>
+          {finished && (
+            <p className="mt-2 text-emerald-600 font-black" style={{ fontSize: "clamp(9px, 1vw, 12px)" }}>
+              ✓ 達成！
+            </p>
+          )}
         </div>
       </div>
 
-      {/* ════════════════════════════════════
-          ── 時間プリセット（スタート前のみ、中央） ──
-          ════════════════════════════════════ */}
+      {/* 時間プリセット（スタート前のみ）— 右ゾーン上段 */}
       {!started && (
-        <div className="absolute z-20 flex gap-2 justify-center" style={{ bottom: "82px", left: 0, right: 0 }}>
+        <div
+          className="absolute z-20 flex gap-2 items-center"
+          style={{ bottom: "21%", left: "38%", right: "5%" }}
+        >
           {PRESETS.map((p) => (
             <button
               key={p.label}
               onClick={() => handlePreset(p.minutes)}
-              className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all ${
+              className={`px-4 py-1.5 rounded-full font-bold transition-all ${
                 selectedMinutes === p.minutes && !customMinutes
                   ? "bg-white text-slate-700 shadow-md"
                   : "bg-black/30 backdrop-blur text-white/75 hover:bg-black/45"
               }`}
+              style={{ fontSize: "clamp(12px, 1.1vw, 15px)" }}
             >
               {p.label}
             </button>
@@ -349,59 +372,55 @@ export default function TravelStudyRoomScreen({
             type="number" min={1} max={300} value={customMinutes}
             onChange={(e) => handleCustom(e.target.value)}
             placeholder="自由"
-            className="w-14 px-2 py-1.5 rounded-full text-sm bg-black/30 backdrop-blur text-white text-center placeholder-white/35 focus:outline-none focus:bg-black/45"
+            className="rounded-full bg-black/30 backdrop-blur text-white text-center placeholder-white/35 focus:outline-none focus:bg-black/45"
+            style={{ width: "clamp(48px, 5vw, 64px)", padding: "6px 8px", fontSize: "clamp(12px, 1.1vw, 14px)" }}
           />
         </div>
       )}
 
-      {/* ════════════════════════════════════
-          ── 下部3ボタン（浮かせ、パネルなし） ──
-          ════════════════════════════════════ */}
-      <div className="absolute bottom-7 left-4 right-4 z-20 flex gap-2.5 items-center">
-
+      {/* 3ボタン — 右ゾーン下段 */}
+      <div
+        className="absolute z-20 flex gap-3 items-center"
+        style={{ bottom: "6%", left: "36%", right: "5%" }}
+      >
         {/* 左: 一時停止 / 再開 */}
         <button
           onClick={started ? handlePause : undefined}
           disabled={!started}
-          className={`flex-1 py-3.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
+          className={`flex-1 rounded-full font-bold transition-all flex items-center justify-center gap-1.5 ${
             started
               ? "bg-slate-800/65 backdrop-blur-md hover:bg-slate-700/70 text-white shadow-lg"
               : "bg-slate-800/30 backdrop-blur text-white/25 cursor-default"
           }`}
+          style={{ padding: "clamp(10px, 1.2vw, 14px) 0", fontSize: "clamp(12px, 1.2vw, 15px)" }}
         >
           {started
-            ? running
-              ? <><Pause size={14} />一時停止</>
-              : <><Play size={14} />再開</>
+            ? running ? <><Pause size={14} />一時停止</> : <><Play size={14} />再開</>
             : <><Pause size={14} />一時停止</>}
         </button>
 
-        {/* 中央: 集中スタート！/ 終了する（ピンク、メインCTA） */}
-        {!started ? (
-          <button
-            onClick={handleStart}
-            className="flex-[1.4] py-4 bg-rose-400 hover:bg-rose-300 active:scale-[0.97] text-white rounded-full font-black text-base shadow-2xl shadow-rose-900/40 transition-all flex items-center justify-center gap-2"
-          >
-            <Play size={17} fill="white" strokeWidth={0} />
-            集中スタート！
-          </button>
-        ) : (
-          <button
-            onClick={handleComplete}
-            className="flex-[1.4] py-4 bg-rose-400/75 hover:bg-rose-400 active:scale-[0.97] text-white rounded-full font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-1.5"
-          >
-            <Square size={14} fill="white" strokeWidth={0} />
-            終了する
-          </button>
-        )}
+        {/* 中央: 集中スタート！/ 終了する (ピンク・メインCTA) */}
+        <button
+          onClick={!started ? handleStart : handleComplete}
+          className={`flex-[1.6] rounded-full font-black text-white shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2 ${
+            !started
+              ? "bg-rose-400 hover:bg-rose-300 shadow-rose-900/40"
+              : "bg-rose-400/80 hover:bg-rose-400"
+          }`}
+          style={{ padding: "clamp(12px, 1.4vw, 16px) 0", fontSize: "clamp(13px, 1.3vw, 16px)" }}
+        >
+          {!started
+            ? <><Play size={16} fill="white" strokeWidth={0} />集中スタート！</>
+            : <><Square size={14} fill="white" strokeWidth={0} />終了する</>}
+        </button>
 
         {/* 右: 旅ノート */}
         <button
           onClick={onViewNotes ?? onExit}
-          className="flex-1 py-3.5 bg-slate-800/65 backdrop-blur-md hover:bg-slate-700/70 text-white/80 hover:text-white rounded-full text-sm font-bold transition-all flex items-center justify-center gap-1 shadow-lg"
+          className="flex-1 bg-slate-800/65 backdrop-blur-md hover:bg-slate-700/70 text-white/80 hover:text-white rounded-full font-bold transition-all shadow-lg flex items-center justify-center gap-1"
+          style={{ padding: "clamp(10px, 1.2vw, 14px) 0", fontSize: "clamp(12px, 1.2vw, 15px)" }}
         >
-          旅ノート
-          <span className="text-xs">→</span>
+          旅ノート <span className="text-xs">→</span>
         </button>
       </div>
     </div>
