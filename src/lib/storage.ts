@@ -27,15 +27,75 @@ export interface AppSettings {
   backgroundMode: BackgroundMode;
 }
 
+/* ── 旅する自習室：背景演出設定型 ── */
+export type LightTone = "warm" | "cool" | "sunset" | "night";
+
+export interface LocationVisualConfig {
+  backgroundStyle: { blurPx: number; brightness: number; contrast: number; saturation: number };
+  ambient: {
+    slowZoom: boolean; zoomScale: number; zoomDurationSec: number;
+    lightDrift: boolean; lightTone: LightTone; lightOpacity: number;
+    haze: boolean; hazeOpacity: number; distantLights: boolean;
+  };
+  uiTheme: { cardOpacity: number; cardBlurPx: number; textTone: "light" | "dark" };
+}
+
+export type VisualConfigOverride = {
+  backgroundStyle?: Partial<LocationVisualConfig["backgroundStyle"]>;
+  ambient?: Partial<LocationVisualConfig["ambient"]>;
+  uiTheme?: Partial<LocationVisualConfig["uiTheme"]>;
+};
+
+export const defaultVisualConfig: LocationVisualConfig = {
+  backgroundStyle: { blurPx: 2, brightness: 0.95, contrast: 1.02, saturation: 1.02 },
+  ambient: {
+    slowZoom: true, zoomScale: 1.025, zoomDurationSec: 36,
+    lightDrift: true, lightTone: "sunset", lightOpacity: 0.08,
+    haze: true, hazeOpacity: 0.06, distantLights: false,
+  },
+  uiTheme: { cardOpacity: 0.72, cardBlurPx: 14, textTone: "light" },
+};
+
+export function resolveVisualConfig(override?: VisualConfigOverride): LocationVisualConfig {
+  if (!override) return defaultVisualConfig;
+  return {
+    backgroundStyle: { ...defaultVisualConfig.backgroundStyle, ...override.backgroundStyle },
+    ambient:         { ...defaultVisualConfig.ambient,         ...override.ambient         },
+    uiTheme:         { ...defaultVisualConfig.uiTheme,         ...override.uiTheme         },
+  };
+}
+
 /* ── 旅する自習室：地点データ ── */
 // mapX/mapY: % of image width/height for public/maps/japan-map.png (square ~1052×1052)
-export const TRAVEL_LOCATIONS = [
-  { id: "start_room", name: "はじまりの自習室", englishName: "My Study Room",      area: "特別", description: "旅のはじまり。ここから全国へ",                                    requiredMinutes: 60, prefId: 4,  isSpecial: true, bgImage: undefined as string | undefined },
-  { id: "kanazawa",   name: "石川・金沢",       englishName: "Kanazawa, Ishikawa", area: "北陸", description: "金沢駅の鼓門は、\n伝統工芸・能楽の鼓を\nイメージして作られたんだって！", requiredMinutes: 60, prefId: 17, bgImage: "/-/images/kanazawa2.jpg" as string | undefined },
-  { id: "toyama",     name: "富山",             englishName: "Toyama",             area: "北陸", description: "立山連峰を望みながら学ぶ",                                        requiredMinutes: 60, prefId: 16, bgImage: undefined as string | undefined },
-  { id: "fukui",      name: "福井",             englishName: "Fukui",              area: "北陸", description: "恐竜の里の静かな自習室",                                          requiredMinutes: 60, prefId: 18, bgImage: undefined as string | undefined },
-  { id: "kyoto",      name: "京都",             englishName: "Kyoto",              area: "近畿", description: "千年の都で机に向かう",                                            requiredMinutes: 60, prefId: 26, bgImage: undefined as string | undefined },
-  { id: "tokyo",      name: "東京",             englishName: "Tokyo",              area: "関東", description: "東京タワーを望む\nルーフトップで集中タイム",                        requiredMinutes: 60, prefId: 13, bgImage: "/-/images/tokyo.jpg" as string | undefined },
+export const TRAVEL_LOCATIONS: Array<{
+  id: string; name: string; englishName: string; area: string; description: string;
+  requiredMinutes: number; prefId: number; bgImage: string | undefined;
+  isSpecial?: boolean; visualConfig?: VisualConfigOverride;
+}> = [
+  { id: "start_room", name: "はじまりの自習室", englishName: "My Study Room",      area: "特別", description: "旅のはじまり。ここから全国へ",                                    requiredMinutes: 60, prefId: 4,  isSpecial: true, bgImage: undefined },
+  {
+    id: "kanazawa", name: "石川・金沢", englishName: "Kanazawa, Ishikawa", area: "北陸",
+    description: "金沢駅の鼓門は、\n伝統工芸・能楽の鼓を\nイメージして作られたんだって！",
+    requiredMinutes: 60, prefId: 17, bgImage: "/-/images/kanazawa2.jpg",
+    visualConfig: {
+      backgroundStyle: { blurPx: 0, brightness: 0.90, contrast: 1.06, saturation: 1.10 },
+      ambient: { slowZoom: true, zoomScale: 1.02, zoomDurationSec: 40, lightDrift: true, lightTone: "warm", lightOpacity: 0.18, haze: false, hazeOpacity: 0, distantLights: false },
+      uiTheme: { cardOpacity: 0.80, cardBlurPx: 12, textTone: "light" },
+    },
+  },
+  { id: "toyama", name: "富山",  englishName: "Toyama", area: "北陸", description: "立山連峰を望みながら学ぶ",     requiredMinutes: 60, prefId: 16, bgImage: undefined },
+  { id: "fukui",  name: "福井",  englishName: "Fukui",  area: "北陸", description: "恐竜の里の静かな自習室",       requiredMinutes: 60, prefId: 18, bgImage: undefined },
+  { id: "kyoto",  name: "京都",  englishName: "Kyoto",  area: "近畿", description: "千年の都で机に向かう",         requiredMinutes: 60, prefId: 26, bgImage: undefined },
+  {
+    id: "tokyo", name: "東京", englishName: "Tokyo", area: "関東",
+    description: "東京タワーを望む\nルーフトップで集中タイム",
+    requiredMinutes: 60, prefId: 13, bgImage: "/-/images/tokyo.jpg",
+    visualConfig: {
+      backgroundStyle: { blurPx: 0, brightness: 1.0, contrast: 1.05, saturation: 1.05 },
+      ambient: { slowZoom: true, zoomScale: 1.015, zoomDurationSec: 45, lightDrift: true, lightTone: "night", lightOpacity: 0.22, haze: true, hazeOpacity: 0.08, distantLights: true },
+      uiTheme: { cardOpacity: 0.70, cardBlurPx: 16, textTone: "light" },
+    },
+  },
 ];
 
 export type TravelLocationId = typeof TRAVEL_LOCATIONS[number]["id"];
