@@ -31,7 +31,7 @@ export interface AppSettings {
 // mapX/mapY: % of image width/height for public/maps/japan-map.png (square ~1052×1052)
 export const TRAVEL_LOCATIONS = [
   { id: "start_room", name: "はじまりの自習室", englishName: "My Study Room",      area: "特別", description: "旅のはじまり。ここから全国へ",                                    requiredMinutes: 60, prefId: 4,  isSpecial: true, bgImage: undefined as string | undefined },
-  { id: "kanazawa",   name: "石川・金沢",       englishName: "Kanazawa, Ishikawa", area: "北陸", description: "金沢駅の鼓門は、\n伝統工芸・能楽の鼓を\nイメージして作られたんだって！", requiredMinutes: 60, prefId: 17, bgImage: "/-/images/kanazawa.jpg" as string | undefined },
+  { id: "kanazawa",   name: "石川・金沢",       englishName: "Kanazawa, Ishikawa", area: "北陸", description: "金沢駅の鼓門は、\n伝統工芸・能楽の鼓を\nイメージして作られたんだって！", requiredMinutes: 60, prefId: 17, bgImage: "/-/images/kanazawa2.jpg" as string | undefined },
   { id: "toyama",     name: "富山",             englishName: "Toyama",             area: "北陸", description: "立山連峰を望みながら学ぶ",                                        requiredMinutes: 60, prefId: 16, bgImage: undefined as string | undefined },
   { id: "fukui",      name: "福井",             englishName: "Fukui",              area: "北陸", description: "恐竜の里の静かな自習室",                                          requiredMinutes: 60, prefId: 18, bgImage: undefined as string | undefined },
   { id: "kyoto",      name: "京都",             englishName: "Kyoto",              area: "近畿", description: "千年の都で机に向かう",                                            requiredMinutes: 60, prefId: 26, bgImage: undefined as string | undefined },
