@@ -95,28 +95,24 @@ function DeskForegroundLayer() {
   const [failed, setFailed] = useState(false);
   if (failed) return null;
   return (
-    <div
+    <img
+      src="/-/illustrations/desk/desk-foreground-fotor-bg-remover-20260627213034.png"
+      alt=""
+      onError={() => setFailed(true)}
+      draggable={false}
       style={{
         position: "absolute",
-        bottom: "-4vh",
+        bottom: "-8vh",
         left: 0,
         width: "100%",
-        height: "38vh",
-        overflow: "hidden",
+        height: "auto",
+        display: "block",
         zIndex: 15,
         pointerEvents: "none",
-        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
-        maskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
+        WebkitMaskImage: "linear-gradient(to bottom, transparent 60%, black 67%)",
+        maskImage: "linear-gradient(to bottom, transparent 60%, black 67%)",
       }}
-    >
-      <img
-        src="/-/illustrations/desk/desk-foreground-fotor-bg-remover-20260627213034.png"
-        alt=""
-        onError={() => setFailed(true)}
-        draggable={false}
-        style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "auto", display: "block" }}
-      />
-    </div>
+    />
   );
 }
 
@@ -255,7 +251,7 @@ function TravelTopHud({
       <div className="absolute top-4 left-4 z-20" style={{ width: "clamp(160px,19vw,270px)" }}>
         <div
           className="rounded-2xl shadow-xl px-3 pt-2.5 pb-3 relative overflow-hidden"
-          style={{ background: "rgba(255,253,248,0.82)", backdropFilter: "blur(18px)" }}
+          style={{ background: "rgba(255,253,248,0.38)", backdropFilter: "blur(18px)" }}
         >
           <div
             className="absolute top-1 right-1 text-stone-200 pointer-events-none select-none"
@@ -318,7 +314,7 @@ function TravelTopHud({
       <div className="absolute z-20" style={{ top: "clamp(12px,1.5vh,20px)", right: "clamp(16px,2vw,24px)", width: "clamp(160px,18vw,250px)" }}>
         <div
           className="rounded-2xl shadow-xl px-3 py-2.5"
-          style={{ background: "rgba(255,253,248,0.82)", backdropFilter: "blur(18px)" }}
+          style={{ background: "rgba(255,253,248,0.38)", backdropFilter: "blur(18px)" }}
         >
           <p className="text-stone-400 text-[9px] tracking-[0.12em] mb-1">滞在時間</p>
           <div className="flex items-end justify-between">
