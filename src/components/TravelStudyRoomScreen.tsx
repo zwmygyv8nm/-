@@ -188,9 +188,10 @@ function PetLayer({
   // desk-foreground.png の机天板位置に合わせてサイズ・位置を調整すること
   // 目安: 机天板は bottom 約 32〜38% の位置に設計するとペット・GoalPanel と合いやすい
   const petSize: React.CSSProperties = {
-    height: "clamp(80px,9vw,130px)",
+    height: "clamp(100px,10vw,160px)",
     width: "auto",
     display: "block",
+    filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.30))",
   };
 
   /* ── ペット本体: WebM → PNG → 絵文字 の3段フォールバック ── */

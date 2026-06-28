@@ -131,7 +131,7 @@ const SETTINGS_DEFAULTS: AppSettings = {
   backgroundType: "template",
   templateBg: "classroom",
   customBgUrl: "",
-  characterId: "neko",
+  characterId: "shiro",
   studyRoomBg: "classroom",
   backgroundMode: "standard",
 };
