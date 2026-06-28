@@ -147,7 +147,8 @@ export function saveSettings(settings: AppSettings): void {
 }
 
 /* ── TravelProgress ── */
-const ALWAYS_UNLOCKED = ["start_room", "kanazawa"];
+// 🚧 DEV: 全地点ロック解除中（テスト用・本番前に戻す）
+const ALWAYS_UNLOCKED = ["start_room", "kanazawa", "toyama", "fukui", "kyoto", "tokyo"];
 
 const TRAVEL_DEFAULTS: TravelProgress = {
   currentLocationId: "start_room",
