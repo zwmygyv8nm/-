@@ -35,7 +35,7 @@ export const TRAVEL_LOCATIONS = [
   { id: "toyama",     name: "富山",             englishName: "Toyama",             area: "北陸", description: "立山連峰を望みながら学ぶ",                                        requiredMinutes: 60, prefId: 16, bgImage: undefined as string | undefined },
   { id: "fukui",      name: "福井",             englishName: "Fukui",              area: "北陸", description: "恐竜の里の静かな自習室",                                          requiredMinutes: 60, prefId: 18, bgImage: undefined as string | undefined },
   { id: "kyoto",      name: "京都",             englishName: "Kyoto",              area: "近畿", description: "千年の都で机に向かう",                                            requiredMinutes: 60, prefId: 26, bgImage: undefined as string | undefined },
-  { id: "tokyo",      name: "東京",             englishName: "Tokyo",              area: "関東", description: "日本の首都で集中タイム",                                          requiredMinutes: 60, prefId: 13, bgImage: undefined as string | undefined },
+  { id: "tokyo",      name: "東京",             englishName: "Tokyo",              area: "関東", description: "東京タワーを望む\nルーフトップで集中タイム",                        requiredMinutes: 60, prefId: 13, bgImage: "/-/images/tokyo.jpg" as string | undefined },
 ];
 
 export type TravelLocationId = typeof TRAVEL_LOCATIONS[number]["id"];
