@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Pause, Play, Square, X, MapPin, BookOpen } from "lucide-react";
-import IllustrationImg from "./IllustrationImg";
 
 const PRESETS = [
   { label: "25分", minutes: 25 },
@@ -142,45 +141,10 @@ function DeskForegroundLayer() {
 
 /* ══════════════════════════════════════════
    Layer 4: 小物レイヤー (z-16)
-   ピンクの付箋：机の上・右寄り
+   desk-foreground.png に付箋・文具が含まれるため不要。
+   ファイルが配置されたらこのコンポーネントごと削除する。
 ══════════════════════════════════════════ */
-function AccessoriesLayer() {
-  return (
-    <div className="absolute inset-0 z-[16] pointer-events-none">
-      <div
-        className="absolute"
-        style={{
-          right: "6%",
-          bottom: "16%",
-          animation: "stickySwing 5s ease-in-out infinite",
-          transformOrigin: "top center",
-        }}
-      >
-        <IllustrationImg
-          src="/-/illustrations/desk/sticky-note.png"
-          alt="付箋"
-          style={{ height: "clamp(52px,6vw,78px)", width: "auto", objectFit: "contain" }}
-          fallback={
-            <div
-              className="flex items-center justify-center shadow-lg"
-              style={{
-                width: "clamp(88px,9vw,120px)",
-                height: "clamp(64px,7vw,88px)",
-                background: "linear-gradient(135deg,#fda4af,#fb7185)",
-                borderRadius: 6,
-              }}
-            >
-              <p className="text-white font-bold text-center leading-snug select-none whitespace-pre-line"
-                style={{ fontSize: "clamp(8px,0.8vw,10px)", padding: "6px 8px" }}>
-                {"できたことを\nつみあげていこう！"}
-              </p>
-            </div>
-          }
-        />
-      </div>
-    </div>
-  );
-}
+// AccessoriesLayer は desk-foreground.png 配置後に削除予定
 
 /* ══════════════════════════════════════════
    Layer 4: ペットレイヤー (z-17) + 吹き出し (z-18)
@@ -221,8 +185,10 @@ function PetLayer({
     ? "petBounce 0.75s cubic-bezier(0.175,0.885,0.32,1.275) forwards"
     : `petBob ${bobSpeed} ease-in-out infinite`;
 
+  // desk-foreground.png の机天板位置に合わせてサイズ・位置を調整すること
+  // 目安: 机天板は bottom 約 32〜38% の位置に設計するとペット・GoalPanel と合いやすい
   const petSize: React.CSSProperties = {
-    height: "clamp(64px,8vw,110px)",
+    height: "clamp(80px,9vw,130px)",
     width: "auto",
     display: "block",
   };
@@ -263,10 +229,12 @@ function PetLayer({
   })();
 
   return (
-    /* z-17: ペット本体 */
+    /* z-17: ペット本体
+       left: 机の左寄り。desk-foreground.png の机天板位置（目安 bottom 32〜38%）に合わせて bottom を調整。
+       現在 bottom: 28% は 1920×1080 での机天板 ~35% 想定の暫定値。 */
     <div
       className="absolute pointer-events-none"
-      style={{ left: "16%", bottom: "20%", zIndex: 17 }}
+      style={{ left: "14%", bottom: "28%", zIndex: 17 }}
     >
       {/* z-18: 吹き出し（React UIとして独立表示） */}
       <div
@@ -517,9 +485,10 @@ function StudyTicket({
 function GoalPanel({ goal }: { goal: string }) {
   const lines = goal ? goal.split("\n").filter(Boolean) : [];
   return (
+    // bottom は desk-foreground.png の机天板位置（目安 32〜38%）に合わせて調整する
     <div
       className="absolute z-20"
-      style={{ bottom: "20%", left: "50%", transform: "translateX(-50%)", width: "clamp(220px,28vw,400px)" }}
+      style={{ bottom: "26%", left: "50%", transform: "translateX(-50%)", width: "clamp(220px,28vw,400px)" }}
     >
       <div
         className="relative rounded-xl shadow-2xl overflow-hidden"
@@ -906,8 +875,7 @@ export default function TravelStudyRoomScreen({
       {/* ── Layer 3: 机前景PNG (z-15) ── */}
       <DeskForegroundLayer />
 
-      {/* ── Layer 4: 小物・付箋 (z-16) ── */}
-      <AccessoriesLayer />
+      {/* ── Layer 4: 小物・付箋 (z-16) ── desk-foreground.png 配置後に削除済み ── */}
 
       {/* ── Layer 5: ペット (z-17) ── */}
       <PetLayer
