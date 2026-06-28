@@ -11,11 +11,6 @@ type TimerState = "before" | "running" | "paused" | "finished";
    CSSキーフレーム定義（一括）
 ══════════════════════════════════════════ */
 const ANIM_STYLES = `
-  @keyframes bgZoom {
-    0%, 100% { transform: scale(1.0); }
-    50%       { transform: scale(1.05); }
-  }
-
   @keyframes stickySwing {
     0%, 100% { transform: rotate(-1.8deg); }
     50%      { transform: rotate(1.8deg); }
@@ -33,9 +28,7 @@ const ANIM_STYLES = `
 ══════════════════════════════════════════ */
 function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabled: boolean }) {
   const [imgFailed, setImgFailed] = useState(false);
-  const zoomStyle = { animation: "bgZoom 42s ease-in-out infinite", transformOrigin: "center" };
-  const blurStyle = { filter: "blur(4px)", transform: "scale(1.06)", transformOrigin: "center" };
-  const activeStyle = blurEnabled ? blurStyle : zoomStyle;
+  const blurStyle: React.CSSProperties = { filter: "blur(4px)", transform: "scale(1.04)", transformOrigin: "center" };
 
   if (bgImage && !imgFailed) {
     return (
@@ -43,7 +36,7 @@ function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabl
         className="absolute inset-0 w-full h-full object-cover z-0"
         src={bgImage}
         alt=""
-        style={activeStyle}
+        style={blurEnabled ? blurStyle : {}}
         onError={() => setImgFailed(true)}
       />
     );
@@ -51,7 +44,7 @@ function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabl
   return (
     <div
       className="absolute inset-0 z-0 bg-gradient-to-br from-indigo-900 via-sky-800 to-teal-700"
-      style={activeStyle}
+      style={blurEnabled ? blurStyle : {}}
     />
   );
 }
