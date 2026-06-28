@@ -21,17 +21,7 @@ const ANIM_STYLES = `
     0%, 100% { transform: scale(1.0); }
     50%       { transform: scale(1.05); }
   }
-  @keyframes petBob {
-    0%, 100% { transform: translateY(0px); }
-    50%      { transform: translateY(-7px); }
-  }
-  @keyframes petBounce {
-    0%   { transform: translateY(0px) scale(1); }
-    20%  { transform: translateY(-20px) scale(0.93); }
-    50%  { transform: translateY(0px) scale(1.06); }
-    70%  { transform: translateY(-9px) scale(0.97); }
-    100% { transform: translateY(0px) scale(1); }
-  }
+
   @keyframes stickySwing {
     0%, 100% { transform: rotate(-1.8deg); }
     50%      { transform: rotate(1.8deg); }
@@ -167,11 +157,9 @@ const CHAR_MSGS: Record<TimerState, string> = {
 function PetLayer({
   characterId,
   timerState,
-  justStarted,
 }: {
   characterId: string;
   timerState: TimerState;
-  justStarted: boolean;
 }) {
   const [videoFailed, setVideoFailed] = useState(false);
   const [imgFailed,   setImgFailed]   = useState(false);
@@ -180,10 +168,6 @@ function PetLayer({
   const emoji = CHAR_EMOJI[characterId] ?? "🐤";
   const msg   = CHAR_MSGS[timerState];
 
-  const bobSpeed = timerState === "running" ? "2.4s" : "3.5s";
-  const petAnim  = justStarted
-    ? "petBounce 0.75s cubic-bezier(0.175,0.885,0.32,1.275) forwards"
-    : `petBob ${bobSpeed} ease-in-out infinite`;
 
   // desk-foreground.png の机天板位置に合わせてサイズ・位置を調整すること
   // 目安: 机天板は bottom 約 32〜38% の位置に設計するとペット・GoalPanel と合いやすい
@@ -260,8 +244,7 @@ function PetLayer({
         {msg}
       </div>
 
-      {/* ペット（上下に揺れるアニメーション） */}
-      <div style={{ animation: petAnim }}>
+      <div>
         {petBody}
       </div>
     </div>
@@ -786,7 +769,6 @@ export default function TravelStudyRoomScreen({
   const [finished,        setFinished]        = useState(false);
   const [isPortrait,      setIsPortrait]      = useState(false);
   const [blurEnabled,     setBlurEnabled]     = useState(false);
-  const [justStarted,     setJustStarted]     = useState(false);
   const startSecondsRef = useRef(25 * 60);
   const intervalRef     = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -842,8 +824,6 @@ export default function TravelStudyRoomScreen({
     startSecondsRef.current = secondsLeft;
     setStarted(true);
     setRunning(true);
-    setJustStarted(true);
-    setTimeout(() => setJustStarted(false), 800);
   };
   const handlePause  = () => setRunning(false);
   const handleResume = () => setRunning(true);
@@ -890,7 +870,6 @@ export default function TravelStudyRoomScreen({
       <PetLayer
         characterId={characterId}
         timerState={timerState}
-        justStarted={justStarted}
       />
 
       {/* ── Layer 6: エフェクト (z-18) ── */}
