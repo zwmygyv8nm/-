@@ -509,7 +509,7 @@ function TimerControls({
       return (
         <button
           disabled
-          className="flex-1 rounded-full font-bold bg-stone-700/40 backdrop-blur text-white/35 flex items-center justify-center gap-1 cursor-default"
+          className="flex-[0.35] rounded-full font-bold bg-stone-700/40 backdrop-blur text-white/35 flex items-center justify-center gap-1 cursor-default"
           style={{ padding: "clamp(8px,0.9vw,11px) 0", fontSize: "clamp(8px,0.85vw,11px)" }}
         >
           <Pause size={10} />一時停止
@@ -520,7 +520,7 @@ function TimerControls({
       return (
         <button
           onClick={onPause}
-          className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
+          className="flex-[0.35] rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
           style={{ padding: "clamp(8px,0.9vw,11px) 0", fontSize: "clamp(8px,0.85vw,11px)" }}
         >
           <Pause size={10} />一時停止
@@ -531,7 +531,7 @@ function TimerControls({
       return (
         <button
           onClick={onResume}
-          className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
+          className="flex-[0.35] rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
           style={{ padding: "clamp(8px,0.9vw,11px) 0", fontSize: "clamp(8px,0.85vw,11px)" }}
         >
           <Play size={10} />再開する
@@ -542,7 +542,7 @@ function TimerControls({
     return (
       <button
         onClick={onBackToMap}
-        className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
+        className="flex-[0.35] rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
         style={{ padding: "clamp(8px,0.9vw,11px) 0", fontSize: "clamp(8px,0.85vw,11px)" }}
       >
         ← マップへ戻る
@@ -591,7 +591,7 @@ function TimerControls({
   const rightBtn = (
     <button
       onClick={onJournal}
-      className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
+      className="flex-[0.35] rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
       style={{ padding: "clamp(8px,0.9vw,11px) 0", fontSize: "clamp(8px,0.85vw,11px)" }}
     >
       <BookOpen size={10} />旅ノート
