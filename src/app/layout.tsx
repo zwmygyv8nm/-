@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Klee_One } from "next/font/google";
+import { Geist, M_PLUS_Rounded_1c } from "next/font/google";
 import "./globals.css";
 
 const geist = Geist({
@@ -7,10 +7,10 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
-const kleeOne = Klee_One({
+const mPlusRounded = M_PLUS_Rounded_1c({
   variable: "--font-klee",
   subsets: ["latin"],
-  weight: ["400", "600"],
+  weight: ["700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={`${geist.variable} ${kleeOne.variable} h-full antialiased`}>
+    <html lang="ja" className={`${geist.variable} ${mPlusRounded.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
