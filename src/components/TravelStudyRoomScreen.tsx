@@ -198,16 +198,23 @@ function PetLayer({
   const petBody = (() => {
     if (!videoFailed) {
       return (
+        // <source type="video/webm"> を使うことで、非対応ブラウザ(Safari等)が
+        // フォーマット不一致を即検出して onError を発火 → PNG フォールバックへ
         <video
           ref={videoRef}
-          src={`/-/illustrations/pets/${characterId}.webm`}
           autoPlay
           muted
           loop
           playsInline
           onError={() => setVideoFailed(true)}
           style={petSize}
-        />
+        >
+          <source
+            src={`/-/illustrations/pets/${characterId}.webm`}
+            type="video/webm"
+            onError={() => setVideoFailed(true)}
+          />
+        </video>
       );
     }
     if (!imgFailed) {
