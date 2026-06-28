@@ -198,8 +198,8 @@ function PetLayer({
   const petBody = (() => {
     if (!videoFailed) {
       return (
-        // <source type="video/webm"> を使うことで、非対応ブラウザ(Safari等)が
-        // フォーマット不一致を即検出して onError を発火 → PNG フォールバックへ
+        // mix-blend-mode: screen で黒背景を透過として扱う
+        // (透過WebMの代替。黒 → 透明、白/カラー → そのまま表示)
         <video
           ref={videoRef}
           autoPlay
@@ -207,7 +207,7 @@ function PetLayer({
           loop
           playsInline
           onError={() => setVideoFailed(true)}
-          style={petSize}
+          style={{ ...petSize, mixBlendMode: "screen" as const }}
         >
           <source
             src={`/-/illustrations/pets/${characterId}.webm`}
