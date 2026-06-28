@@ -21,6 +21,28 @@ const ANIM_STYLES = `
     78%  { transform: scale(1.10) rotate(-2deg); }
     100% { opacity: 1; transform: scale(1) rotate(0deg); }
   }
+
+  /* ── 環境演出アニメーション ── */
+
+  /* 1. 背景超ゆっくりズーム (scale 1.00→1.03) */
+  @keyframes bgBreath {
+    0%, 100% { transform: scale(1.00); }
+    50%       { transform: scale(1.03); }
+  }
+
+  /* 2. 光ゆらぎオーバーレイ — 位置と透明度がゆっくり変化 */
+  @keyframes lightDrift {
+    0%   { opacity: 0.07; transform: translate(0%,    0%); }
+    33%  { opacity: 0.12; transform: translate(3%,   -2%); }
+    66%  { opacity: 0.08; transform: translate(-2%,   3%); }
+    100% { opacity: 0.07; transform: translate(0%,    0%); }
+  }
+
+  /* 3. 机上の光/影ゆらぎ */
+  @keyframes deskGlow {
+    0%, 100% { opacity: 0.06; }
+    50%      { opacity: 0.13; }
+  }
 `;
 
 /* ══════════════════════════════════════════
@@ -28,7 +50,16 @@ const ANIM_STYLES = `
 ══════════════════════════════════════════ */
 function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabled: boolean }) {
   const [imgFailed, setImgFailed] = useState(false);
-  const blurStyle: React.CSSProperties = { filter: "blur(4px)", transform: "scale(1.04)", transformOrigin: "center" };
+  const zoomAnim: React.CSSProperties = {
+    animation: "bgBreath 32s ease-in-out infinite",
+    transformOrigin: "center",
+  };
+  const blurStyle: React.CSSProperties = {
+    filter: "blur(4px)",
+    transform: "scale(1.04)",
+    transformOrigin: "center",
+  };
+  const activeStyle = blurEnabled ? blurStyle : zoomAnim;
 
   if (bgImage && !imgFailed) {
     return (
@@ -36,7 +67,7 @@ function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabl
         className="absolute inset-0 w-full h-full object-cover z-0"
         src={bgImage}
         alt=""
-        style={blurEnabled ? blurStyle : {}}
+        style={activeStyle}
         onError={() => setImgFailed(true)}
       />
     );
@@ -44,7 +75,7 @@ function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabl
   return (
     <div
       className="absolute inset-0 z-0 bg-gradient-to-br from-indigo-900 via-sky-800 to-teal-700"
-      style={blurEnabled ? blurStyle : {}}
+      style={activeStyle}
     />
   );
 }
@@ -720,6 +751,17 @@ export default function TravelStudyRoomScreen({
       {/* ── Layer 2: 背景オーバーレイ (z-10) ── */}
       <BackgroundOverlay />
 
+      {/* ── Layer 2.5: 光ゆらぎオーバーレイ (z-11) ── */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 11,
+          background: "radial-gradient(ellipse 70% 55% at 60% 35%, rgba(255,200,120,0.18) 0%, rgba(255,160,80,0.06) 55%, transparent 80%)",
+          animation: "lightDrift 26s ease-in-out infinite",
+          transformOrigin: "center",
+        }}
+      />
+
       {/* ── 縦向き警告 (z-50) ── */}
       {isPortrait && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/88 backdrop-blur-md">
@@ -733,6 +775,17 @@ export default function TravelStudyRoomScreen({
 
       {/* ── Layer 3: 机前景PNG (z-15) ── */}
       <DeskForegroundLayer />
+
+      {/* ── Layer 3.5: 机上グロー (z-16) ── 机レイヤーと同z-indexで上に重ねる ── */}
+      <div
+        className="absolute inset-x-0 bottom-0 pointer-events-none"
+        style={{
+          zIndex: 16,
+          height: "45%",
+          background: "linear-gradient(to top, rgba(255,200,140,0.10) 0%, rgba(255,220,160,0.05) 40%, transparent 80%)",
+          animation: "deskGlow 20s ease-in-out infinite",
+        }}
+      />
 
       {/* ── Layer 4: 小物・付箋 (z-16) ── desk-foreground.png 配置後に削除済み ── */}
 
