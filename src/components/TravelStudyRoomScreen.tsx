@@ -374,7 +374,7 @@ function TravelMemo({ description }: { description: string }) {
     <div className="absolute left-5 z-20" style={{ top: "24%" }}>
       <div
         className="relative rounded-2xl shadow-2xl"
-        style={{ width: "clamp(140px,15vw,210px)", background: "rgba(255,253,248,0.93)", backdropFilter: "blur(8px)" }}
+        style={{ width: "clamp(140px,15vw,210px)", background: "rgba(255,253,248,0.93)", backdropFilter: "blur(8px)", fontFamily: "var(--font-klee), sans-serif" }}
       >
         {/* マスキングテープ */}
         <div
@@ -383,7 +383,7 @@ function TravelMemo({ description }: { description: string }) {
         />
         <div className="px-3 pt-4 pb-3">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-stone-500 text-[10px] font-bold tracking-wide">旅メモ</p>
+            <p className="text-stone-500 text-[10px] font-semibold tracking-wide">旅メモ</p>
             <span className="text-base leading-none">📷</span>
           </div>
           <p className="text-stone-600 leading-relaxed whitespace-pre-line" style={{ fontSize: "clamp(10px,1.1vw,13px)" }}>
@@ -411,7 +411,7 @@ function StudyTicket({
     <div className="absolute right-5 z-20" style={{ top: "22%" }}>
       <div
         className="rounded-2xl overflow-hidden shadow-2xl"
-        style={{ width: "clamp(150px,17vw,230px)", background: "rgba(255,253,248,0.93)", backdropFilter: "blur(8px)" }}
+        style={{ width: "clamp(150px,17vw,230px)", background: "rgba(255,253,248,0.93)", backdropFilter: "blur(8px)", fontFamily: "var(--font-klee), sans-serif" }}
       >
         <div className="px-3 py-2" style={{ background: "#f472b6" }}>
           <p className="text-white font-black tracking-[0.2em]" style={{ fontSize: "clamp(9px,1vw,12px)" }}>

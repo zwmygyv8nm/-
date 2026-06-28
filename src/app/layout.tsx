@@ -1,10 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Klee_One } from "next/font/google";
 import "./globals.css";
 
 const geist = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+});
+
+const kleeOne = Klee_One({
+  variable: "--font-klee",
+  subsets: ["latin"],
+  weight: ["400", "600"],
 });
 
 export const metadata: Metadata = {
@@ -24,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={`${geist.variable} h-full antialiased`}>
+    <html lang="ja" className={`${geist.variable} ${kleeOne.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
