@@ -32,10 +32,10 @@ const ANIM_STYLES = `
 
   /* 2. 光ゆらぎオーバーレイ — 位置と透明度がゆっくり変化 */
   @keyframes lightDrift {
-    0%   { opacity: 0.07; transform: translate(0%,    0%); }
-    33%  { opacity: 0.12; transform: translate(3%,   -2%); }
-    66%  { opacity: 0.08; transform: translate(-2%,   3%); }
-    100% { opacity: 0.07; transform: translate(0%,    0%); }
+    0%   { opacity: 0.18; transform: translate(0%,    0%); }
+    33%  { opacity: 0.30; transform: translate(3%,   -2%); }
+    66%  { opacity: 0.20; transform: translate(-2%,   3%); }
+    100% { opacity: 0.18; transform: translate(0%,    0%); }
   }
 
   /* 3. 机上の光/影ゆらぎ */
@@ -756,7 +756,7 @@ export default function TravelStudyRoomScreen({
         className="absolute inset-0 pointer-events-none"
         style={{
           zIndex: 11,
-          background: "radial-gradient(ellipse 70% 55% at 60% 35%, rgba(255,200,120,0.18) 0%, rgba(255,160,80,0.06) 55%, transparent 80%)",
+          background: "radial-gradient(ellipse 70% 55% at 60% 35%, rgba(255,210,130,0.38) 0%, rgba(255,170,90,0.14) 55%, transparent 80%)",
           animation: "lightDrift 26s ease-in-out infinite",
           transformOrigin: "center",
         }}
