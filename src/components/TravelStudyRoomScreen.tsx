@@ -90,27 +90,51 @@ function BackgroundOverlay() {
 
 /* ══════════════════════════════════════════
    Layer 3: 机前景画像 (z-15)
+   素材配置先: public/illustrations/desk/desk-foreground.png
+   - PNG内で自然な透過処理済みのものを想定（CSSマスク不要）
+   - 素材未配置時は旧ファイルにフォールバック
 ══════════════════════════════════════════ */
+const DESK_SRC_PRIMARY  = "/-/illustrations/desk/desk-foreground.png";
+const DESK_SRC_FALLBACK = "/-/illustrations/desk/desk-foreground-fotor-bg-remover-20260627213034.png";
+
 function DeskForegroundLayer() {
+  const [src, setSrc]     = useState(DESK_SRC_PRIMARY);
   const [failed, setFailed] = useState(false);
+
   if (failed) return null;
+
+  const handleError = () => {
+    if (src === DESK_SRC_PRIMARY) {
+      setSrc(DESK_SRC_FALLBACK);
+    } else {
+      setFailed(true);
+    }
+  };
+
+  // desk-foreground.png（正式素材）はPNG内の透過で上端を処理するため mask 不要。
+  // フォールバックの旧ファイルは画像の特性上 mask で上端をフェードさせる。
+  const isFallback = src === DESK_SRC_FALLBACK;
+
   return (
     <img
-      src="/-/illustrations/desk/desk-foreground-fotor-bg-remover-20260627213034.png"
+      key={src}
+      src={src}
       alt=""
-      onError={() => setFailed(true)}
+      onError={handleError}
       draggable={false}
       style={{
         position: "absolute",
-        bottom: "-18vh",
+        bottom: isFallback ? "-18vh" : 0,
         left: 0,
         width: "100%",
         height: "auto",
         display: "block",
         zIndex: 15,
         pointerEvents: "none",
-        WebkitMaskImage: "linear-gradient(to bottom, transparent 60%, black 64%)",
-        maskImage: "linear-gradient(to bottom, transparent 60%, black 64%)",
+        ...(isFallback && {
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 60%, black 64%)",
+          maskImage: "linear-gradient(to bottom, transparent 60%, black 64%)",
+        }),
       }}
     />
   );
@@ -159,15 +183,21 @@ function AccessoriesLayer() {
 }
 
 /* ══════════════════════════════════════════
-   Layer 5: ペットレイヤー (z-17)
+   Layer 4: ペットレイヤー (z-17) + 吹き出し (z-18)
+   素材配置先:
+     public/illustrations/pets/<characterId>.webm  ← 透過WebM（第1候補）
+     public/illustrations/pets/<characterId>.png   ← 静止画フォールバック
+   - autoplay / muted / loop / playsInline で自動再生
+   - CSSアニメーションでゆっくり上下に揺れる
+   - 素材未配置時は絵文字にフォールバック
 ══════════════════════════════════════════ */
 const CHAR_EMOJI: Record<string, string> = { neko: "🐱", shiro: "🐤", kuma: "🐻" };
 
 const CHAR_MSGS: Record<TimerState, string> = {
   before:   "今日も\n一緒にがんばろう！",
-  running:  "集中して！\nファイト！",
+  running:  "コツコツいくよ〜！",
   paused:   "少し\n休憩中...",
-  finished: "お疲れ様！\n🎉",
+  finished: "おつかれさま！\n🎉",
 };
 
 function PetLayer({
@@ -179,6 +209,10 @@ function PetLayer({
   timerState: TimerState;
   justStarted: boolean;
 }) {
+  const [videoFailed, setVideoFailed] = useState(false);
+  const [imgFailed,   setImgFailed]   = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   const emoji = CHAR_EMOJI[characterId] ?? "🐤";
   const msg   = CHAR_MSGS[timerState];
 
@@ -187,32 +221,71 @@ function PetLayer({
     ? "petBounce 0.75s cubic-bezier(0.175,0.885,0.32,1.275) forwards"
     : `petBob ${bobSpeed} ease-in-out infinite`;
 
+  const petSize: React.CSSProperties = {
+    height: "clamp(64px,8vw,110px)",
+    width: "auto",
+    display: "block",
+  };
+
+  /* ── ペット本体: WebM → PNG → 絵文字 の3段フォールバック ── */
+  const petBody = (() => {
+    if (!videoFailed) {
+      return (
+        <video
+          ref={videoRef}
+          src={`/-/illustrations/pets/${characterId}.webm`}
+          autoPlay
+          muted
+          loop
+          playsInline
+          onError={() => setVideoFailed(true)}
+          style={petSize}
+        />
+      );
+    }
+    if (!imgFailed) {
+      return (
+        <img
+          src={`/-/illustrations/pets/${characterId}.png`}
+          alt={characterId}
+          onError={() => setImgFailed(true)}
+          draggable={false}
+          style={petSize}
+        />
+      );
+    }
+    /* 絵文字フォールバック */
+    return (
+      <div className="drop-shadow-lg select-none" style={{ fontSize: "clamp(2.5rem,5vw,4rem)" }}>
+        {timerState === "finished" ? "🎉" : emoji}
+      </div>
+    );
+  })();
+
   return (
-    <div className="absolute z-[17] pointer-events-none" style={{ left: "16%", bottom: "20%" }}>
-      {/* 吹き出し */}
+    /* z-17: ペット本体 */
+    <div
+      className="absolute pointer-events-none"
+      style={{ left: "16%", bottom: "20%", zIndex: 17 }}
+    >
+      {/* z-18: 吹き出し（React UIとして独立表示） */}
       <div
         className="bg-white/93 rounded-2xl rounded-bl-none shadow-lg text-center text-slate-700
-                   font-medium leading-snug whitespace-pre-line mb-1.5 mx-auto"
+                   font-medium leading-snug whitespace-pre-line mb-2 mx-auto"
         style={{
           fontSize: "clamp(8px,0.85vw,11px)",
           padding: "5px 10px",
-          maxWidth: "clamp(72px,8.5vw,110px)",
+          maxWidth: "clamp(80px,9vw,120px)",
+          zIndex: 18,
+          position: "relative",
         }}
       >
         {msg}
       </div>
-      {/* キャラクター */}
+
+      {/* ペット（上下に揺れるアニメーション） */}
       <div style={{ animation: petAnim }}>
-        <IllustrationImg
-          src={`/-/illustrations/characters/${characterId}.png`}
-          alt={characterId}
-          style={{ height: "clamp(52px,7vw,96px)", width: "auto", objectFit: "contain" }}
-          fallback={
-            <div className="drop-shadow-lg" style={{ fontSize: "clamp(2rem,3.5vw,3.5rem)" }}>
-              {timerState === "finished" ? "🎉" : emoji}
-            </div>
-          }
-        />
+        {petBody}
       </div>
     </div>
   );
