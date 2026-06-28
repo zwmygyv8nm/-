@@ -3,12 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Pause, Play, Square, X, MapPin, BookOpen } from "lucide-react";
 
-const PRESETS = [
-  { label: "25分", minutes: 25 },
-  { label: "50分", minutes: 50 },
-  { label: "90分", minutes: 90 },
-];
-
 const DOT_COUNT = 12;
 
 type TimerState = "before" | "running" | "paused" | "finished";
@@ -415,11 +409,9 @@ function TravelMemo({ description }: { description: string }) {
 function StudyTicket({
   locationName,
   locationEnglishName,
-  selectedMinutes,
 }: {
   locationName: string;
   locationEnglishName?: string;
-  selectedMinutes: number;
 }) {
   const pattern = [3,1,2,1,3,2,1,3,1,2,1,2,3,1,1,2,3,1,2,1];
   return (
@@ -442,9 +434,6 @@ function StudyTicket({
           )}
           <div className="h-px bg-stone-200 my-2" />
           <p className="text-stone-500" style={{ fontSize: "clamp(9px,0.9vw,11px)" }}>出発日：今日</p>
-          <p className="text-stone-500 mt-0.5" style={{ fontSize: "clamp(9px,0.9vw,11px)" }}>
-            目的：{selectedMinutes}分集中すること！
-          </p>
           <div className="flex items-end justify-between mt-2.5">
             <div className="flex items-end gap-[1.5px] h-3.5">
               {pattern.map((w, i) => (
@@ -471,65 +460,7 @@ function StudyTicket({
   );
 }
 
-/* ══════════════════════════════════════════
-   今日の目標パネル — ノート風（机の上・中央）
-══════════════════════════════════════════ */
-function GoalPanel({ goal }: { goal: string }) {
-  const lines = goal ? goal.split("\n").filter(Boolean) : [];
-  return (
-    // bottom は desk-foreground.png の机天板位置（目安 32〜38%）に合わせて調整する
-    <div
-      className="absolute z-20"
-      style={{ bottom: "26%", left: "50%", transform: "translateX(-50%)", width: "clamp(220px,28vw,400px)" }}
-    >
-      <div
-        className="relative rounded-xl shadow-2xl overflow-hidden"
-        style={{ background: "#fffef5" }}
-      >
-        {/* リング穴 */}
-        <div
-          className="absolute left-0 top-0 bottom-0 flex flex-col justify-around items-center"
-          style={{ width: "clamp(22px,2.5vw,32px)", background: "#f0ede2" }}
-        >
-          {[0,1,2,3].map((i) => (
-            <div
-              key={i}
-              className="rounded-full bg-white border border-stone-300 shadow-inner"
-              style={{ width: "clamp(10px,1.2vw,16px)", height: "clamp(10px,1.2vw,16px)" }}
-            />
-          ))}
-        </div>
-        {/* ノート本文 */}
-        <div style={{ marginLeft: "clamp(26px,3vw,38px)", padding: "clamp(10px,1.2vw,16px) clamp(12px,1.4vw,18px)" }}>
-          <p className="font-black text-amber-500 flex items-center gap-1 mb-2" style={{ fontSize: "clamp(11px,1.1vw,14px)" }}>
-            今日の目標 ⭐
-          </p>
-          <div className="space-y-1.5">
-            {lines.length > 0 ? lines.map((line, i) => (
-              <div key={i} className="flex items-start gap-2 pb-1.5 border-b border-stone-100">
-                <span className="text-stone-300 mt-0.5 shrink-0" style={{ fontSize: "clamp(10px,1vw,13px)" }}>□</span>
-                <p className="text-stone-600 leading-snug" style={{ fontSize: "clamp(10px,1.1vw,14px)" }}>{line}</p>
-              </div>
-            )) : (
-              <p className="text-stone-300 pb-1.5 border-b border-stone-100" style={{ fontSize: "clamp(10px,1.1vw,14px)" }}>
-                （目標を入力しよう）
-              </p>
-            )}
-          </div>
-          {/* ピンクのひとこと */}
-          <div
-            className="inline-block mt-2.5 px-2.5 py-1 rounded"
-            style={{ background: "#fda4af", transform: "rotate(-0.8deg)" }}
-          >
-            <p className="text-white font-bold" style={{ fontSize: "clamp(8px,0.85vw,11px)" }}>
-              コツコツいくよ～！
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
 /* ══════════════════════════════════════════
    完了スタンプ (z-25)
@@ -563,10 +494,6 @@ function CompletionStamp() {
 ══════════════════════════════════════════ */
 function TimerControls({
   state,
-  selectedMinutes,
-  customMinutes,
-  onPreset,
-  onCustom,
   onStart,
   onPause,
   onResume,
@@ -575,10 +502,6 @@ function TimerControls({
   onJournal,
 }: {
   state: TimerState;
-  selectedMinutes: number;
-  customMinutes: string;
-  onPreset: (m: number) => void;
-  onCustom: (v: string) => void;
   onStart: () => void;
   onPause: () => void;
   onResume: () => void;
@@ -586,38 +509,6 @@ function TimerControls({
   onBackToMap: () => void;
   onJournal: () => void;
 }) {
-  /* 時間プリセット（開始前のみ） */
-  const presetRow = state === "before" && (
-    <div
-      className="absolute z-20 flex gap-2 items-center"
-      style={{ bottom: "13%", left: "50%", transform: "translateX(-50%)" }}
-    >
-      {PRESETS.map((p) => (
-        <button
-          key={p.label}
-          onClick={() => onPreset(p.minutes)}
-          className={`px-4 py-1.5 rounded-full font-bold transition-all ${
-            selectedMinutes === p.minutes && !customMinutes
-              ? "bg-white text-stone-700 shadow-md"
-              : "bg-black/30 backdrop-blur text-white/75 hover:bg-black/45"
-          }`}
-          style={{ fontSize: "clamp(12px,1.1vw,15px)" }}
-        >
-          {p.label}
-        </button>
-      ))}
-      <input
-        type="number"
-        min={1}
-        max={300}
-        value={customMinutes}
-        onChange={(e) => onCustom(e.target.value)}
-        placeholder="自由"
-        className="rounded-full bg-black/30 backdrop-blur text-white text-center placeholder-white/35 focus:outline-none focus:bg-black/45"
-        style={{ width: "clamp(48px,5vw,64px)", padding: "6px 8px", fontSize: "clamp(12px,1.1vw,14px)" }}
-      />
-    </div>
-  );
 
   /* ── 左ボタン ── */
   const leftBtn = (() => {
@@ -715,17 +606,14 @@ function TimerControls({
   );
 
   return (
-    <>
-      {presetRow}
-      <div
-        className="absolute z-20 flex gap-3 items-center"
-        style={{ bottom: "4%", left: "8%", right: "8%" }}
-      >
+    <div
+      className="absolute z-20 flex gap-3 items-center"
+      style={{ bottom: "4%", left: "8%", right: "8%" }}
+    >
         {leftBtn}
         {centerBtn}
         {rightBtn}
       </div>
-    </>
   );
 }
 
@@ -733,7 +621,6 @@ function TimerControls({
    メインコンポーネント
 ══════════════════════════════════════════ */
 interface Props {
-  goal: string;
   characterId: string;
   locationName: string;
   locationEnglishName?: string;
@@ -748,7 +635,6 @@ interface Props {
 }
 
 export default function TravelStudyRoomScreen({
-  goal,
   characterId,
   locationName,
   locationEnglishName,
@@ -761,8 +647,6 @@ export default function TravelStudyRoomScreen({
   onComplete,
   onExit,
 }: Props) {
-  const [selectedMinutes, setSelectedMinutes] = useState(25);
-  const [customMinutes,   setCustomMinutes]   = useState("");
   const [secondsLeft,     setSecondsLeft]     = useState(25 * 60);
   const [running,         setRunning]         = useState(false);
   const [started,         setStarted]         = useState(false);
@@ -830,13 +714,6 @@ export default function TravelStudyRoomScreen({
   const handleEnd    = useCallback(() => {
     onComplete(Math.max(1, Math.round((startSecondsRef.current - secondsLeft) / 60)));
   }, [secondsLeft, onComplete]);
-  const handlePreset = (m: number) => { if (started) return; setSelectedMinutes(m); setSecondsLeft(m * 60); setCustomMinutes(""); };
-  const handleCustom = (val: string) => {
-    if (started) return;
-    setCustomMinutes(val);
-    const n = parseInt(val);
-    if (!isNaN(n) && n > 0 && n <= 300) { setSelectedMinutes(n); setSecondsLeft(n * 60); }
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden select-none bg-slate-800">
@@ -918,17 +795,10 @@ export default function TravelStudyRoomScreen({
       <StudyTicket
         locationName={locationName}
         locationEnglishName={locationEnglishName}
-        selectedMinutes={selectedMinutes}
       />
-
-      <GoalPanel goal={goal} />
 
       <TimerControls
         state={timerState}
-        selectedMinutes={selectedMinutes}
-        customMinutes={customMinutes}
-        onPreset={handlePreset}
-        onCustom={handleCustom}
         onStart={handleStart}
         onPause={handlePause}
         onResume={handleResume}

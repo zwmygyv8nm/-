@@ -269,7 +269,6 @@ export default function App() {
             : undefined;
           return (
             <TravelStudyRoomScreen
-              goal={goal}
               characterId={settings.characterId}
               locationName={travelLoc.name}
               locationEnglishName={travelLoc.englishName}
