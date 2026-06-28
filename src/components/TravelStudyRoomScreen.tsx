@@ -161,8 +161,8 @@ function PetLayer({
   characterId: string;
   timerState: TimerState;
 }) {
-  const [videoFailed, setVideoFailed] = useState(false);
-  const [imgFailed,   setImgFailed]   = useState(false);
+  const [videoFailed, setVideoFailed] = useState(true); // 動画は無効化中、静止画を使用
+  const [imgFailed,   setImgFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const emoji = CHAR_EMOJI[characterId] ?? "🐤";
