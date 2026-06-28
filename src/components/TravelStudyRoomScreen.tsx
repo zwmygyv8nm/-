@@ -601,7 +601,7 @@ function TimerControls({
   return (
     <div
       className="absolute z-20 flex gap-3 items-center"
-      style={{ bottom: "4%", left: "8%", right: "8%" }}
+      style={{ bottom: "4%", left: "50%", transform: "translateX(-50%)", width: "clamp(280px,36vw,520px)" }}
     >
         {leftBtn}
         {centerBtn}
