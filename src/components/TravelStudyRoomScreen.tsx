@@ -242,18 +242,19 @@ function PetLayer({
        現在 bottom: 28% は 1920×1080 での机天板 ~35% 想定の暫定値。 */
     <div
       className="absolute pointer-events-none"
-      style={{ left: "14%", bottom: "28%", zIndex: 17 }}
+      style={{ left: "14%", bottom: "10%", zIndex: 17 }}
     >
       {/* z-18: 吹き出し（React UIとして独立表示） */}
       <div
         className="bg-white/93 rounded-2xl rounded-bl-none shadow-lg text-center text-slate-700
-                   font-medium leading-snug whitespace-pre-line mb-2 mx-auto"
+                   font-medium leading-snug whitespace-pre-line mb-2"
         style={{
           fontSize: "clamp(8px,0.85vw,11px)",
           padding: "5px 10px",
           maxWidth: "clamp(80px,9vw,120px)",
           zIndex: 18,
           position: "relative",
+          marginLeft: "clamp(12px,2vw,28px)",
         }}
       >
         {msg}
