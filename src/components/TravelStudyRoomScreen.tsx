@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Pause, Play, Square, X, MapPin, BookOpen } from "lucide-react";
+import { LocationVisualConfig, VisualConfigOverride, resolveVisualConfig } from "@/lib/storage";
 
 const DOT_COUNT = 12;
 
@@ -22,44 +23,57 @@ const ANIM_STYLES = `
     100% { opacity: 1; transform: scale(1) rotate(0deg); }
   }
 
-  /* ── 環境演出アニメーション ── */
+  /* ── 環境演出アニメーション（CSS変数で調整可能） ── */
 
-  /* 1. 背景超ゆっくりズーム (scale 1.00→1.03) */
+  /* 1. 背景ゆっくりズーム: --zoom-scale で最大倍率を制御 */
   @keyframes bgBreath {
     0%, 100% { transform: scale(1.00); }
-    50%       { transform: scale(1.03); }
+    50%       { transform: scale(var(--zoom-scale, 1.025)); }
   }
 
-  /* 2. 光ゆらぎオーバーレイ — 位置と透明度がゆっくり変化 */
+  /* 2. 光ゆらぎ: --lo / --hi / --mid で透明度レンジを制御 */
   @keyframes lightDrift {
-    0%   { opacity: 0.18; transform: translate(0%,    0%); }
-    33%  { opacity: 0.30; transform: translate(3%,   -2%); }
-    66%  { opacity: 0.20; transform: translate(-2%,   3%); }
-    100% { opacity: 0.18; transform: translate(0%,    0%); }
+    0%   { opacity: var(--lo, 0.18); transform: translate(0%,   0%); }
+    33%  { opacity: var(--hi, 0.30); transform: translate(3%,  -2%); }
+    66%  { opacity: var(--mid,0.20); transform: translate(-2%,  3%); }
+    100% { opacity: var(--lo, 0.18); transform: translate(0%,   0%); }
   }
 
-  /* 3. 机上の光/影ゆらぎ */
+  /* 3. 霞のゆらぎ */
+  @keyframes hazePulse {
+    0%, 100% { opacity: 1.0; }
+    50%      { opacity: 0.5; }
+  }
+
+  /* 4. 机上グロー */
   @keyframes deskGlow {
-    0%, 100% { opacity: 0.06; }
-    50%      { opacity: 0.13; }
+    0%, 100% { opacity: 0.6; }
+    50%      { opacity: 1.0; }
   }
 `;
 
 /* ══════════════════════════════════════════
    Layer 1: 背景画像
 ══════════════════════════════════════════ */
-function BackgroundLayer({ bgImage, blurEnabled }: { bgImage?: string; blurEnabled: boolean }) {
+function BackgroundLayer({ bgImage, blurEnabled, visualConfig }: {
+  bgImage?: string; blurEnabled: boolean; visualConfig: LocationVisualConfig;
+}) {
   const [imgFailed, setImgFailed] = useState(false);
-  const zoomAnim: React.CSSProperties = {
-    animation: "bgBreath 32s ease-in-out infinite",
-    transformOrigin: "center",
-  };
-  const blurStyle: React.CSSProperties = {
-    filter: "blur(4px)",
-    transform: "scale(1.04)",
-    transformOrigin: "center",
-  };
-  const activeStyle = blurEnabled ? blurStyle : zoomAnim;
+  const { backgroundStyle, ambient } = visualConfig;
+
+  const baseFilter = `blur(${backgroundStyle.blurPx}px) brightness(${backgroundStyle.brightness}) contrast(${backgroundStyle.contrast}) saturate(${backgroundStyle.saturation})`;
+  const blurFilter = `blur(${backgroundStyle.blurPx + 4}px) brightness(${backgroundStyle.brightness}) contrast(${backgroundStyle.contrast}) saturate(${backgroundStyle.saturation})`;
+
+  const activeStyle: React.CSSProperties = blurEnabled
+    ? { filter: blurFilter, transform: "scale(1.04)", transformOrigin: "center" }
+    : ambient.slowZoom
+      ? {
+          filter: baseFilter,
+          animation: `bgBreath ${ambient.zoomDurationSec}s ease-in-out infinite`,
+          transformOrigin: "center",
+          ["--zoom-scale" as string]: ambient.zoomScale,
+        }
+      : { filter: baseFilter };
 
   if (bgImage && !imgFailed) {
     return (
@@ -92,6 +106,68 @@ function BackgroundOverlay() {
           "linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(10,5,0,0.08) 40%, rgba(20,10,0,0.30) 100%)",
       }}
     />
+  );
+}
+
+/* ══════════════════════════════════════════
+   Layer 2.5: 環境演出レイヤー (z-11〜16)
+══════════════════════════════════════════ */
+const LIGHT_TONE_GRADIENT: Record<string, string> = {
+  warm:   "radial-gradient(ellipse 70% 55% at 60% 35%, rgba(255,210,130,0.38) 0%, rgba(255,170,90,0.14) 55%, transparent 80%)",
+  cool:   "radial-gradient(ellipse 70% 55% at 40% 30%, rgba(130,190,255,0.35) 0%, rgba(90,150,220,0.12) 55%, transparent 80%)",
+  sunset: "radial-gradient(ellipse 80% 60% at 55% 30%, rgba(255,150,90,0.40) 0%, rgba(255,90,60,0.15) 55%, transparent 80%)",
+  night:  "radial-gradient(ellipse 65% 50% at 65% 40%, rgba(255,220,150,0.30) 0%, rgba(180,160,255,0.12) 55%, transparent 80%)",
+};
+
+function AmbientLayer({ config }: { config: LocationVisualConfig }) {
+  const { ambient } = config;
+  const lo  = ambient.lightOpacity * 0.7;
+  const hi  = ambient.lightOpacity;
+  const mid = ambient.lightOpacity * 0.85;
+  const gradient = LIGHT_TONE_GRADIENT[ambient.lightTone] ?? LIGHT_TONE_GRADIENT.warm;
+
+  return (
+    <>
+      {/* 光ゆらぎ (z-11) */}
+      {ambient.lightDrift && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            zIndex: 11,
+            background: gradient,
+            animation: "lightDrift 26s ease-in-out infinite",
+            transformOrigin: "center",
+            ["--lo"  as string]: lo,
+            ["--hi"  as string]: hi,
+            ["--mid" as string]: mid,
+          }}
+        />
+      )}
+
+      {/* 霞 (z-12) */}
+      {ambient.haze && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            zIndex: 12,
+            background: "linear-gradient(to bottom, rgba(200,215,255,1.0) 0%, transparent 60%)",
+            opacity: ambient.hazeOpacity,
+            animation: "hazePulse 40s ease-in-out infinite",
+          }}
+        />
+      )}
+
+      {/* 机上グロー (z-16) */}
+      <div
+        className="absolute inset-x-0 bottom-0 pointer-events-none"
+        style={{
+          zIndex: 16,
+          height: "45%",
+          background: "linear-gradient(to top, rgba(255,200,140,0.10) 0%, rgba(255,220,160,0.05) 40%, transparent 80%)",
+          animation: "deskGlow 20s ease-in-out infinite",
+        }}
+      />
+    </>
   );
 }
 
@@ -400,12 +476,15 @@ function TravelTopHud({
 /* ══════════════════════════════════════════
    旅メモカード（左中）
 ══════════════════════════════════════════ */
-function TravelMemo({ description }: { description: string }) {
+function TravelMemo({ description, uiTheme }: {
+  description: string;
+  uiTheme: LocationVisualConfig["uiTheme"];
+}) {
   return (
     <div className="absolute left-5 z-20" style={{ top: "24%" }}>
       <div
         className="relative rounded-2xl shadow-2xl"
-        style={{ width: "clamp(140px,15vw,210px)", background: "rgba(255,244,220,0.95)", backdropFilter: "blur(8px)", fontFamily: "var(--font-klee), sans-serif", fontWeight: 700 }}
+        style={{ width: "clamp(140px,15vw,210px)", background: `rgba(255,244,220,${uiTheme.cardOpacity})`, backdropFilter: `blur(${uiTheme.cardBlurPx}px)`, fontFamily: "var(--font-klee), sans-serif", fontWeight: 700 }}
       >
         {/* マスキングテープ */}
         <div
@@ -433,16 +512,18 @@ function TravelMemo({ description }: { description: string }) {
 function StudyTicket({
   locationName,
   locationEnglishName,
+  uiTheme,
 }: {
   locationName: string;
   locationEnglishName?: string;
+  uiTheme: LocationVisualConfig["uiTheme"];
 }) {
   const pattern = [3,1,2,1,3,2,1,3,1,2,1,2,3,1,1,2,3,1,2,1];
   return (
     <div className="absolute right-5 z-20" style={{ top: "22%" }}>
       <div
         className="rounded-2xl overflow-hidden shadow-2xl"
-        style={{ width: "clamp(150px,17vw,230px)", background: "rgba(255,244,220,0.95)", backdropFilter: "blur(8px)", fontFamily: "var(--font-klee), sans-serif", fontWeight: 700 }}
+        style={{ width: "clamp(150px,17vw,230px)", background: `rgba(255,244,220,${uiTheme.cardOpacity})`, backdropFilter: `blur(${uiTheme.cardBlurPx}px)`, fontFamily: "var(--font-klee), sans-serif", fontWeight: 700 }}
       >
         <div className="px-3 py-2" style={{ background: "#f472b6" }}>
           <p className="text-white font-black tracking-[0.2em]" style={{ fontSize: "clamp(9px,1vw,12px)" }}>
@@ -654,6 +735,7 @@ interface Props {
   locationStudyMinutes: number;
   locationRequiredMinutes: number;
   locationNextName?: string;
+  locationVisualConfig?: VisualConfigOverride;
   onComplete: (minutes: number) => void;
   onExit: () => void;
 }
@@ -668,9 +750,11 @@ export default function TravelStudyRoomScreen({
   locationStudyMinutes,
   locationRequiredMinutes,
   locationNextName,
+  locationVisualConfig,
   onComplete,
   onExit,
 }: Props) {
+  const visualConfig = resolveVisualConfig(locationVisualConfig);
   const [secondsLeft,     setSecondsLeft]     = useState(25 * 60);
   const [running,         setRunning]         = useState(false);
   const [started,         setStarted]         = useState(false);
@@ -746,21 +830,13 @@ export default function TravelStudyRoomScreen({
       <style dangerouslySetInnerHTML={{ __html: ANIM_STYLES }} />
 
       {/* ── Layer 1: 背景画像 ── */}
-      <BackgroundLayer bgImage={locationBgImage} blurEnabled={blurEnabled} />
+      <BackgroundLayer bgImage={locationBgImage} blurEnabled={blurEnabled} visualConfig={visualConfig} />
 
       {/* ── Layer 2: 背景オーバーレイ (z-10) ── */}
       <BackgroundOverlay />
 
-      {/* ── Layer 2.5: 光ゆらぎオーバーレイ (z-11) ── */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          zIndex: 11,
-          background: "radial-gradient(ellipse 70% 55% at 60% 35%, rgba(255,210,130,0.38) 0%, rgba(255,170,90,0.14) 55%, transparent 80%)",
-          animation: "lightDrift 26s ease-in-out infinite",
-          transformOrigin: "center",
-        }}
-      />
+      {/* ── Layer 2.5: 環境演出 (z-11〜16) ── */}
+      <AmbientLayer config={visualConfig} />
 
       {/* ── 縦向き警告 (z-50) ── */}
       {isPortrait && (
@@ -775,17 +851,6 @@ export default function TravelStudyRoomScreen({
 
       {/* ── Layer 3: 机前景PNG (z-15) ── */}
       <DeskForegroundLayer />
-
-      {/* ── Layer 3.5: 机上グロー (z-16) ── 机レイヤーと同z-indexで上に重ねる ── */}
-      <div
-        className="absolute inset-x-0 bottom-0 pointer-events-none"
-        style={{
-          zIndex: 16,
-          height: "45%",
-          background: "linear-gradient(to top, rgba(255,200,140,0.10) 0%, rgba(255,220,160,0.05) 40%, transparent 80%)",
-          animation: "deskGlow 20s ease-in-out infinite",
-        }}
-      />
 
       {/* ── Layer 4: 小物・付箋 (z-16) ── desk-foreground.png 配置後に削除済み ── */}
 
@@ -836,11 +901,12 @@ export default function TravelStudyRoomScreen({
         filledDots={filledDots}
       />
 
-      <TravelMemo description={locationDescription} />
+      <TravelMemo description={locationDescription} uiTheme={visualConfig.uiTheme} />
 
       <StudyTicket
         locationName={locationName}
         locationEnglishName={locationEnglishName}
+        uiTheme={visualConfig.uiTheme}
       />
 
       <TimerControls

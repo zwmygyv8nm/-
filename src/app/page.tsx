@@ -278,6 +278,7 @@ export default function App() {
               locationStudyMinutes={travelProgress.locationStudyMinutes[travelLoc.id] ?? 0}
               locationRequiredMinutes={travelLoc.requiredMinutes}
               locationNextName={nextLoc?.name}
+              locationVisualConfig={travelLoc.visualConfig}
               onComplete={handleTimerComplete}
               onExit={() => setScreen("gate")}
             />
