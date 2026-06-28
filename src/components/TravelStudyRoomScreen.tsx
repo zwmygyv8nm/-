@@ -254,17 +254,17 @@ function TravelTopHud({
           style={{ background: "rgba(255,253,248,0.38)", backdropFilter: "blur(18px)" }}
         >
           <div
-            className="absolute top-1 right-1 text-stone-200 pointer-events-none select-none"
+            className="absolute top-1 right-1 text-white/20 pointer-events-none select-none"
             style={{ fontSize: "clamp(32px,4.5vw,56px)", lineHeight: 1 }}
           >🗾</div>
-          <p className="text-stone-400 text-[9px] tracking-[0.15em] flex items-center gap-1 mb-1">
+          <p className="text-white/70 text-[9px] tracking-[0.15em] flex items-center gap-1 mb-1">
             <MapPin size={8} /> 今日の旅先
           </p>
-          <p className="text-stone-800 font-black leading-tight" style={{ fontSize: "clamp(14px,1.8vw,24px)" }}>
+          <p className="text-white font-black leading-tight" style={{ fontSize: "clamp(14px,1.8vw,24px)" }}>
             {locationName}
           </p>
           {locationEnglishName && (
-            <p className="text-stone-400 mt-0.5" style={{ fontSize: "clamp(8px,0.85vw,11px)" }}>
+            <p className="text-white/70 mt-0.5" style={{ fontSize: "clamp(8px,0.85vw,11px)" }}>
               {locationEnglishName}
             </p>
           )}
@@ -316,11 +316,11 @@ function TravelTopHud({
           className="rounded-2xl shadow-xl px-3 py-2.5"
           style={{ background: "rgba(255,253,248,0.38)", backdropFilter: "blur(18px)" }}
         >
-          <p className="text-stone-400 text-[9px] tracking-[0.12em] mb-1">滞在時間</p>
+          <p className="text-white/70 text-[9px] tracking-[0.12em] mb-1">滞在時間</p>
           <div className="flex items-end justify-between">
-            <p className="text-stone-800 font-black tabular-nums leading-tight" style={{ fontSize: "clamp(22px,2.6vw,36px)" }}>
+            <p className="text-white font-black tabular-nums leading-tight" style={{ fontSize: "clamp(22px,2.6vw,36px)" }}>
               {totalStayed}
-              <span className="text-stone-400 font-normal" style={{ fontSize: "clamp(11px,1.1vw,15px)" }}>
+              <span className="text-white/70 font-normal" style={{ fontSize: "clamp(11px,1.1vw,15px)" }}>
                 {" "}/ {locationRequiredMinutes}分
               </span>
             </p>
@@ -331,11 +331,11 @@ function TravelTopHud({
             {Array.from({ length: 10 }).map((_, i) => (
               <div
                 key={i}
-                className={`h-0.5 flex-1 rounded-full ${i < Math.round(stayPct / 10) ? "bg-emerald-400" : "bg-stone-200"}`}
+                className={`h-0.5 flex-1 rounded-full ${i < Math.round(stayPct / 10) ? "bg-emerald-400" : "bg-white/30"}`}
               />
             ))}
           </div>
-          <p className="text-emerald-500 font-bold" style={{ fontSize: "clamp(9px,0.9vw,12px)" }}>
+          <p className="text-white font-bold" style={{ fontSize: "clamp(9px,0.9vw,12px)" }}>
             {remaining === 0
               ? "到着完了！🎉"
               : `あと${remaining}分で${locationNextName ?? "次の旅先"}へ！`}
@@ -591,10 +591,10 @@ function TimerControls({
       return (
         <button
           disabled
-          className="flex-1 rounded-full font-bold bg-stone-700/40 backdrop-blur text-white/35 flex items-center justify-center gap-1.5 cursor-default"
-          style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+          className="flex-1 rounded-full font-bold bg-stone-700/40 backdrop-blur text-white/35 flex items-center justify-center gap-1 cursor-default"
+          style={{ padding: "clamp(8px,0.9vw,11px) 0", fontSize: "clamp(8px,0.85vw,11px)" }}
         >
-          <Pause size={14} />一時停止
+          <Pause size={10} />一時停止
         </button>
       );
     }
@@ -602,10 +602,10 @@ function TimerControls({
       return (
         <button
           onClick={onPause}
-          className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1.5 transition-all"
-          style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+          className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
+          style={{ padding: "clamp(8px,0.9vw,11px) 0", fontSize: "clamp(8px,0.85vw,11px)" }}
         >
-          <Pause size={14} />一時停止
+          <Pause size={10} />一時停止
         </button>
       );
     }
@@ -613,10 +613,10 @@ function TimerControls({
       return (
         <button
           onClick={onResume}
-          className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1.5 transition-all"
-          style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+          className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
+          style={{ padding: "clamp(8px,0.9vw,11px) 0", fontSize: "clamp(8px,0.85vw,11px)" }}
         >
-          <Play size={14} />再開する
+          <Play size={10} />再開する
         </button>
       );
     }
@@ -624,8 +624,8 @@ function TimerControls({
     return (
       <button
         onClick={onBackToMap}
-        className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1.5 transition-all"
-        style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+        className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
+        style={{ padding: "clamp(8px,0.9vw,11px) 0", fontSize: "clamp(8px,0.85vw,11px)" }}
       >
         ← マップへ戻る
       </button>
@@ -638,10 +638,10 @@ function TimerControls({
       return (
         <button
           onClick={onStart}
-          className="flex-[1.4] rounded-full font-black text-white bg-rose-400 hover:bg-rose-300 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
-          style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(14px,1.4vw,18px)" }}
+          className="flex-[1.4] rounded-full font-black text-white bg-rose-400 hover:bg-rose-300 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
+          style={{ padding: "clamp(9px,1.05vw,12px) 0", fontSize: "clamp(10px,1vw,13px)" }}
         >
-          <Play size={17} fill="white" strokeWidth={0} />
+          <Play size={12} fill="white" strokeWidth={0} />
           集中スタート！
         </button>
       );
@@ -650,10 +650,10 @@ function TimerControls({
       return (
         <button
           onClick={onEnd}
-          className="flex-[1.4] rounded-full font-black text-white bg-rose-400/90 hover:bg-rose-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
-          style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(14px,1.4vw,18px)" }}
+          className="flex-[1.4] rounded-full font-black text-white bg-rose-400/90 hover:bg-rose-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
+          style={{ padding: "clamp(9px,1.05vw,12px) 0", fontSize: "clamp(10px,1vw,13px)" }}
         >
-          <Square size={15} fill="white" strokeWidth={0} />終了する
+          <Square size={11} fill="white" strokeWidth={0} />終了する
         </button>
       );
     }
@@ -661,8 +661,8 @@ function TimerControls({
     return (
       <button
         onClick={onBackToMap}
-        className="flex-[1.4] rounded-full font-black text-white bg-emerald-500 hover:bg-emerald-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-2"
-        style={{ padding: "clamp(13px,1.5vw,17px) 0", fontSize: "clamp(14px,1.4vw,18px)" }}
+        className="flex-[1.4] rounded-full font-black text-white bg-emerald-500 hover:bg-emerald-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
+        style={{ padding: "clamp(9px,1.05vw,12px) 0", fontSize: "clamp(10px,1vw,13px)" }}
       >
         マップへ戻る →
       </button>
@@ -673,10 +673,10 @@ function TimerControls({
   const rightBtn = (
     <button
       onClick={onJournal}
-      className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1.5 transition-all"
-      style={{ padding: "clamp(11px,1.3vw,15px) 0", fontSize: "clamp(12px,1.2vw,16px)" }}
+      className="flex-1 rounded-full font-bold bg-stone-700/65 backdrop-blur hover:bg-stone-600/70 text-white shadow-lg flex items-center justify-center gap-1 transition-all"
+      style={{ padding: "clamp(8px,0.9vw,11px) 0", fontSize: "clamp(8px,0.85vw,11px)" }}
     >
-      <BookOpen size={14} />旅ノート
+      <BookOpen size={10} />旅ノート
     </button>
   );
 
