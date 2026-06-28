@@ -556,7 +556,7 @@ function TimerControls({
       return (
         <button
           onClick={onStart}
-          className="flex-[1.4] rounded-full font-black text-white bg-rose-400 hover:bg-rose-300 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
+          className="flex-[0.7] rounded-full font-black text-white bg-rose-400 hover:bg-rose-300 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
           style={{ padding: "clamp(9px,1.05vw,12px) 0", fontSize: "clamp(10px,1vw,13px)" }}
         >
           <Play size={12} fill="white" strokeWidth={0} />
@@ -568,7 +568,7 @@ function TimerControls({
       return (
         <button
           onClick={onEnd}
-          className="flex-[1.4] rounded-full font-black text-white bg-rose-400/90 hover:bg-rose-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
+          className="flex-[0.7] rounded-full font-black text-white bg-rose-400/90 hover:bg-rose-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
           style={{ padding: "clamp(9px,1.05vw,12px) 0", fontSize: "clamp(10px,1vw,13px)" }}
         >
           <Square size={11} fill="white" strokeWidth={0} />終了する
@@ -579,7 +579,7 @@ function TimerControls({
     return (
       <button
         onClick={onBackToMap}
-        className="flex-[1.4] rounded-full font-black text-white bg-emerald-500 hover:bg-emerald-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
+        className="flex-[0.7] rounded-full font-black text-white bg-emerald-500 hover:bg-emerald-400 shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5"
         style={{ padding: "clamp(9px,1.05vw,12px) 0", fontSize: "clamp(10px,1vw,13px)" }}
       >
         マップへ戻る →
