@@ -102,15 +102,15 @@ function DeskForegroundLayer() {
       draggable={false}
       style={{
         position: "absolute",
-        bottom: "-8vh",
+        bottom: "-18vh",
         left: 0,
         width: "100%",
         height: "auto",
         display: "block",
         zIndex: 15,
         pointerEvents: "none",
-        WebkitMaskImage: "linear-gradient(to bottom, transparent 60%, black 67%)",
-        maskImage: "linear-gradient(to bottom, transparent 60%, black 67%)",
+        WebkitMaskImage: "linear-gradient(to bottom, transparent 60%, black 64%)",
+        maskImage: "linear-gradient(to bottom, transparent 60%, black 64%)",
       }}
     />
   );
