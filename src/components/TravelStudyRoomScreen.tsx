@@ -296,7 +296,7 @@ function TravelTopHud({
         {/* 数字 + プログレスバー */}
         <div className="flex items-center gap-5">
           <p
-            className={`font-black tabular-nums tracking-tight leading-none drop-shadow-2xl ${
+            className={`font-light tabular-nums tracking-tight leading-none drop-shadow-2xl ${
               finished ? "text-emerald-400" : "text-white"
             }`}
             style={{ fontSize: "clamp(2.8rem,5.5vw,4.5rem)", textShadow: "0 2px 28px rgba(0,0,0,0.60)" }}
