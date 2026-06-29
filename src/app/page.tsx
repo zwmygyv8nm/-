@@ -76,19 +76,11 @@ export default function App() {
   const isNight = settings.templateBg === "night";
 
   const handleAttend = () => {
-    if (!goal.trim()) {
-      alert("今日の目標を書いてから入室しよう！");
-      return;
-    }
     setScreen("room");
   };
 
   // 旅モード：地点を選んで出発モーダルを表示
   const handleDepart = (locationId: string) => {
-    if (!goal.trim()) {
-      alert("今日の目標を書いてから出発しよう！");
-      return;
-    }
     setDepartureTarget(locationId);
   };
 
