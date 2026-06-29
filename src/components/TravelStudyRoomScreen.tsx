@@ -346,13 +346,6 @@ function PetLayer({
 }
 
 /* ══════════════════════════════════════════
-   Layer 6: エフェクトレイヤー (z-18)
-══════════════════════════════════════════ */
-function EffectsLayer({ locationId: _locationId }: { locationId: string }) {
-  return null;
-}
-
-/* ══════════════════════════════════════════
    Layer 7-UI: 上部HUD
    左: 旅先カード / 中: タイマー / 右: 滞在時間
 ══════════════════════════════════════════ */
@@ -729,7 +722,6 @@ interface Props {
   characterId: string;
   locationName: string;
   locationEnglishName?: string;
-  locationArea: string;
   locationDescription: string;
   locationBgImage?: string;
   locationStudyMinutes: number;
@@ -744,7 +736,6 @@ export default function TravelStudyRoomScreen({
   characterId,
   locationName,
   locationEnglishName,
-  locationArea,
   locationDescription,
   locationBgImage,
   locationStudyMinutes,
@@ -860,10 +851,7 @@ export default function TravelStudyRoomScreen({
         timerState={timerState}
       />
 
-      {/* ── Layer 6: エフェクト (z-18) ── */}
-      <EffectsLayer locationId={locationName} />
-
-      {/* ── Layer 7: UI (z-20〜30) ── */}
+      {/* ── Layer 6: UI (z-20〜30) ── */}
 
       {/* 完了スタンプ (z-25) */}
       {finished && <CompletionStamp />}

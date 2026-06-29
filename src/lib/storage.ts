@@ -207,12 +207,12 @@ export function saveSettings(settings: AppSettings): void {
 }
 
 /* ── TravelProgress ── */
-// 🚧 DEV: 全地点ロック解除中（テスト用・本番前に戻す）
-const ALWAYS_UNLOCKED = ["start_room", "kanazawa", "toyama", "fukui", "kyoto", "tokyo"];
+// 開発環境（next dev）のみ全地点を強制解放する。本番ビルドでは start_room のみ。
+const DEV_UNLOCK_ALL = process.env.NODE_ENV === "development";
 
 const TRAVEL_DEFAULTS: TravelProgress = {
   currentLocationId: "start_room",
-  unlockedLocationIds: [...ALWAYS_UNLOCKED],
+  unlockedLocationIds: ["start_room"],
   completedLocationIds: [],
   locationStudyMinutes: {},
 };
@@ -223,10 +223,11 @@ export function getTravelProgress(): TravelProgress {
   const base: TravelProgress = raw
     ? { ...TRAVEL_DEFAULTS, ...(JSON.parse(raw) as Partial<TravelProgress>) }
     : { ...TRAVEL_DEFAULTS };
-  // 常時解放の地点を確実に含める（既存ユーザーも対象）
-  for (const id of ALWAYS_UNLOCKED) {
-    if (!base.unlockedLocationIds.includes(id)) {
-      base.unlockedLocationIds = [...base.unlockedLocationIds, id];
+  if (DEV_UNLOCK_ALL) {
+    for (const loc of TRAVEL_LOCATIONS) {
+      if (!base.unlockedLocationIds.includes(loc.id)) {
+        base.unlockedLocationIds = [...base.unlockedLocationIds, loc.id];
+      }
     }
   }
   return base;
