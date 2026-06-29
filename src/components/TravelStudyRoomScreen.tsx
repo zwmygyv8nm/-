@@ -412,7 +412,7 @@ function TravelTopHud({
           </p>
           <div className="flex flex-col gap-2">
             {/* メインプログレスバー */}
-            <div className="h-2.5 bg-white/20 rounded-full overflow-hidden" style={{ width: "clamp(140px,16vw,240px)" }}>
+            <div className="h-2.5 bg-white/20 rounded-full overflow-hidden" style={{ width: "clamp(210px,24vw,360px)" }}>
               <div
                 className="h-full bg-emerald-400 rounded-full transition-all duration-1000 ease-linear"
                 style={{ width: `${stayPct}%` }}
