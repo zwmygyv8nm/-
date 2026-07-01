@@ -94,3 +94,17 @@ export function getTodayPrompt(): Prompt {
   const index = seed % prompts.length;
   return prompts[index];
 }
+
+export function getAllCategories(): string[] {
+  return Array.from(new Set(prompts.map((p) => p.category)));
+}
+
+export function getPromptsByCategory(category: string): Prompt[] {
+  return prompts.filter((p) => p.category === category);
+}
+
+export function getRandomPromptByCategory(category: string, excludeId?: string): Prompt {
+  const pool = getPromptsByCategory(category).filter((p) => p.id !== excludeId);
+  const list = pool.length > 0 ? pool : getPromptsByCategory(category);
+  return list[Math.floor(Math.random() * list.length)];
+}

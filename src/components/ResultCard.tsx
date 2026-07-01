@@ -55,7 +55,7 @@ export default function ResultCard({ record, progress, onHome }: ResultCardProps
   const achievement = getAchievementLabel(record.durationSec);
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-white rounded-3xl shadow-sm border border-purple-100">
+    <div className="flex flex-col gap-6 p-6 bg-white rounded-3xl shadow-sm border border-purple-100 result-pop">
       <div className="text-center">
         <p className="text-3xl mb-2">🎉</p>
         <h2 className="text-xl font-bold text-gray-700">今日も話せました</h2>

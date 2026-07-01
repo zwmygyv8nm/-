@@ -59,7 +59,7 @@ export default function BuddyCard({ buddyStage, totalXp }: BuddyCardProps) {
 
   return (
     <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-3xl shadow-sm border border-pink-100">
-      <div className="w-28 h-28 rounded-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center text-6xl shadow-inner">
+      <div className="w-28 h-28 rounded-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center text-6xl shadow-inner buddy-float">
         {data.emoji}
       </div>
       <p className="text-center text-gray-500 text-sm leading-relaxed px-4">{line}</p>

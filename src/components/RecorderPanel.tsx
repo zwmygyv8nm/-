@@ -71,7 +71,7 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
         {state === 'recording' && (
           <button
             onClick={stop}
-            className="w-20 h-20 rounded-full bg-red-400 text-white text-3xl shadow-lg active:scale-95 transition-transform animate-pulse"
+            className="w-20 h-20 rounded-full bg-red-400 text-white text-3xl shadow-lg active:scale-95 transition-transform recording-glow"
           >
             ⏹
           </button>
