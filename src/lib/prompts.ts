@@ -108,3 +108,20 @@ export function getRandomPromptByCategory(category: string, excludeId?: string):
   const list = pool.length > 0 ? pool : getPromptsByCategory(category);
   return list[Math.floor(Math.random() * list.length)];
 }
+
+/**
+ * カテゴリ（null = 全体）から、既読を避けてお題を返す。
+ * 未読が尽きた場合は全体からランダム。
+ */
+export function getSmartPrompt(
+  category: string | null,
+  doneTexts: string[],
+  excludeId?: string
+): Prompt {
+  const pool = category ? getPromptsByCategory(category) : [...prompts];
+  const doneSet = new Set(doneTexts);
+  const undone = pool.filter((p) => !doneSet.has(p.text) && p.id !== excludeId);
+  const candidates = undone.length > 0 ? undone : pool.filter((p) => p.id !== excludeId);
+  const list = candidates.length > 0 ? candidates : pool;
+  return list[Math.floor(Math.random() * list.length)];
+}

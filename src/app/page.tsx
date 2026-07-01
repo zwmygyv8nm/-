@@ -11,10 +11,7 @@ import HistoryCalendar from '../components/HistoryCalendar';
 import WelcomeCard from '../components/WelcomeCard';
 import CategorySelector from '../components/CategorySelector';
 import WeeklyRecap from '../components/WeeklyRecap';
-import {
-  getTodayPrompt,
-  getRandomPromptByCategory,
-} from '../lib/prompts';
+import { getTodayPrompt, getSmartPrompt } from '../lib/prompts';
 import type { Prompt } from '../lib/prompts';
 import { loadProgress, addRecord } from '../lib/progress';
 import type { UserProgress, SpeechRecord } from '../types';
@@ -31,11 +28,12 @@ function loadCategory(): string | null {
 
 function saveCategory(cat: string | null) {
   if (typeof window === 'undefined') return;
-  if (cat === null) {
-    localStorage.removeItem(CATEGORY_KEY);
-  } else {
-    localStorage.setItem(CATEGORY_KEY, cat);
-  }
+  if (cat === null) localStorage.removeItem(CATEGORY_KEY);
+  else localStorage.setItem(CATEGORY_KEY, cat);
+}
+
+function getDoneTexts(records: SpeechRecord[]): string[] {
+  return records.map((r) => r.prompt);
 }
 
 export default function Home() {
@@ -47,15 +45,16 @@ export default function Home() {
   const [currentPrompt, setCurrentPrompt] = useState<Prompt>(getTodayPrompt());
 
   useEffect(() => {
-    setProgress(loadProgress());
+    const prog = loadProgress();
+    setProgress(prog);
+
     const shown = localStorage.getItem(WELCOME_KEY);
     if (!shown) setShowWelcome(true);
 
     const savedCat = loadCategory();
     setSelectedCategory(savedCat);
-    if (savedCat) {
-      setCurrentPrompt(getRandomPromptByCategory(savedCat));
-    }
+    const doneTexts = getDoneTexts(prog.records);
+    setCurrentPrompt(getSmartPrompt(savedCat, doneTexts));
   }, []);
 
   const handleCloseWelcome = useCallback(() => {
@@ -63,20 +62,20 @@ export default function Home() {
     setShowWelcome(false);
   }, []);
 
-  const handleCategoryChange = useCallback((cat: string | null) => {
-    setSelectedCategory(cat);
-    saveCategory(cat);
-    if (cat === null) {
-      setCurrentPrompt(getTodayPrompt());
-    } else {
-      setCurrentPrompt(getRandomPromptByCategory(cat));
-    }
-  }, []);
+  const handleCategoryChange = useCallback(
+    (cat: string | null) => {
+      setSelectedCategory(cat);
+      saveCategory(cat);
+      const doneTexts = getDoneTexts(progress?.records ?? []);
+      setCurrentPrompt(getSmartPrompt(cat, doneTexts));
+    },
+    [progress]
+  );
 
   const handleReroll = useCallback(() => {
-    if (selectedCategory === null) return;
-    setCurrentPrompt(getRandomPromptByCategory(selectedCategory, currentPrompt.id));
-  }, [selectedCategory, currentPrompt.id]);
+    const doneTexts = getDoneTexts(progress?.records ?? []);
+    setCurrentPrompt(getSmartPrompt(selectedCategory, doneTexts, currentPrompt.id));
+  }, [selectedCategory, currentPrompt.id, progress]);
 
   const handleComplete = useCallback((record: SpeechRecord) => {
     const updated = addRecord(record);
@@ -86,10 +85,14 @@ export default function Home() {
   }, []);
 
   const handleHome = useCallback(() => {
-    setView('home');
+    const prog = loadProgress();
+    setProgress(prog);
+    // 記録後はお題をリフレッシュ
+    const doneTexts = getDoneTexts(prog.records);
+    setCurrentPrompt(getSmartPrompt(selectedCategory, doneTexts));
     setLastRecord(null);
-    setProgress(loadProgress());
-  }, []);
+    setView('home');
+  }, [selectedCategory]);
 
   if (!progress) {
     return (
@@ -109,7 +112,7 @@ export default function Home() {
           {/* ヘッダー */}
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-700 tracking-wide">はなす日記</h1>
-            <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+            <p className="text-xs text-gray-400 mt-2">
               毎日1分。お題に答えて、話す練習を少しずつ。
             </p>
           </div>
@@ -119,23 +122,16 @@ export default function Home() {
               <BuddyCard buddyStage={progress.buddyStage} totalXp={progress.totalXp} />
               <ProgressSummary progress={progress} />
 
-              {/* カテゴリ選択 */}
-              <CategorySelector
-                selected={selectedCategory}
-                onChange={handleCategoryChange}
-              />
+              <CategorySelector selected={selectedCategory} onChange={handleCategoryChange} />
 
-              {/* お題カード + 別のお題ボタン */}
               <div className="flex flex-col gap-2">
                 <DailyPromptCard prompt={currentPrompt} />
-                {selectedCategory !== null && (
-                  <button
-                    onClick={handleReroll}
-                    className="text-sm text-purple-400 text-center py-2 active:scale-95 transition-transform"
-                  >
-                    別のお題にする →
-                  </button>
-                )}
+                <button
+                  onClick={handleReroll}
+                  className="text-sm text-purple-400 text-center py-2 active:scale-95 transition-transform"
+                >
+                  別のお題にする →
+                </button>
               </div>
 
               <button
@@ -163,7 +159,11 @@ export default function Home() {
               >
                 ← ホームに戻る
               </button>
-              <RecorderPanel prompt={currentPrompt} onComplete={handleComplete} />
+              <RecorderPanel
+                prompt={currentPrompt}
+                onComplete={handleComplete}
+                onSkip={handleHome}
+              />
             </>
           )}
 

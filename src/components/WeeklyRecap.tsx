@@ -1,5 +1,6 @@
 'use client';
 
+import { getAllCategories } from '../lib/prompts';
 import type { SpeechRecord } from '../types';
 
 type WeeklyRecapProps = {
@@ -20,67 +21,86 @@ function getLast7Days(): string[] {
   return days;
 }
 
+function formatSec(sec: number): string {
+  if (sec === 0) return '0秒';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  if (m === 0) return `${s}秒`;
+  if (s === 0) return `${m}分`;
+  return `${m}分${s}秒`;
+}
+
 export default function WeeklyRecap({ records }: WeeklyRecapProps) {
   const last7 = new Set(getLast7Days());
   const weekRecords = records.filter((r) => last7.has(r.date));
 
-  const activeDays = new Set(weekRecords.map((r) => r.date)).size;
-  const totalSec = weekRecords.reduce((sum, r) => sum + r.durationSec, 0);
-  const clearCount = weekRecords.filter((r) => r.cleared).length;
-  const maxSec = weekRecords.length > 0 ? Math.max(...weekRecords.map((r) => r.durationSec)) : 0;
-  const totalXp = weekRecords.reduce((sum, r) => sum + r.xpEarned, 0);
-
-  const formatSec = (sec: number) => {
-    if (sec === 0) return '0秒';
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    if (m === 0) return `${s}秒`;
-    if (s === 0) return `${m}分`;
-    return `${m}分${s}秒`;
-  };
-
   if (weekRecords.length === 0) {
     return (
       <div className="p-5 bg-white rounded-3xl shadow-sm border border-purple-100">
-        <p className="text-xs text-gray-400 mb-1">今週のふりかえり</p>
+        <p className="text-xs text-gray-400 mb-2">今週のふりかえり</p>
         <p className="text-sm text-gray-400 leading-relaxed">
-          まだ今週の記録がありません。<br />今日、最初の一声を出してみましょう。
+          まだ今週の記録がありません。今日、最初の一声を出してみましょう。
         </p>
       </div>
     );
   }
 
-  return (
-    <div className="p-5 bg-white rounded-3xl shadow-sm border border-purple-100">
-      <p className="text-xs text-gray-400 mb-4">今週のふりかえり</p>
+  const activeDays = new Set(weekRecords.map((r) => r.date)).size;
+  const totalSec = weekRecords.reduce((sum, r) => sum + r.durationSec, 0);
+  const maxSec = Math.max(...weekRecords.map((r) => r.durationSec));
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+  // カテゴリ別集計
+  const catCount: Record<string, number> = {};
+  for (const r of weekRecords) {
+    catCount[r.category] = (catCount[r.category] ?? 0) + 1;
+  }
+  const sortedCats = Object.entries(catCount).sort((a, b) => b[1] - a[1]);
+  const allCats = getAllCategories();
+  const untriedCats = allCats.filter((c) => !catCount[c]);
+
+  return (
+    <div className="p-5 bg-white rounded-3xl shadow-sm border border-purple-100 flex flex-col gap-4">
+      <p className="text-xs text-gray-400">今週のふりかえり</p>
+
+      {/* サマリー 2枚 */}
+      <div className="grid grid-cols-2 gap-3">
         <div className="bg-pink-50 rounded-2xl p-4">
-          <p className="text-2xl font-bold text-pink-500">{activeDays}<span className="text-sm font-normal ml-1">日</span></p>
+          <p className="text-2xl font-bold text-pink-500">
+            {activeDays}
+            <span className="text-sm font-normal ml-1">日</span>
+          </p>
           <p className="text-xs text-gray-400 mt-1">声を出せた日</p>
         </div>
         <div className="bg-purple-50 rounded-2xl p-4">
-          <p className="text-2xl font-bold text-purple-500">{formatSec(totalSec)}</p>
+          <p className="text-xl font-bold text-purple-500">{formatSec(totalSec)}</p>
           <p className="text-xs text-gray-400 mt-1">合計の発話時間</p>
-        </div>
-        <div className="bg-green-50 rounded-2xl p-4">
-          <p className="text-2xl font-bold text-green-500">{clearCount}<span className="text-sm font-normal ml-1">回</span></p>
-          <p className="text-xs text-gray-400 mt-1">クリアした回数</p>
-        </div>
-        <div className="bg-blue-50 rounded-2xl p-4">
-          <p className="text-2xl font-bold text-blue-500">{formatSec(maxSec)}</p>
-          <p className="text-xs text-gray-400 mt-1">一番長く話した時間</p>
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl px-4 py-3 text-sm text-gray-500 leading-relaxed">
-        今週は{activeDays}日、声を出せました。
-        {totalSec > 0 && `合計${formatSec(totalSec)}話しています。`}
-        {maxSec > 0 && `一番長く話せたのは${formatSec(maxSec)}でした。`}
-        {totalXp > 0 && (
-          <span className="block mt-1 text-xs text-gray-400">獲得XP: +{totalXp}</span>
+      {/* カテゴリ別 */}
+      <div>
+        <p className="text-xs text-gray-400 mb-2">練習したカテゴリ</p>
+        <div className="flex flex-col gap-1">
+          {sortedCats.map(([cat, cnt]) => (
+            <div key={cat} className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-xl">
+              <span className="text-sm text-gray-600">{cat}</span>
+              <span className="text-sm font-medium text-purple-400">{cnt}回</span>
+            </div>
+          ))}
+        </div>
+        {untriedCats.length > 0 && (
+          <p className="text-xs text-gray-300 mt-2 leading-relaxed">
+            まだ試していない：{untriedCats.slice(0, 3).join('・')}
+            {untriedCats.length > 3 ? `など` : ''}
+          </p>
         )}
       </div>
+
+      {/* 一言まとめ */}
+      <p className="text-sm text-gray-400 leading-relaxed bg-pink-50 rounded-2xl px-4 py-3">
+        今週は{activeDays}日、声を出せました。
+        {maxSec > 0 && `一番長く話せたのは${formatSec(maxSec)}でした。`}
+      </p>
     </div>
   );
 }
