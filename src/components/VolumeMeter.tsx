@@ -9,7 +9,8 @@ export default function VolumeMeter({ volumeLevel }: VolumeMeterProps) {
   const filled = Math.round(volumeLevel * bars);
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex flex-col items-center gap-2">
+      <p className="text-xs text-gray-400">声の反応</p>
       <div className="flex items-end gap-1 h-8">
         {Array.from({ length: bars }).map((_, i) => {
           const active = i < filled;
@@ -21,17 +22,17 @@ export default function VolumeMeter({ volumeLevel }: VolumeMeterProps) {
               className={`w-2 rounded-full transition-all duration-75 ${
                 active
                   ? i < bars * 0.5
-                    ? 'bg-mint-400 bg-green-300'
+                    ? 'bg-green-300'
                     : i < bars * 0.8
                     ? 'bg-yellow-300'
                     : 'bg-pink-300'
-                  : 'bg-gray-200'
+                  : 'bg-gray-100'
               }`}
             />
           );
         })}
       </div>
-      <p className="text-xs text-gray-400">音量の参考表示です</p>
+      <p className="text-xs text-gray-300">マイクの反応（参考表示）</p>
     </div>
   );
 }
