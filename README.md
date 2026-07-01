@@ -1,36 +1,190 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# はなす日記
 
-## Getting Started
+**話すのが苦手な人のための、毎日1分スピーキング練習アプリ**
 
-First, run the development server:
+お題に答えて録音するだけ。採点なし、正解なし。声を出せたことを積み上げる、やさしい発話習慣アプリです。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 課題意識
+
+英語スピーキングや面接練習のアプリは数多くありますが、多くは**採点・評価・正解判定を起点に設計**されています。しかし実際には、日本語で声に出して話すこと自体に苦手意識を持つ人も少なくありません。
+
+- 「録音するのが恥ずかしい」
+- 「声が小さいと指摘されそうで怖い」
+- 「話す内容に自信がない」
+
+こうしたユーザーにとって、最初のハードルは「うまく話すこと」ではなく、**「声を出すこと」** です。
+
+本アプリは、話す内容の良し悪しを判断せず、**「声を出せた」という小さな成功体験を積み重ねること**を目的に設計しました。
+
+---
+
+## コンセプト
+
+> **採点しないスピーキング練習**
+
+- 音声認識・AI採点・滑舌判定は実装しない（MVP方針）
+- 「失敗」「点数」「声量不足」などの否定的フィードバックを出さない
+- 5秒以上話せれば記録。5秒未満でも責めない
+- 音声ファイルはサーバーに送らない。端末内でさえ保存しない
+
+---
+
+## 主な機能
+
+| 機能 | 説明 |
+|------|------|
+| 今日のお題表示 | 59件のお題を日替わり・カテゴリ別に表示 |
+| カテゴリ選択 | 9カテゴリから練習の目的に合わせて選択できる |
+| お題の既読回避 | 練習済みのお題を避けて新しいお題を優先表示 |
+| 録音開始 / 停止 | MediaRecorder API によるブラウザ録音 |
+| 録音秒数カウント | リアルタイムで発話時間を表示 |
+| 音量バー | Web Audio API による参考表示（採点には使わない） |
+| 5秒以上で記録 | 5秒以上話せれば達成。XPを加算 |
+| やさしいリトライ導線 | 5秒未満の場合も責めず「もう一回」「今日はここまで」を選択できる |
+| 達成ラベル | 5秒/10秒/30秒/60秒で段階的なラベルを表示（採点ではなく記録として） |
+| XP・レベル | 発話時間に応じてXPを獲得し、5段階でレベルアップ |
+| 連続記録 | 毎日続けると連続日数が増える |
+| バッジ | 初回達成・連続記録・長時間発話などでバッジを獲得 |
+| 相棒キャラ | XPに応じて成長する絵文字キャラ（🌱→🌿→🌸→🌳） |
+| 週次ふりかえり | 直近7日の発話日数・合計時間・カテゴリ別回数を表示 |
+| localStorage 保存 | アカウント不要。端末内にのみデータを保存 |
+| 音声ファイル非保存 | 録音データはサーバーにも端末にも保存しない |
+| スマホ対応 | 360px〜のスマートフォンでも使いやすいレスポンシブUI |
+
+---
+
+## UX設計で重視したこと
+
+**「ユーザーを傷つけない」ことを最優先の設計方針としました。**
+
+1. **減点方式にしない** — 声が小さい・話が短いといった否定的フィードバックを一切出さない
+2. **音声ファイルを保存しない** — 録音が外部に出ないことを明示し、心理的安全性を確保
+3. **AI採点を入れない（MVP）** — 正解のない練習に採点を持ち込まず、まず声を出す習慣づくりを優先
+4. **音量は参考表示のみ** — マイクの反応を可視化するが、音量の大小でクリア判定には使わない
+5. **5秒未満でも責めない** — 達成できなかった場合も「声を出せた」と肯定し、リトライ選択肢を提供
+6. **状況に応じた相棒の言葉** — 初回達成・連続記録更新・同日2回目など、状況を読んだやさしいメッセージを表示
+
+---
+
+## 技術構成
+
+| 技術 | 用途 |
+|------|------|
+| Next.js 16 (App Router) | フレームワーク |
+| React 19 | UIコンポーネント |
+| TypeScript | 型安全な開発 |
+| Tailwind CSS | スタイリング |
+| MediaRecorder API | ブラウザ録音 |
+| Web Audio API (AnalyserNode) | リアルタイム音量取得 |
+| localStorage | 練習記録の永続化 |
+
+**外部サービス・バックエンドは一切不使用です。**
+
+---
+
+## データ設計
+
+```ts
+type SpeechRecord = {
+  id: string;
+  date: string;           // YYYY-MM-DD
+  prompt: string;         // お題テキスト
+  category: string;       // カテゴリ名
+  durationSec: number;    // 録音秒数
+  maxVolume?: number;     // 最大音量（参考値）
+  avgVolume?: number;     // 平均音量（参考値）
+  xpEarned: number;       // 獲得XP
+  cleared: boolean;       // 5秒以上かどうか
+  selfRating?: 'easy' | 'nervous' | 'better_than_expected' | 'retry';
+  createdAt: string;      // ISO 8601
+};
+
+type UserProgress = {
+  totalXp: number;
+  level: number;          // 1〜5
+  streakDays: number;     // 連続記録日数
+  lastCompletedDate?: string;
+  records: SpeechRecord[];
+  badges: string[];
+  buddyStage: number;     // 1〜4（相棒の成長段階）
+};
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**保存するのは録音のメタデータのみです。音声ファイルは保存しません。**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ディレクトリ構成
 
-## Learn More
+```
+src/
+├── app/
+│   ├── page.tsx               # ホーム・録音・結果の3ビューSPA
+│   ├── layout.tsx
+│   └── globals.css            # CSSアニメーション定義
+├── components/
+│   ├── BuddyCard.tsx          # 相棒キャラ
+│   ├── CategorySelector.tsx   # カテゴリ選択
+│   ├── DailyPromptCard.tsx    # お題表示
+│   ├── HistoryCalendar.tsx    # 28日カレンダー
+│   ├── RecorderPanel.tsx      # 録音UI
+│   ├── ResultCard.tsx         # 結果・報酬画面
+│   ├── VolumeMeter.tsx        # 音量バー
+│   ├── WeeklyRecap.tsx        # 週次ふりかえり
+│   ├── ProgressSummary.tsx    # XP・レベル表示
+│   ├── BadgeList.tsx          # バッジ一覧
+│   └── WelcomeCard.tsx        # 初回説明カード
+├── hooks/
+│   └── useRecorder.ts         # MediaRecorder + Web Audio API フック
+├── lib/
+│   ├── prompts.ts             # お題データ（59件）・選択ロジック
+│   └── progress.ts            # localStorage 読み書き・XP・バッジ計算
+└── types/
+    └── index.ts               # 型定義
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## セットアップ
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# 依存パッケージのインストール
+npm install
 
-## Deploy on Vercel
+# 開発サーバーの起動
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+ブラウザで [http://localhost:3000](http://localhost:3000) を開いてください。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+録音ボタンを押すとブラウザからマイクの使用許可を求められます。許可することで録音が開始されます。
+
+---
+
+## 注意事項
+
+- **マイクの許可が必要です。** ブラウザの設定からマイクアクセスを許可してください
+- **古いブラウザでは動作しない場合があります。** `MediaRecorder API` に対応していないブラウザ（iOS 14以前など）では録音機能が利用できません
+- **音量バーは参考表示です。** 端末・マイク・環境音の影響を受けるため、クリア判定には使用していません
+- **データはブラウザのlocalStorageに保存されます。** ブラウザのデータを削除すると練習記録も削除されます
+
+---
+
+## 今後の展望
+
+MVPとして基本的な練習サイクルは実装済みです。今後は以下を検討しています。
+
+- **実ユーザーテスト** — 話すことに苦手意識がある人に実際に使ってもらい、UIと文言を改善
+- **お題の拡充・品質改善** — カテゴリ別の難易度調整、ユーザーによるお題追加機能
+- **相棒キャラクターの改善** — アニメーションや状況別セリフのさらなる充実
+- **月次ふりかえり** — 月単位での積み上げ表示
+- **AI文字起こし（任意）** — 話した内容を振り返るための補助機能として
+- **面接・発表前ウォームアップモード** — 本番前の短時間練習に特化したフロー
+
+---
+
+## ライセンス
+
+MIT
