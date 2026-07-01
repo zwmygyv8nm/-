@@ -17,7 +17,14 @@ export function loadProgress(): UserProgress {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...INITIAL_PROGRESS };
-    return JSON.parse(raw) as UserProgress;
+    const parsed = JSON.parse(raw);
+    // 壊れたデータや古いスキーマに対して安全にマージ
+    return {
+      ...INITIAL_PROGRESS,
+      ...parsed,
+      records: Array.isArray(parsed?.records) ? parsed.records : [],
+      badges: Array.isArray(parsed?.badges) ? parsed.badges : [],
+    };
   } catch {
     return { ...INITIAL_PROGRESS };
   }

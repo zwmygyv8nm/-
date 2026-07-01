@@ -10,7 +10,7 @@ export default function HistoryCalendar({ records }: HistoryCalendarProps) {
   const today = new Date();
   const days: { date: string; label: string; cleared: boolean }[] = [];
 
-  for (let i = 29; i >= 0; i--) {
+  for (let i = 27; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
     const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
@@ -20,10 +20,18 @@ export default function HistoryCalendar({ records }: HistoryCalendarProps) {
     days.push({ date: dateStr, label: String(d.getDate()), cleared });
   }
 
+  const clearedCount = days.filter((d) => d.cleared).length;
+
   return (
     <div className="p-5 bg-white rounded-3xl shadow-sm border border-green-100">
-      <p className="text-xs text-gray-400 mb-3">直近30日の記録</p>
-      <div className="grid grid-cols-10 gap-1">
+      <div className="flex items-baseline justify-between mb-3">
+        <p className="text-xs text-gray-400">直近4週間の記録</p>
+        {clearedCount > 0 && (
+          <p className="text-xs text-green-500">{clearedCount}日 練習した</p>
+        )}
+      </div>
+      {/* 7列 × 4行 = 28日。360px / 7 ≈ 51px/cell で余裕あり */}
+      <div className="grid grid-cols-7 gap-1.5">
         {days.map((day) => (
           <div
             key={day.date}
