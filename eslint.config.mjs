@@ -13,6 +13,13 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // localStorage の初期化は useEffect 内で setState するのが Next.js の正しいパターン。
+      // SSR 環境では window が存在しないため、マウント後に状態をセットする必要がある。
+      'react-hooks/set-state-in-effect': 'off',
+    },
+  },
 ]);
 
 export default eslintConfig;
