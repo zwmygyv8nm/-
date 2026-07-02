@@ -12,10 +12,6 @@ type TimerState = "before" | "running" | "paused" | "finished";
    CSSキーフレーム定義（一括）
 ══════════════════════════════════════════ */
 const ANIM_STYLES = `
-  @keyframes stickySwing {
-    0%, 100% { transform: rotate(-1.8deg); }
-    50%      { transform: rotate(1.8deg); }
-  }
   @keyframes stampIn {
     0%   { opacity: 0; transform: scale(2.8) rotate(-15deg); }
     55%  { opacity: 1; transform: scale(0.88) rotate(4deg); }
@@ -60,6 +56,9 @@ function BackgroundLayer({ bgImage, blurEnabled, visualConfig }: {
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   const { backgroundStyle, ambient } = visualConfig;
+
+  // 別の地点の画像に切り替わったら失敗フラグをリセット
+  useEffect(() => setImgFailed(false), [bgImage]);
 
   const baseFilter = `blur(${backgroundStyle.blurPx}px) brightness(${backgroundStyle.brightness}) contrast(${backgroundStyle.contrast}) saturate(${backgroundStyle.saturation})`;
   const blurFilter = `blur(${backgroundStyle.blurPx + 4}px) brightness(${backgroundStyle.brightness}) contrast(${backgroundStyle.contrast}) saturate(${backgroundStyle.saturation})`;
@@ -257,11 +256,9 @@ function PetLayer({
 }) {
   const [videoFailed, setVideoFailed] = useState(true); // 動画は無効化中、静止画を使用
   const [imgFailed,   setImgFailed] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const emoji = CHAR_EMOJI[characterId] ?? "🐤";
   const msg   = CHAR_MSGS[timerState];
-
 
   // desk-foreground.png の机天板位置に合わせてサイズ・位置を調整すること
   // 目安: 机天板は bottom 約 32〜38% の位置に設計するとペット・GoalPanel と合いやすい
@@ -279,7 +276,6 @@ function PetLayer({
         // mix-blend-mode: screen で黒背景を透過として扱う
         // (透過WebMの代替。黒 → 透明、白/カラー → そのまま表示)
         <video
-          ref={videoRef}
           autoPlay
           muted
           loop
@@ -588,7 +584,6 @@ function CompletionStamp() {
    タイマーコントロール
    3ボタン固定レイアウト:
      [一時停止 / 再開]  [集中スタート！ / 終了 / マップへ]  [旅ノート]
-   プリセット(25/50/90分)は開始前のみ上に表示
 ══════════════════════════════════════════ */
 function TimerControls({
   state,
@@ -753,7 +748,8 @@ export default function TravelStudyRoomScreen({
   const [isPortrait,      setIsPortrait]      = useState(false);
   const [blurEnabled,     setBlurEnabled]     = useState(false);
   const startSecondsRef = useRef(25 * 60);
-  const intervalRef     = useRef<ReturnType<typeof setInterval> | null>(null);
+  const secondsLeftRef  = useRef(secondsLeft);
+  secondsLeftRef.current = secondsLeft;
 
   /* 縦横検知 */
   useEffect(() => {
@@ -763,24 +759,25 @@ export default function TravelStudyRoomScreen({
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  /* タイマー */
+  /* タイマー
+     setIntervalの減算カウントはタブ非表示時にブラウザがtickを間引くため実時間より遅れる。
+     区間開始時刻からの経過を壁時計（Date.now）で毎tick計算し直すことでズレを防ぐ。 */
   useEffect(() => {
-    if (running) {
-      intervalRef.current = setInterval(() => {
-        setSecondsLeft((s) => {
-          if (s <= 1) {
-            clearInterval(intervalRef.current!);
-            setRunning(false);
-            setFinished(true);
-            return 0;
-          }
-          return s - 1;
-        });
-      }, 1_000);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    if (!running) return;
+    const segStartMs  = Date.now();
+    const segStartSec = secondsLeftRef.current;
+    const id = setInterval(() => {
+      const left = segStartSec - Math.floor((Date.now() - segStartMs) / 1000);
+      if (left <= 0) {
+        clearInterval(id);
+        setSecondsLeft(0);
+        setRunning(false);
+        setFinished(true);
+      } else {
+        setSecondsLeft(left);
+      }
+    }, 500);
+    return () => clearInterval(id);
   }, [running]);
 
   /* 計算値 */
@@ -870,6 +867,7 @@ export default function TravelStudyRoomScreen({
         </button>
         <button
           onClick={onExit}
+          aria-label="自習室を出る"
           className="text-white/55 hover:text-white bg-black/22 backdrop-blur-sm rounded-full p-2 transition-colors"
         >
           <X size={14} />
