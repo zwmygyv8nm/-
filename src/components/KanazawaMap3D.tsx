@@ -8,107 +8,100 @@ type Facility = {
   id: string;
   name: string;
   desc: string;
-  labelPos: [number, number, number];
+  labelPos?: [number, number, number];
   camTarget: [number, number, number];
   camPos: [number, number, number];
 };
 
+// 施設の構成・竣工年などは学校公式サイト等で確認できる情報に基づく。
+// 配置・寸法は公開されている情報からの近似で、実測ではない。
 const FACILITIES: Facility[] = [
   {
     id: "gate",
     name: "正門",
-    desc: "昭和3年(1928年)に創設者・河合常治が開いた金沢中学校を前身とし、同年に現在の泉本町へ移転。校歌に「一望十里加賀平野」と歌われる学び舎の玄関口です(イメージ)。",
-    labelPos: [0, 10, 116],
-    camTarget: [0, 4, 108],
-    camPos: [28, 26, 168],
+    desc: "昭和3年(1928年)に創設者・河合常治が開いた金沢中学校を前身とし、同年に現在の泉本町へ移転。校歌に「一望十里加賀平野」と歌われる学び舎の玄関口です。",
+    labelPos: [150, 10, 40],
+    camTarget: [142, 4, 40],
+    camPos: [205, 28, 95],
   },
   {
-    id: "honkan",
-    name: "本館(新校舎)",
-    desc: "近年竣工した明るく開放的な新校舎。各教室にプロジェクターとWi-Fiを完備し、1階に職員室・事務室、上層階に普通教室が並びます(イメージ)。",
-    labelPos: [0, 26, 62],
-    camTarget: [0, 10, 62],
-    camPos: [55, 55, 150],
+    id: "classroom",
+    name: "教室棟(新校舎)",
+    desc: "令和4年(2022年)11月竣工の新校舎。開放的で明るい教室にプロジェクターとWi-Fiを完備し、ICTを活用した授業に対応しています。バリアフリーにも対応。",
+    labelPos: [115, 20, 15],
+    camTarget: [115, 8, 15],
+    camPos: [195, 45, 90],
   },
   {
     id: "special",
     name: "特別教室棟",
-    desc: "理科実験室・音楽室・美術室・図書室などの特別教室が入る棟。本館とは2本の渡り廊下でつながっています(イメージ)。",
-    labelPos: [0, 21, 24],
-    camTarget: [0, 8, 24],
-    camPos: [70, 55, 110],
+    desc: "令和元年(2019年)完成。理科実験室や芸術系教室などの特別教室が入り、教室棟(新校舎)とともにバリアフリーに対応した学びの空間を形成しています。",
+    labelPos: [70, 20, -25],
+    camTarget: [70, 8, -25],
+    camPos: [130, 50, 55],
   },
   {
     id: "courtyard",
     name: "中庭",
-    desc: "本館と特別教室棟に挟まれた憩いのスペース。昼休みには生徒たちが集まります(イメージ)。",
-    labelPos: [0, 8, 43],
-    camTarget: [0, 2, 43],
-    camPos: [45, 40, 95],
+    desc: "教室棟と特別教室棟に面した憩いのスペース。昼休みには生徒たちが集まります(イメージ)。",
+    labelPos: [70, 8, 2],
+    camTarget: [70, 2, 2],
+    camPos: [115, 38, 60],
   },
   {
-    id: "gym",
-    name: "体育館",
-    desc: "全校集会や式典のほか、バスケットボール部・バレーボール部などの活動拠点(イメージ)。",
-    labelPos: [-118, 26, 55],
-    camTarget: [-118, 10, 55],
-    camPos: [-55, 45, 130],
+    id: "gym1",
+    name: "第一体育館",
+    desc: "1階はウエイトトレーニング場。2階にはステージのほか、バスケットボールコート・バレーボールコートがあり、式典や集会にも使われます。",
+    labelPos: [70, 22, -70],
+    camTarget: [70, 8, -70],
+    camPos: [135, 45, -5],
   },
   {
-    id: "budokan",
-    name: "武道場",
-    desc: "柔道・剣道の授業や武道系部活動で使用する道場(イメージ)。",
-    labelPos: [-118, 15, 0],
-    camTarget: [-118, 5, 0],
-    camPos: [-60, 40, 60],
+    id: "senshinkan",
+    name: "洗心館(第2体育館)",
+    desc: "2階にバスケットボール・バドミントン・バレーボールコートを備え、1階の屋内運動場には人工芝が敷設されています。天候を問わず体育の授業や部活動に活用されています。",
+    labelPos: [0, 22, -70],
+    camTarget: [0, 8, -70],
+    camPos: [65, 48, -5],
+  },
+  {
+    id: "turf",
+    name: "人工芝グラウンド",
+    desc: "2023年11月竣工。約5,000㎡のグラウンド全面に温度抑制・帯電抑制仕様の60mmロングパイル人工芝(カラーゴムチップ充填)を敷設。サッカー・フットサルのコートを備え、体育の授業や部活動など多目的に利用されています。",
+    labelPos: [-78, 10, 20],
+    camTarget: [-78, 0, 20],
+    camPos: [-15, 70, 100],
+  },
+  {
+    id: "tennis",
+    name: "テニスコート",
+    desc: "テニス部が活動するコート(イメージ)。",
+    labelPos: [25, 8, 68],
+    camTarget: [25, 0, 68],
+    camPos: [75, 45, 125],
   },
   {
     id: "clubhouse",
     name: "部室棟",
     desc: "グラウンドに面して運動部の部室が並びます(イメージ)。",
-    labelPos: [-118, 12, -32],
-    camTarget: [-118, 4, -32],
-    camPos: [-65, 35, 25],
-  },
-  {
-    id: "cafeteria",
-    name: "食堂・売店",
-    desc: "昼休みに賑わう学生食堂と売店(イメージ)。",
-    labelPos: [118, 14, 62],
-    camTarget: [118, 5, 62],
-    camPos: [70, 40, 125],
-  },
-  {
-    id: "tennis",
-    name: "テニスコート",
-    desc: "テニス部が活動する2面のコート(イメージ)。",
-    labelPos: [118, 8, 12],
-    camTarget: [118, 0, 12],
-    camPos: [75, 50, 70],
+    labelPos: [-18, 10, -25],
+    camTarget: [-18, 3, -25],
+    camPos: [40, 35, 35],
   },
   {
     id: "parking",
     name: "駐輪場",
     desc: "自転車通学の生徒のための屋根付き駐輪場(イメージ)。",
-    labelPos: [118, 8, -20],
-    camTarget: [118, 2, -20],
-    camPos: [80, 30, 25],
+    labelPos: [112, 8, 80],
+    camTarget: [112, 2, 80],
+    camPos: [160, 30, 125],
   },
   {
-    id: "turf",
-    name: "人工芝グラウンド",
-    desc: "面積約5,000㎡の全天候型人工芝グラウンド。サッカー・フットサルのコートを備え、体育の授業や部活動など多目的に利用されています。",
-    labelPos: [-45, 10, -78],
-    camTarget: [-45, 0, -78],
-    camPos: [-15, 75, 30],
-  },
-  {
-    id: "baseball",
-    name: "野球練習場",
-    desc: "甲子園常連として知られる野球部の練習エリア。女子ソフトボール部も全国大会の常連です(イメージ)。",
-    labelPos: [115, 10, -78],
-    camTarget: [115, 0, -78],
-    camPos: [55, 70, -5],
+    id: "kawakita",
+    name: "川北グラウンド(校外)",
+    desc: "野球部の専用球場「駒谷記念球場」(通称・川北グラウンド)は能美郡川北町にある校外施設で、2025年3月には外野の人工芝化改修が竣工しました。甲子園常連の野球部がここで練習しています。※校外のためこのマップには含まれていません。",
+    camTarget: [0, 0, -5],
+    camPos: [170, 155, 245],
   },
 ];
 
@@ -195,55 +188,9 @@ function drawTennis(ctx: CanvasRenderingContext2D, w: number, h: number) {
   drawCourt(w * 0.73);
 }
 
-function drawBaseball(ctx: CanvasRenderingContext2D, w: number, h: number) {
-  ctx.fillStyle = "#55814f";
-  ctx.fillRect(0, 0, w, h);
-  const hx = 80;
-  const hy = h - 80;
-  // dirt fan from home plate toward north-east
-  ctx.fillStyle = "#b98a5a";
-  ctx.beginPath();
-  ctx.moveTo(hx, hy);
-  ctx.arc(hx, hy, 330, -Math.PI / 2, 0);
-  ctx.closePath();
-  ctx.fill();
-  // grass infield
-  ctx.fillStyle = "#5d8f55";
-  ctx.beginPath();
-  ctx.moveTo(hx + 40, hy - 40);
-  ctx.lineTo(hx + 200, hy - 40);
-  ctx.lineTo(hx + 200, hy - 200);
-  ctx.lineTo(hx + 40, hy - 200);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "rgba(255,255,255,0.95)";
-  ctx.lineWidth = 5;
-  // foul lines
-  ctx.beginPath();
-  ctx.moveTo(hx, hy);
-  ctx.lineTo(hx + 340, hy);
-  ctx.moveTo(hx, hy);
-  ctx.lineTo(hx, hy - 340);
-  ctx.stroke();
-  // base path diamond
-  ctx.strokeRect(hx + 20, hy - 240, 220, 220);
-  const base = (x: number, y: number) => {
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(x - 9, y - 9, 18, 18);
-  };
-  base(hx + 240, hy - 20); // 1st
-  base(hx + 240, hy - 240); // 2nd
-  base(hx + 20, hy - 240); // 3rd
-  base(hx + 20, hy - 20); // home
-  // pitcher circle
-  ctx.fillStyle = "#c69a68";
-  ctx.beginPath();
-  ctx.arc(hx + 130, hy - 130, 26, 0, Math.PI * 2);
-  ctx.fill();
-}
-
 export default function KanazawaMap3D() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const compassRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<MapApi | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [autoRotate, setAutoRotate] = useState(false);
@@ -396,8 +343,8 @@ export default function KanazawaMap3D() {
         opts.id
       );
       if (opts.rooftop) {
-        box(5, 1.4, 3.5, mat(0xaab3bd), opts.x + opts.w * 0.3, h + 1.1, opts.z, opts.id);
-        box(3, 1.1, 2.5, mat(0xaab3bd), opts.x - opts.w * 0.32, h + 0.95, opts.z, opts.id);
+        box(5, 1.4, 3.5, mat(0xaab3bd), opts.x, h + 1.1, opts.z + opts.d * 0.2, opts.id);
+        box(3, 1.1, 2.5, mat(0xaab3bd), opts.x, h + 0.95, opts.z - opts.d * 0.25, opts.id);
       }
     };
 
@@ -433,154 +380,174 @@ export default function KanazawaMap3D() {
       scene.add(sprite);
     };
 
-    // ---------- terrain ----------
-    groundPlane(460, 340, mat(0xaab89a), 0, -0.05, 0);
-    // campus paving
-    groundPlane(340, 250, mat(0xd8d5cc), 0, 0, 0);
-    // street along the south side
-    groundPlane(460, 14, mat(0x6b6f73), 0, 0.01, 133);
-    for (let x = -220; x < 220; x += 14) {
-      groundPlane(6, 0.6, mat(0xf2f2ea), x + 3, 0.02, 133);
-    }
+    // ==========================================================
+    // 敷地: 東側に前面道路と正門、東寄りに校舎群、
+    // 北側に体育館2棟、西側に人工芝グラウンド。
+    // ==========================================================
 
-    // approach path and rotary
-    groundPlane(14, 34, mat(0xe9e4d8), 0, 0.03, 100);
+    // ---------- terrain ----------
+    groundPlane(480, 340, mat(0xaab89a), 0, -0.05, 0);
+    // campus paving (x: -140..150, z: -105..105)
+    groundPlane(290, 210, mat(0xd8d5cc), 5, 0, 0);
+    // 前面道路(東側・南北方向)
+    groundPlane(14, 340, mat(0x6b6f73), 165, 0.01, 0);
+    for (let z = -160; z < 160; z += 14) {
+      groundPlane(0.6, 6, mat(0xf2f2ea), 165, 0.02, z + 3);
+    }
+    // 南側の道路
+    groundPlane(480, 12, mat(0x6b6f73), 0, 0.01, 118);
+
+    // 正門からのアプローチとロータリー
+    groundPlane(26, 12, mat(0xe9e4d8), 137, 0.03, 40);
     {
-      const g = new THREE.CircleGeometry(9, 40);
+      const g = new THREE.CircleGeometry(8, 40);
       disposables.push(g);
       const rot = new THREE.Mesh(g, mat(0xe9e4d8));
       rot.rotation.x = -Math.PI / 2;
-      rot.position.set(0, 0.035, 92);
+      rot.position.set(133, 0.035, 40);
       rot.receiveShadow = true;
       scene.add(rot);
-      const g2 = new THREE.CircleGeometry(3.4, 32);
+      const g2 = new THREE.CircleGeometry(3, 32);
       disposables.push(g2);
       const green = new THREE.Mesh(g2, mat(0x5f8f55));
       green.rotation.x = -Math.PI / 2;
-      green.position.set(0, 0.05, 92);
+      green.position.set(133, 0.05, 40);
       scene.add(green);
     }
 
     // ---------- gate & fence ----------
     const pillarMat = mat(0x9c9488);
-    box(2.4, 4.6, 2.4, pillarMat, -8, 2.3, 116, "gate");
-    box(2.4, 4.6, 2.4, pillarMat, 8, 2.3, 116, "gate");
-    box(0.4, 2.6, 1.6, mat(0xf5f2ea), -8, 2.6, 114.6, "gate"); // name plate
-    // school name over the gate
-    makeLabel("金沢高等学校", 0, 8.5, 116);
+    box(2.4, 4.6, 2.4, pillarMat, 150, 2.3, 33, "gate");
+    box(2.4, 4.6, 2.4, pillarMat, 150, 2.3, 47, "gate");
+    box(1.6, 2.6, 0.4, mat(0xf5f2ea), 151.4, 2.6, 34, "gate"); // name plate
+    makeLabel("金沢高等学校", 150, 8.5, 40);
 
     const fenceMat = mat(0x8a9099);
     const hedgeMat = mat(0x4c7a45);
-    // south fence (with gate gap)
-    box(150, 1.8, 0.4, fenceMat, -86, 0.9, 122);
-    box(150, 1.8, 0.4, fenceMat, 86, 0.9, 122);
-    box(148, 1.2, 1.2, hedgeMat, -86, 0.6, 120.6);
-    box(148, 1.2, 1.2, hedgeMat, 86, 0.6, 120.6);
-    // north / west / east fences
-    box(340, 1.8, 0.4, fenceMat, 0, 0.9, -122);
-    box(0.4, 1.8, 244, fenceMat, -170, 0.9, 0);
-    box(0.4, 1.8, 244, fenceMat, 170, 0.9, 0);
+    // 東側フェンス(正門の開口部あり)
+    box(0.4, 1.8, 82, fenceMat, 150, 0.9, -64);
+    box(0.4, 1.8, 52, fenceMat, 150, 0.9, 79);
+    // 北・南・西
+    box(290, 1.8, 0.4, fenceMat, 5, 0.9, -105);
+    box(290, 1.8, 0.4, fenceMat, 5, 0.9, 105);
+    box(0.4, 1.8, 210, fenceMat, -140, 0.9, 0);
+    box(288, 1.2, 1.2, hedgeMat, 5, 0.6, 103.5);
+    box(1.2, 1.2, 206, hedgeMat, -138.5, 0.6, 0);
 
     // ---------- buildings ----------
-    addBuilding({ id: "honkan", x: 0, z: 62, w: 104, d: 18, floors: 5, color: 0xf5f2ea, rooftop: true });
-    // entrance canopy
-    box(16, 0.5, 6, mat(0xb8c2cc), 0, 4.1, 74, "honkan");
-    box(13, 3.6, 0.8, glassMat, 0, 1.8, 71.4, "honkan");
+    // 教室棟(新校舎・2022): 東側で南北方向に伸びる
+    addBuilding({ id: "classroom", x: 115, z: 15, w: 18, d: 94, floors: 4, color: 0xf5f2ea, rooftop: true });
+    // 昇降口の庇
+    box(6, 0.5, 14, mat(0xb8c2cc), 103, 4.1, 40, "classroom");
+    box(0.8, 3.6, 12, glassMat, 105.6, 1.8, 40, "classroom");
 
-    addBuilding({ id: "special", x: 0, z: 24, w: 84, d: 16, floors: 4, color: 0xefe9dc, rooftop: true });
-    // connecting corridors
-    addBuilding({ id: "special", x: -30, z: 43, w: 6, d: 20, floors: 2, color: 0xe6e0d4 });
-    addBuilding({ id: "special", x: 30, z: 43, w: 6, d: 20, floors: 2, color: 0xe6e0d4 });
+    // 特別教室棟(2019): 教室棟の北端から西へ伸びてL字を形成
+    addBuilding({ id: "special", x: 70, z: -25, w: 72, d: 16, floors: 4, color: 0xefe9dc, rooftop: true });
 
-    // courtyard
-    groundPlane(44, 16, mat(0x6f9a5e), 0, 0.03, 43, "courtyard");
+    // 中庭
+    groundPlane(58, 22, mat(0x6f9a5e), 70, 0.03, 2, "courtyard");
 
-    // gymnasium: walls + vaulted roof
-    box(46, 9, 60, mat(0xe3e0d8), -118, 4.5, 55, "gym");
+    // 第一体育館: かまぼこ屋根
+    box(42, 9, 30, mat(0xe3e0d8), 70, 4.5, -70, "gym1");
     {
-      const bandG = new THREE.BoxGeometry(46.2, 1.4, 60.2);
+      const bandG = new THREE.BoxGeometry(42.2, 1.4, 30.2);
       disposables.push(bandG);
       const band = new THREE.Mesh(bandG, glassMat);
-      band.position.set(-118, 6.6, 55);
-      band.userData.facilityId = "gym";
+      band.position.set(70, 6.6, -70);
+      band.userData.facilityId = "gym1";
       pickables.push(band);
       scene.add(band);
       const shape = new THREE.Shape();
-      shape.absarc(0, 0, 23, 0, Math.PI, false);
+      shape.absarc(0, 0, 15, 0, Math.PI, false);
       shape.closePath();
-      const roofG = new THREE.ExtrudeGeometry(shape, { depth: 60, bevelEnabled: false });
-      roofG.translate(0, 0, -30);
+      const roofG = new THREE.ExtrudeGeometry(shape, { depth: 42, bevelEnabled: false });
+      roofG.rotateY(Math.PI / 2);
+      roofG.translate(-21, 0, 0);
       disposables.push(roofG);
       const roof = new THREE.Mesh(roofG, mat(0x9fb3c8));
-      roof.position.set(-118, 9, 55);
+      roof.position.set(70, 9, -70);
       roof.castShadow = true;
       roof.receiveShadow = true;
-      roof.userData.facilityId = "gym";
+      roof.userData.facilityId = "gym1";
       pickables.push(roof);
       scene.add(roof);
     }
-    box(8, 3.2, 0.8, glassMat, -118, 1.6, 85.4, "gym"); // gym entrance
+    box(8, 3.2, 0.8, glassMat, 70, 1.6, -54.6, "gym1");
 
-    // budokan (martial arts hall) with dark pitched-style roof
-    box(36, 7, 24, mat(0xece6d8), -118, 3.5, 0, "budokan");
-    box(38, 0.9, 26, mat(0x4a4f57), -118, 7.45, 0, "budokan");
-    box(38, 0.8, 14, mat(0x4a4f57), -118, 8.2, 0, "budokan");
+    // 洗心館(第2体育館): 2階建ての大型アリーナ棟
+    box(56, 15, 36, mat(0xece8dd), 0, 7.5, -70, "senshinkan");
+    {
+      const bandG = new THREE.BoxGeometry(56.2, 1.6, 36.2);
+      disposables.push(bandG);
+      for (const y of [3.2, 11.5]) {
+        const band = new THREE.Mesh(bandG, glassMat);
+        band.position.set(0, y, -70);
+        band.userData.facilityId = "senshinkan";
+        pickables.push(band);
+        scene.add(band);
+      }
+    }
+    box(57.5, 0.6, 37.5, mat(0x8d99a6), 0, 15.3, -70, "senshinkan");
+    box(10, 3.4, 0.8, glassMat, 0, 1.7, -51.6, "senshinkan");
 
-    addBuilding({ id: "clubhouse", x: -118, z: -32, w: 40, d: 10, floors: 2, color: 0xdcd6c8 });
-    addBuilding({ id: "cafeteria", x: 118, z: 62, w: 28, d: 18, floors: 2, color: 0xf0ebdf });
+    // 部室棟(グラウンド東縁・南北方向)
+    addBuilding({ id: "clubhouse", x: -18, z: -25, w: 10, d: 44, floors: 2, color: 0xdcd6c8 });
 
-    // tennis courts
+    // テニスコート(南側)
     {
       const tex = canvasTexture(512, 512, drawTennis);
       disposables.push(tex);
-      groundPlane(36, 34, mat(0xffffff, { map: tex }), 118, 0.03, 12, "tennis");
+      groundPlane(36, 32, mat(0xffffff, { map: tex }), 25, 0.03, 68, "tennis");
     }
 
-    // bicycle parking: posts + roof slab
+    // 駐輪場(正門の南、教室棟の南端付近)
     {
       const postG = new THREE.CylinderGeometry(0.18, 0.18, 2.6, 8);
       disposables.push(postG);
       const postMat = mat(0x7d848c);
-      for (const px of [-16, 0, 16]) {
-        for (const pz of [-4, 4]) {
+      for (const px of [-13, 0, 13]) {
+        for (const pz of [-3.5, 3.5]) {
           const p = new THREE.Mesh(postG, postMat);
-          p.position.set(118 + px, 1.3, -20 + pz);
+          p.position.set(112 + px, 1.3, 80 + pz);
           p.castShadow = true;
           scene.add(p);
         }
       }
-      box(38, 0.35, 11, mat(0x98a2ad), 118, 2.75, -20, "parking");
-      groundPlane(38, 11, mat(0xc4c1b8), 118, 0.02, -20, "parking");
+      box(32, 0.35, 10, mat(0x98a2ad), 112, 2.75, 80, "parking");
+      groundPlane(32, 10, mat(0xc4c1b8), 112, 0.02, 80, "parking");
     }
 
-    // artificial turf ground
+    // 人工芝グラウンド(西側 約100m×60m ≒ 5,000㎡強)
     {
       const tex = canvasTexture(1024, 512, drawTurf);
       disposables.push(tex);
-      groundPlane(150, 80, mat(0xffffff, { map: tex }), -45, 0.04, -78, "turf");
+      groundPlane(102, 62, mat(0xffffff, { map: tex }), -80, 0.04, 20, "turf");
+      // 防球ネットの支柱
+      const poleG = new THREE.CylinderGeometry(0.2, 0.25, 12, 8);
+      disposables.push(poleG);
+      const poleMat = mat(0x5e6670);
+      for (let x = -131; x <= -29; x += 25.5) {
+        for (const z of [-11, 51]) {
+          const p = new THREE.Mesh(poleG, poleMat);
+          p.position.set(x, 6, z);
+          p.castShadow = true;
+          scene.add(p);
+        }
+      }
+      const netMat = mat(0x3a4a3f, { transparent: true, opacity: 0.28 });
+      box(102, 10, 0.15, netMat, -80, 6, -11).castShadow = false;
+      box(102, 10, 0.15, netMat, -80, 6, 51).castShadow = false;
     }
 
-    // baseball practice field
-    {
-      const tex = canvasTexture(512, 512, drawBaseball);
-      disposables.push(tex);
-      groundPlane(90, 80, mat(0xffffff, { map: tex }), 115, 0.04, -78, "baseball");
-      // backstop behind home plate (south-west corner of the field)
-      const net = mat(0x2f4f3a, { transparent: true, opacity: 0.85 });
-      const wall = box(18, 8, 0.5, net, 80, 4, -46, "baseball");
-      wall.rotation.y = -Math.PI / 4;
-      wall.castShadow = false;
-    }
-
-    // flag pole
+    // 旗ポール
     {
       const g = new THREE.CylinderGeometry(0.14, 0.18, 13, 8);
       disposables.push(g);
       const pole = new THREE.Mesh(g, mat(0xe8e8e8));
-      pole.position.set(14, 6.5, 92);
+      pole.position.set(133, 6.5, 30);
       pole.castShadow = true;
       scene.add(pole);
-      box(2.6, 1.6, 0.1, mat(0x7a1f2b), 15.4, 11.6, 92);
+      box(2.6, 1.6, 0.1, mat(0x7a1f2b), 133, 11.6, 28.6);
     }
 
     // ---------- trees ----------
@@ -608,16 +575,16 @@ export default function KanazawaMap3D() {
         l2.castShadow = true;
         scene.add(l2);
       };
-      for (let z = -100; z <= 100; z += 26) addTree(-163, z, 1 + ((z % 3) + 1) * 0.08);
-      for (let z = 40; z <= 110; z += 24) addTree(163, z, 1.05);
-      for (const x of [-60, -35, 35, 60]) addTree(x, 114, 0.95);
-      for (const x of [-16, -6, 6, 16]) addTree(x, 43, 0.65); // courtyard
-      for (let x = 30; x <= 150; x += 30) addTree(x, -118, 1.1);
+      for (let x = -125; x <= 135; x += 28) addTree(x, 99, 1 + ((x % 3) + 1) * 0.07);
+      for (let z = -95; z <= -20; z += 24) addTree(-134, z, 1.05);
+      for (let z = 60; z <= 95; z += 17) addTree(144, z, 0.9);
+      for (const x of [50, 62, 78, 90]) addTree(x, 2, 0.6); // courtyard
+      for (const z of [55, 68, 81]) addTree(93, z, 0.85);
     }
 
     // ---------- labels ----------
     for (const f of FACILITIES) {
-      if (f.id === "gate") continue; // gate already has the school name plate
+      if (!f.labelPos || f.id === "gate") continue;
       makeLabel(f.name, ...f.labelPos);
     }
 
@@ -690,6 +657,14 @@ export default function KanazawaMap3D() {
         }
       }
       controls.update();
+      // 北(-z)を指すコンパス
+      if (compassRef.current) {
+        const az = Math.atan2(
+          camera.position.x - controls.target.x,
+          camera.position.z - controls.target.z
+        );
+        compassRef.current.style.transform = `rotate(${az * (180 / Math.PI)}deg)`;
+      }
       renderer.render(scene, camera);
     };
     animate();
@@ -735,13 +710,13 @@ export default function KanazawaMap3D() {
           <p className="mt-1 text-xs leading-relaxed text-gray-600">
             石川県金沢市泉本町3-111(私立)
             <br />
-            ※実際の配置・形状を簡略化したイメージ再現です。建物や地面をクリックすると施設の説明が表示されます。
+            施設の構成・竣工年は公式情報等に基づきます。配置・形状はそれを基にした近似再現で、実測の縮尺ではありません。建物や地面をクリックすると説明が表示されます。
           </p>
         </div>
       </div>
 
       {/* facility list */}
-      <div className="absolute right-4 top-4 flex max-h-[60dvh] w-44 flex-col">
+      <div className="absolute right-4 top-4 flex max-h-[62dvh] w-52 flex-col">
         <button
           onClick={() => setListOpen((v) => !v)}
           className="rounded-xl bg-[#7a1f2b] px-3 py-2 text-sm font-semibold text-white shadow-lg"
@@ -765,6 +740,14 @@ export default function KanazawaMap3D() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* compass */}
+      <div className="absolute bottom-24 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur">
+        <div ref={compassRef} className="flex flex-col items-center leading-none">
+          <span className="text-base font-bold text-[#c0392b]">▲</span>
+          <span className="text-[10px] font-bold text-gray-600">N</span>
+        </div>
       </div>
 
       {/* controls */}
