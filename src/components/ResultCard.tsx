@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { Hachi_Maru_Pop } from 'next/font/google';
 import type { SpeechRecord, UserProgress } from '../types';
 import DiaryIllustration from './DiaryIllustration';
+
+const popFont = Hachi_Maru_Pop({ weight: '400', subsets: ['latin'], preload: false });
 
 type ResultCardProps = {
   record: SpeechRecord;
@@ -66,9 +69,9 @@ function getDiaryWeather(dateStr: string): string {
   return WEATHER_WORDS[hash];
 }
 
-function formatDiaryDate(dateStr: string): string {
-  const [y, m, d] = dateStr.split('-').map((n) => parseInt(n, 10));
-  return `${y}年${m}月${d}日`;
+function getMonthDay(dateStr: string): { month: number; day: number } {
+  const [, m, d] = dateStr.split('-').map((n) => parseInt(n, 10));
+  return { month: m, day: d };
 }
 
 type SelfRating = 'easy' | 'nervous' | 'better_than_expected' | 'retry';
@@ -84,15 +87,12 @@ export default function ResultCard({ record, progress, onHome }: ResultCardProps
   const [selectedRating, setSelectedRating] = useState<SelfRating | null>(null);
   const reaction = getBuddyReaction(record, progress);
   const weather = getDiaryWeather(record.date);
+  const { month, day } = getMonthDay(record.date);
+  const diaryText = record.memo || reaction;
 
   return (
     <div className="flex flex-col gap-4 p-6 hanasu-paper border border-stone-200/70 rounded-2xl result-pop">
-      {/* 日付・天気 */}
-      <p className="text-sm text-stone-400 tracking-wide">
-        {formatDiaryDate(record.date)}　{weather}
-      </p>
-
-      {/* 絵日記の絵スペース */}
+      {/* 絵日記の絵スペース（虹・雲・お部屋のシーン） */}
       <DiaryIllustration buddyStage={progress.buddyStage} />
 
       {/* きょうの一声 / 小さな一声 */}
@@ -108,18 +108,18 @@ export default function ResultCard({ record, progress, onHome }: ResultCardProps
         </p>
       </div>
 
-      {/* ひとこと（ノート風本文） */}
-      {record.memo && (
-        <div className="hanasu-diary-note bg-white/70 border border-stone-100 rounded-lg p-4">
-          <p className="text-xs text-stone-400 mb-1.5">ひとこと</p>
-          <p className="text-sm text-stone-600 leading-relaxed">{record.memo}</p>
+      {/* 下の部分：縦書きの日記欄（月日と天気は右端に） */}
+      <div className="flex bg-white border-2 border-sky-200 rounded-xl overflow-hidden h-40">
+        <div
+          className={`flex-1 hanasu-vertical-lines hanasu-vertical-text overflow-hidden py-3 pr-2 text-stone-700 text-[15px] leading-8 ${popFont.className}`}
+        >
+          {diaryText}
         </div>
-      )}
-
-      {/* 相棒より */}
-      <div>
-        <p className="text-xs text-stone-400 mb-1">相棒より</p>
-        <p className="text-stone-600 text-sm leading-relaxed">{reaction}</p>
+        <div
+          className={`w-10 border-l border-sky-100 bg-sky-50/60 hanasu-vertical-text flex items-center justify-center text-stone-500 text-xs ${popFont.className}`}
+        >
+          {month}月{day}日（{weather}）
+        </div>
       </div>
 
       {/* 成長ポイント（控えめに） */}
