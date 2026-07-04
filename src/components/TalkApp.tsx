@@ -17,6 +17,7 @@ import { loadProgress, addRecord } from '../lib/progress';
 import type { UserProgress, SpeechRecord } from '../types';
 
 type View = 'home' | 'record' | 'result';
+type HomeTab = 'today' | 'records';
 
 const WELCOME_KEY = 'hanasu_welcome_shown';
 const CATEGORY_KEY = 'hanasu_selected_category';
@@ -38,6 +39,7 @@ function getDoneTexts(records: SpeechRecord[]): string[] {
 
 export default function TalkApp() {
   const [view, setView] = useState<View>('home');
+  const [homeTab, setHomeTab] = useState<HomeTab>('today');
   const [progress, setProgress] = useState<UserProgress | null>(null);
   const [lastRecord, setLastRecord] = useState<SpeechRecord | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -96,8 +98,8 @@ export default function TalkApp() {
 
   if (!progress) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-pink-50 flex items-center justify-center">
-        <p className="text-gray-400 text-sm">読み込み中...</p>
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <p className="text-stone-400 text-sm">読み込み中...</p>
       </div>
     );
   }
@@ -106,55 +108,89 @@ export default function TalkApp() {
     <>
       {showWelcome && <WelcomeCard onClose={handleCloseWelcome} />}
 
-      <main className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-pink-50 py-8 px-4">
-        <div className="max-w-md mx-auto flex flex-col gap-5">
+      <main className="min-h-screen bg-stone-50 py-6 px-4">
+        <div className="max-w-md mx-auto flex flex-col gap-4">
 
           {/* 小さなワードマーク */}
-          <p className="text-center text-xs text-gray-400 tracking-widest">はなす日記</p>
+          <p className="text-center text-xs text-stone-400 tracking-widest">はなす日記</p>
 
           {view === 'home' && (
             <>
               {/* ヒーローエリア：やさしい第一印象 */}
-              <div className="rounded-[2rem] bg-gradient-to-br from-amber-50 via-orange-50 to-pink-100 border border-orange-100/70 px-6 py-8 flex flex-col items-center gap-5 hanasu-fade-in">
+              <div className="rounded-2xl bg-white border border-stone-100 px-6 py-6 flex flex-col items-center gap-4 hanasu-fade-in">
                 <div className="text-center">
-                  <p className="text-gray-600 text-base font-medium leading-relaxed">
+                  <p className="text-stone-700 text-base font-medium leading-relaxed">
                     今日も、少しだけ声に出してみる？
                   </p>
-                  <p className="text-gray-400 text-xs mt-1.5 leading-relaxed">
+                  <p className="text-stone-400 text-xs mt-1 leading-relaxed">
                     5秒でも大丈夫。話せたことを残していこう。
                   </p>
                 </div>
                 <BuddyCard buddyStage={progress.buddyStage} totalXp={progress.totalXp} />
+                <div className="flex items-center gap-4 text-xs text-stone-400">
+                  <span>Lv.{progress.level}</span>
+                  <span className="text-stone-200">/</span>
+                  <span>{progress.totalXp} XP</span>
+                  <span className="text-stone-200">/</span>
+                  <span>{progress.streakDays}日連続</span>
+                </div>
               </div>
 
-              <ProgressSummary progress={progress} />
-
-              <CategorySelector selected={selectedCategory} onChange={handleCategoryChange} />
-
-              <div className="flex flex-col gap-2">
-                <DailyPromptCard prompt={currentPrompt} />
+              {/* タブ切り替え：スクロールを抑えるため、記録類は「きろく」タブへ */}
+              <div className="flex gap-1 bg-stone-100 rounded-full p-1">
                 <button
-                  onClick={handleReroll}
-                  className="text-sm text-purple-400 text-center py-2 active:scale-95 transition-transform"
+                  onClick={() => setHomeTab('today')}
+                  className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${
+                    homeTab === 'today' ? 'bg-white text-stone-700 shadow-sm' : 'text-stone-400'
+                  }`}
                 >
-                  別のお題にする →
+                  きょう
+                </button>
+                <button
+                  onClick={() => setHomeTab('records')}
+                  className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${
+                    homeTab === 'records' ? 'bg-white text-stone-700 shadow-sm' : 'text-stone-400'
+                  }`}
+                >
+                  きろく
                 </button>
               </div>
 
-              <button
-                onClick={() => setView('record')}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-400 to-orange-300 text-white font-medium text-base shadow-md active:scale-95 transition-transform"
-              >
-                このお題で話してみる
-              </button>
+              {homeTab === 'today' && (
+                <>
+                  <CategorySelector selected={selectedCategory} onChange={handleCategoryChange} />
 
-              <WeeklyRecap records={progress.records} />
-              <BadgeList badges={progress.badges} />
-              <HistoryCalendar records={progress.records} />
+                  <div className="flex flex-col gap-2">
+                    <DailyPromptCard prompt={currentPrompt} />
+                    <button
+                      onClick={handleReroll}
+                      className="text-sm text-rose-500 text-center py-2 active:scale-95 transition-transform"
+                    >
+                      別のお題にする →
+                    </button>
+                  </div>
 
-              <p className="text-xs text-gray-300 text-center leading-relaxed pb-4">
-                音声ファイルは保存されません。記録されるのは秒数や達成日だけです。
-              </p>
+                  <button
+                    onClick={() => setView('record')}
+                    className="w-full py-4 rounded-xl bg-gradient-to-r from-rose-400 to-rose-500 text-white font-medium text-base shadow-sm active:scale-95 transition-transform"
+                  >
+                    このお題で話してみる
+                  </button>
+
+                  <p className="text-xs text-stone-300 text-center leading-relaxed pb-2">
+                    音声ファイルは保存されません。記録されるのは秒数や達成日だけです。
+                  </p>
+                </>
+              )}
+
+              {homeTab === 'records' && (
+                <>
+                  <ProgressSummary progress={progress} />
+                  <WeeklyRecap records={progress.records} />
+                  <BadgeList badges={progress.badges} />
+                  <HistoryCalendar records={progress.records} />
+                </>
+              )}
             </>
           )}
 
@@ -162,7 +198,7 @@ export default function TalkApp() {
             <>
               <button
                 onClick={() => setView('home')}
-                className="text-sm text-gray-400 self-start active:scale-95 transition-transform"
+                className="text-sm text-stone-400 self-start active:scale-95 transition-transform"
               >
                 ← ホームに戻る
               </button>

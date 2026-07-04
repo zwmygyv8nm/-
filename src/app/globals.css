@@ -60,8 +60,8 @@ body {
 
 /* 録音前の「いつでも話しかけていいよ」という、急かさないやわらかい光 */
 @keyframes hanasu-soft-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 146, 0.35); }
-  50% { box-shadow: 0 0 0 9px rgba(251, 191, 146, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.22); }
+  50% { box-shadow: 0 0 0 9px rgba(244, 63, 94, 0); }
 }
 .hanasu-soft-glow {
   animation: hanasu-soft-glow 2.4s ease-in-out infinite;
@@ -73,8 +73,8 @@ body {
     to bottom,
     transparent 0,
     transparent 27px,
-    rgba(217, 119, 6, 0.08) 27px,
-    rgba(217, 119, 6, 0.08) 28px
+    rgba(120, 113, 108, 0.07) 27px,
+    rgba(120, 113, 108, 0.07) 28px
   );
 }
 

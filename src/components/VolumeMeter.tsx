@@ -20,13 +20,13 @@ export default function VolumeMeter({ volumeLevel }: VolumeMeterProps) {
               key={i}
               style={{ height: `${height}px` }}
               className={`w-2 rounded-full transition-all duration-75 ${
-                active ? 'bg-rose-200' : 'bg-rose-50'
+                active ? 'bg-rose-300' : 'bg-stone-100'
               }`}
             />
           );
         })}
       </div>
-      <p className="text-xs text-gray-300">マイクの反応（参考表示・採点には使いません）</p>
+      <p className="text-xs text-stone-300">マイクの反応（参考表示・採点には使いません）</p>
     </div>
   );
 }
