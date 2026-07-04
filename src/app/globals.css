@@ -48,3 +48,72 @@ body {
 .result-pop {
   animation: result-pop 0.4s ease-out both;
 }
+
+/* ── じぶん自習校 ── */
+@keyframes fade-in {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out forwards;
+}
+
+/* キャラクターのゆっくり跳ね */
+@keyframes bounce-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+.animate-bounce-gentle {
+  animation: bounce-gentle 2.5s ease-in-out infinite;
+}
+
+/* キャラクターの書き書きアニメ */
+@keyframes writing-wiggle {
+  0%, 100% { transform: rotate(0deg) translateX(0); }
+  25%       { transform: rotate(-6deg) translateX(-2px); }
+  75%       { transform: rotate(4deg) translateX(2px); }
+}
+.animate-writing {
+  animation: writing-wiggle 0.55s ease-in-out infinite;
+}
+
+/* 教室グラデーション背景 */
+.classroom-bg {
+  background:
+    /* 窓からの夕日ゴールド光 */
+    radial-gradient(ellipse at 22% 32%, rgba(255, 185, 70, 0.55) 0%, transparent 42%),
+    radial-gradient(ellipse at 68% 28%, rgba(255, 210, 110, 0.35) 0%, transparent 30%),
+    /* 机の木目感 */
+    repeating-linear-gradient(
+      92deg,
+      transparent 0px,
+      rgba(120, 80, 20, 0.06) 2px,
+      transparent 4px,
+      transparent 60px
+    ),
+    /* 縦方向のベースグラデーション */
+    linear-gradient(
+      to bottom,
+      #0e0a05  0%,   /* 天井 */
+      #1e1408  8%,   /* 上壁 */
+      #5c3e12 20%,   /* 壁・窓枠 */
+      #b07018 30%,   /* 窓の明るい部分 */
+      #e09830 38%,   /* 夕日ピーク */
+      #c47c20 44%,   /* 窓下部 */
+      #7a5218 52%,   /* 教室奥 */
+      #8a6420 58%,   /* 中景の机列 */
+      #6b4c14 66%,   /* 手前の机列 */
+      #5a3c0e 74%,   /* 机の縁 */
+      #4a3008 84%,   /* 自分の机面 */
+      #3c2606  92%,  /* 手前の机 */
+      #2e1e04 100%   /* 最前部 */
+    );
+}
