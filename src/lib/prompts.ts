@@ -125,3 +125,76 @@ export function getSmartPrompt(
   const list = candidates.length > 0 ? candidates : pool;
   return list[Math.floor(Math.random() * list.length)];
 }
+
+export function findPromptById(id: string): Prompt | undefined {
+  return prompts.find((p) => p.id === id);
+}
+
+// --- 今日のお題を当日中は固定するための仕組み ---
+
+const TODAY_PROMPT_KEY = 'hanasu_today_prompt';
+
+type TodayPromptLock = {
+  date: string; // YYYY-MM-DD
+  category: string | null;
+  promptId: string;
+};
+
+function todayDateStr(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function loadTodayPromptLock(): TodayPromptLock | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(TODAY_PROMPT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed?.date !== 'string' || typeof parsed?.promptId !== 'string') return null;
+    return {
+      date: parsed.date,
+      category: typeof parsed.category === 'string' ? parsed.category : null,
+      promptId: parsed.promptId,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function saveTodayPromptLock(category: string | null, promptId: string): void {
+  if (typeof window === 'undefined') return;
+  const lock: TodayPromptLock = { date: todayDateStr(), category, promptId };
+  localStorage.setItem(TODAY_PROMPT_KEY, JSON.stringify(lock));
+}
+
+/**
+ * 当日中は同じお題を返す。日付が変わった場合・カテゴリが変わった場合・
+ * ロックが壊れている場合のみ、新しいお題を選んでロックし直す。
+ */
+export function getTodayFixedPrompt(category: string | null, doneTexts: string[]): Prompt {
+  const lock = loadTodayPromptLock();
+  const today = todayDateStr();
+
+  if (lock && lock.date === today && lock.category === category) {
+    const found = findPromptById(lock.promptId);
+    if (found) return found;
+  }
+
+  const prompt = getSmartPrompt(category, doneTexts);
+  saveTodayPromptLock(category, prompt.id);
+  return prompt;
+}
+
+/**
+ * 「別のお題にする」用。ユーザーの明示操作でのみ当日のお題を更新する。
+ */
+export function rerollTodayPrompt(
+  category: string | null,
+  doneTexts: string[],
+  excludeId: string
+): Prompt {
+  const prompt = getSmartPrompt(category, doneTexts, excludeId);
+  saveTodayPromptLock(category, prompt.id);
+  return prompt;
+}

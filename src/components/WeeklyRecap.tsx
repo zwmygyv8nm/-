@@ -45,9 +45,18 @@ export default function WeeklyRecap({ records }: WeeklyRecapProps) {
     );
   }
 
-  const activeDays = new Set(weekRecords.map((r) => r.date)).size;
+  const activeDates = new Set(weekRecords.map((r) => r.date));
+  const activeDays = activeDates.size;
   const totalSec = weekRecords.reduce((sum, r) => sum + r.durationSec, 0);
   const maxSec = Math.max(...weekRecords.map((r) => r.durationSec));
+
+  // 声を出した日を「記録できた日（clear）」と「小さな一声の日（tiny）」に分ける
+  let clearDays = 0;
+  for (const date of activeDates) {
+    const hasClear = weekRecords.some((r) => r.date === date && r.cleared);
+    if (hasClear) clearDays += 1;
+  }
+  const tinyDays = activeDays - clearDays;
 
   // カテゴリ別集計
   const catCount: Record<string, number> = {};
@@ -99,7 +108,9 @@ export default function WeeklyRecap({ records }: WeeklyRecapProps) {
       {/* 一言まとめ */}
       <p className="text-sm text-gray-400 leading-relaxed bg-pink-50 rounded-2xl px-4 py-3">
         今週は{activeDays}日、声を出せました。
-        {maxSec > 0 && `一番長く話せたのは${formatSec(maxSec)}でした。`}
+        {tinyDays > 0
+          ? `そのうち${clearDays}日は記録までできました。`
+          : maxSec > 0 && `一番長く話せたのは${formatSec(maxSec)}でした。`}
       </p>
     </div>
   );

@@ -71,7 +71,7 @@ function getAchievementLabel(sec: number): { label: string; color: string } {
   if (sec >= 30) return { label: 'しっかり話せた',   color: 'text-blue-600 bg-blue-50 border-blue-200' };
   if (sec >= 10) return { label: '今日の練習クリア', color: 'text-green-600 bg-green-50 border-green-200' };
   if (sec >= 5)  return { label: '一声できた',       color: 'text-pink-600 bg-pink-50 border-pink-200' };
-  return                { label: '声を出せました',   color: 'text-yellow-600 bg-yellow-50 border-yellow-200' };
+  return                { label: '小さな一声',       color: 'text-yellow-600 bg-yellow-50 border-yellow-200' };
 }
 
 type SelfRating = 'easy' | 'nervous' | 'better_than_expected' | 'retry';
@@ -120,6 +120,14 @@ export default function ResultCard({ record, progress, onHome }: ResultCardProps
       <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-4 text-center">
         <p className="text-gray-500 text-sm leading-relaxed">{reaction}</p>
       </div>
+
+      {/* 一言メモ（あれば表示） */}
+      {record.memo && (
+        <div className="bg-gray-50 rounded-2xl p-4">
+          <p className="text-xs text-gray-400 mb-1">今日残したメモ</p>
+          <p className="text-sm text-gray-600 leading-relaxed">{record.memo}</p>
+        </div>
+      )}
 
       {/* 自己評価（任意） */}
       <div>

@@ -54,7 +54,8 @@ const BADGE_DEFINITIONS: { id: string; label: string; check: (p: UserProgress) =
   {
     id: 'first_voice',
     label: 'はじめの一声',
-    check: (p) => p.records.length >= 1,
+    // 小さな一声（5秒未満）はバッジ判定に影響させない
+    check: (p) => p.records.some((r) => r.cleared),
   },
   {
     id: 'streak_3',

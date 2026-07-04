@@ -11,7 +11,7 @@ import HistoryCalendar from '../components/HistoryCalendar';
 import WelcomeCard from '../components/WelcomeCard';
 import CategorySelector from '../components/CategorySelector';
 import WeeklyRecap from '../components/WeeklyRecap';
-import { getTodayPrompt, getSmartPrompt } from '../lib/prompts';
+import { getTodayPrompt, getTodayFixedPrompt, rerollTodayPrompt } from '../lib/prompts';
 import type { Prompt } from '../lib/prompts';
 import { loadProgress, addRecord } from '../lib/progress';
 import type { UserProgress, SpeechRecord } from '../types';
@@ -54,7 +54,7 @@ export default function Home() {
     const savedCat = loadCategory();
     setSelectedCategory(savedCat);
     const doneTexts = getDoneTexts(prog.records);
-    setCurrentPrompt(getSmartPrompt(savedCat, doneTexts));
+    setCurrentPrompt(getTodayFixedPrompt(savedCat, doneTexts));
   }, []);
 
   const handleCloseWelcome = useCallback(() => {
@@ -67,14 +67,14 @@ export default function Home() {
       setSelectedCategory(cat);
       saveCategory(cat);
       const doneTexts = getDoneTexts(progress?.records ?? []);
-      setCurrentPrompt(getSmartPrompt(cat, doneTexts));
+      setCurrentPrompt(getTodayFixedPrompt(cat, doneTexts));
     },
     [progress]
   );
 
   const handleReroll = useCallback(() => {
     const doneTexts = getDoneTexts(progress?.records ?? []);
-    setCurrentPrompt(getSmartPrompt(selectedCategory, doneTexts, currentPrompt.id));
+    setCurrentPrompt(rerollTodayPrompt(selectedCategory, doneTexts, currentPrompt.id));
   }, [selectedCategory, currentPrompt.id, progress]);
 
   const handleComplete = useCallback((record: SpeechRecord) => {
@@ -87,9 +87,9 @@ export default function Home() {
   const handleHome = useCallback(() => {
     const prog = loadProgress();
     setProgress(prog);
-    // 記録後はお題をリフレッシュ
+    // 当日・同カテゴリならお題は固定されたまま変わらない
     const doneTexts = getDoneTexts(prog.records);
-    setCurrentPrompt(getSmartPrompt(selectedCategory, doneTexts));
+    setCurrentPrompt(getTodayFixedPrompt(selectedCategory, doneTexts));
     setLastRecord(null);
     setView('home');
   }, [selectedCategory]);
@@ -162,7 +162,6 @@ export default function Home() {
               <RecorderPanel
                 prompt={currentPrompt}
                 onComplete={handleComplete}
-                onSkip={handleHome}
               />
             </>
           )}
