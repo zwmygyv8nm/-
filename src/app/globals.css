@@ -49,6 +49,35 @@ body {
   animation: result-pop 0.4s ease-out both;
 }
 
+/* ── はなす日記 追加UI ── */
+@keyframes hanasu-fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hanasu-fade-in {
+  animation: hanasu-fade-in-up 0.5s ease-out both;
+}
+
+/* 録音前の「いつでも話しかけていいよ」という、急かさないやわらかい光 */
+@keyframes hanasu-soft-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 146, 0.35); }
+  50% { box-shadow: 0 0 0 9px rgba(251, 191, 146, 0); }
+}
+.hanasu-soft-glow {
+  animation: hanasu-soft-glow 2.4s ease-in-out infinite;
+}
+
+/* 日記の便箋のような、ごくうっすらとした罫線 */
+.hanasu-diary-note {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 27px,
+    rgba(217, 119, 6, 0.08) 27px,
+    rgba(217, 119, 6, 0.08) 28px
+  );
+}
+
 /* ── じぶん自習校 ── */
 @keyframes fade-in {
   from { opacity: 0; transform: scale(0.5); }

@@ -10,7 +10,7 @@ export default function VolumeMeter({ volumeLevel }: VolumeMeterProps) {
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="text-xs text-gray-400">声の反応</p>
+      {/* 評価ではなく「反応」として見えるよう、単一色で高さのみ変化させる */}
       <div className="flex items-end gap-1 h-8">
         {Array.from({ length: bars }).map((_, i) => {
           const active = i < filled;
@@ -20,19 +20,13 @@ export default function VolumeMeter({ volumeLevel }: VolumeMeterProps) {
               key={i}
               style={{ height: `${height}px` }}
               className={`w-2 rounded-full transition-all duration-75 ${
-                active
-                  ? i < bars * 0.5
-                    ? 'bg-green-300'
-                    : i < bars * 0.8
-                    ? 'bg-yellow-300'
-                    : 'bg-pink-300'
-                  : 'bg-gray-100'
+                active ? 'bg-rose-200' : 'bg-rose-50'
               }`}
             />
           );
         })}
       </div>
-      <p className="text-xs text-gray-300">マイクの反応（参考表示）</p>
+      <p className="text-xs text-gray-300">マイクの反応（参考表示・採点には使いません）</p>
     </div>
   );
 }

@@ -96,7 +96,7 @@ export default function TalkApp() {
 
   if (!progress) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-pink-50 flex items-center justify-center">
         <p className="text-gray-400 text-sm">読み込み中...</p>
       </div>
     );
@@ -106,20 +106,27 @@ export default function TalkApp() {
     <>
       {showWelcome && <WelcomeCard onClose={handleCloseWelcome} />}
 
-      <main className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 py-10 px-4">
-        <div className="max-w-md mx-auto flex flex-col gap-6">
+      <main className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-pink-50 py-8 px-4">
+        <div className="max-w-md mx-auto flex flex-col gap-5">
 
-          {/* ヘッダー */}
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-700 tracking-wide">はなす日記</h1>
-            <p className="text-xs text-gray-400 mt-2">
-              毎日1分。お題に答えて、話す練習を少しずつ。
-            </p>
-          </div>
+          {/* 小さなワードマーク */}
+          <p className="text-center text-xs text-gray-400 tracking-widest">はなす日記</p>
 
           {view === 'home' && (
             <>
-              <BuddyCard buddyStage={progress.buddyStage} totalXp={progress.totalXp} />
+              {/* ヒーローエリア：やさしい第一印象 */}
+              <div className="rounded-[2rem] bg-gradient-to-br from-amber-50 via-orange-50 to-pink-100 border border-orange-100/70 px-6 py-8 flex flex-col items-center gap-5 hanasu-fade-in">
+                <div className="text-center">
+                  <p className="text-gray-600 text-base font-medium leading-relaxed">
+                    今日も、少しだけ声に出してみる？
+                  </p>
+                  <p className="text-gray-400 text-xs mt-1.5 leading-relaxed">
+                    5秒でも大丈夫。話せたことを残していこう。
+                  </p>
+                </div>
+                <BuddyCard buddyStage={progress.buddyStage} totalXp={progress.totalXp} />
+              </div>
+
               <ProgressSummary progress={progress} />
 
               <CategorySelector selected={selectedCategory} onChange={handleCategoryChange} />
@@ -136,7 +143,7 @@ export default function TalkApp() {
 
               <button
                 onClick={() => setView('record')}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-400 to-purple-400 text-white font-medium text-base shadow-md active:scale-95 transition-transform"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-400 to-orange-300 text-white font-medium text-base shadow-md active:scale-95 transition-transform"
               >
                 このお題で話してみる
               </button>

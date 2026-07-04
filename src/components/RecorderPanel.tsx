@@ -60,7 +60,7 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
   }, [reset]);
 
   return (
-    <div className="flex flex-col gap-5 p-6 bg-white rounded-3xl shadow-sm border border-pink-100">
+    <div className="flex flex-col gap-5 p-6 sm:p-7 bg-white rounded-[1.75rem] shadow-sm border border-pink-100">
       {/* お題 */}
       <div>
         <p className="text-xs text-gray-400 mb-1">{prompt.category}</p>
@@ -69,7 +69,7 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
 
       {/* エラー */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-sm text-red-600">
+        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-sm text-orange-700">
           {error}
         </div>
       )}
@@ -81,13 +81,27 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
           {String(durationSec % 60).padStart(2, '0')}
         </div>
 
-        {state === 'recording' && <VolumeMeter volumeLevel={volumeLevel} />}
+        {/* 録音前の安心文 */}
+        {state === 'idle' && (
+          <p className="text-xs text-gray-400 text-center leading-relaxed">
+            うまく話さなくて大丈夫。<br />声が少し入ればOKです。
+          </p>
+        )}
+
+        {state === 'recording' && (
+          <div className="flex flex-col items-center gap-2">
+            <VolumeMeter volumeLevel={volumeLevel} />
+            <p className="text-xs text-gray-400 text-center leading-relaxed">
+              今は練習中。きれいに話さなくて大丈夫。
+            </p>
+          </div>
+        )}
 
         {/* 開始ボタン */}
         {state === 'idle' && (
           <button
             onClick={start}
-            className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 text-white text-3xl shadow-lg active:scale-95 transition-transform"
+            className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-orange-300 text-white text-3xl shadow-lg active:scale-95 transition-transform hanasu-soft-glow"
           >
             🎤
           </button>
@@ -97,7 +111,7 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
         {state === 'recording' && (
           <button
             onClick={stop}
-            className="w-20 h-20 rounded-full bg-red-400 text-white text-3xl shadow-lg active:scale-95 transition-transform recording-glow"
+            className="w-20 h-20 rounded-full bg-rose-400 text-white text-3xl shadow-lg active:scale-95 transition-transform recording-glow"
           >
             ⏹
           </button>
@@ -105,15 +119,15 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
 
         {/* 停止後 */}
         {state === 'stopped' && (
-          <div className="flex flex-col items-center gap-3 w-full">
+          <div className="flex flex-col items-center gap-3 w-full hanasu-fade-in">
             {cleared ? (
-              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-center w-full">
-                <p className="text-green-700 font-medium">声が出せました</p>
-                <p className="text-green-600 text-sm mt-1">+{xp} XP</p>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-center w-full">
+                <p className="text-emerald-700 font-medium">声が出せました</p>
+                <p className="text-emerald-600 text-sm mt-1">+{xp} XP</p>
               </div>
             ) : (
-              <div className="bg-yellow-50 rounded-2xl p-4 text-center w-full">
-                <p className="text-yellow-700 text-sm leading-relaxed">
+              <div className="bg-amber-50 rounded-2xl p-4 text-center w-full">
+                <p className="text-amber-700 text-sm leading-relaxed">
                   少しだけ声を出せました。<br />
                   もう一回やってみても、ここで終わっても、どちらでも大丈夫です。
                 </p>
@@ -123,7 +137,7 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
             {/* 一言メモ（任意） */}
             <div className="w-full">
               <label htmlFor="memo" className="block text-xs text-gray-400 mb-1.5">
-                話したことを一言だけ残す（任意）
+                📝 話したことを一言だけ残す（任意）
               </label>
               <input
                 id="memo"
@@ -132,7 +146,7 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
                 onChange={(e) => setMemo(e.target.value.slice(0, MEMO_MAX_LENGTH))}
                 maxLength={MEMO_MAX_LENGTH}
                 placeholder="例：明日の予定を少し話した"
-                className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:border-purple-300 transition-colors"
+                className="w-full px-4 py-3 rounded-2xl border border-amber-100 bg-amber-50/40 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:border-orange-200 transition-colors"
               />
             </div>
 
@@ -146,7 +160,7 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-pink-400 to-purple-400 text-white text-sm font-medium active:scale-95 transition-transform"
+                  className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-pink-400 to-orange-300 text-white text-sm font-medium active:scale-95 transition-transform"
                 >
                   記録する
                 </button>
@@ -155,7 +169,7 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
               <>
                 <button
                   onClick={handleRetry}
-                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-pink-400 to-purple-400 text-white text-sm font-medium active:scale-95 transition-transform"
+                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-pink-400 to-orange-300 text-white text-sm font-medium active:scale-95 transition-transform"
                 >
                   もう一回だけ試す
                 </button>

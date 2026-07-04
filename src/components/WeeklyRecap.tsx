@@ -36,8 +36,8 @@ export default function WeeklyRecap({ records }: WeeklyRecapProps) {
 
   if (weekRecords.length === 0) {
     return (
-      <div className="p-5 bg-white rounded-3xl shadow-sm border border-purple-100">
-        <p className="text-xs text-gray-400 mb-2">今週のふりかえり</p>
+      <div className="p-5 sm:p-6 bg-white rounded-[1.75rem] shadow-sm border border-purple-100">
+        <p className="text-xs text-gray-400 mb-2">📔 今週のふりかえり</p>
         <p className="text-sm text-gray-400 leading-relaxed">
           まだ今週の記録がありません。今日、最初の一声を出してみましょう。
         </p>
@@ -68,20 +68,20 @@ export default function WeeklyRecap({ records }: WeeklyRecapProps) {
   const untriedCats = allCats.filter((c) => !catCount[c]);
 
   return (
-    <div className="p-5 bg-white rounded-3xl shadow-sm border border-purple-100 flex flex-col gap-4">
-      <p className="text-xs text-gray-400">今週のふりかえり</p>
+    <div className="p-5 sm:p-6 bg-white rounded-[1.75rem] shadow-sm border border-purple-100 flex flex-col gap-4">
+      <p className="text-xs text-gray-400">📔 今週のふりかえり</p>
 
       {/* サマリー 2枚 */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-pink-50 rounded-2xl p-4">
-          <p className="text-2xl font-bold text-pink-500">
+        <div className="bg-pink-50/70 rounded-2xl p-4">
+          <p className="text-2xl font-semibold text-pink-500">
             {activeDays}
             <span className="text-sm font-normal ml-1">日</span>
           </p>
           <p className="text-xs text-gray-400 mt-1">声を出せた日</p>
         </div>
-        <div className="bg-purple-50 rounded-2xl p-4">
-          <p className="text-xl font-bold text-purple-500">{formatSec(totalSec)}</p>
+        <div className="bg-sky-50/70 rounded-2xl p-4">
+          <p className="text-xl font-semibold text-sky-500">{formatSec(totalSec)}</p>
           <p className="text-xs text-gray-400 mt-1">合計の発話時間</p>
         </div>
       </div>

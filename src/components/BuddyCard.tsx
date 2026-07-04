@@ -9,6 +9,8 @@ const BUDDY_DATA = [
   {
     stage: 1,
     emoji: '🌱',
+    ring: 'from-amber-50 to-rose-50',
+    decoration: null,
     lines: [
       'はじめまして。いっしょにいるよ。',
       'どんな話でも聞いてるよ。',
@@ -20,6 +22,8 @@ const BUDDY_DATA = [
   {
     stage: 2,
     emoji: '🌿',
+    ring: 'from-emerald-50 to-teal-50',
+    decoration: '🍃',
     lines: [
       '少しずつ話せてきたね。',
       '声が聞けてうれしいよ。',
@@ -31,6 +35,8 @@ const BUDDY_DATA = [
   {
     stage: 3,
     emoji: '🌸',
+    ring: 'from-pink-50 to-fuchsia-50',
+    decoration: '✨',
     lines: [
       '声が出てきたね。いい感じだよ。',
       '毎日聞けて楽しいな。',
@@ -42,6 +48,8 @@ const BUDDY_DATA = [
   {
     stage: 4,
     emoji: '🌳',
+    ring: 'from-orange-50 to-amber-100',
+    decoration: '🌤️',
     lines: [
       '毎日話してくれてありがとう。',
       'ここまで続けてきたね。',
@@ -58,11 +66,26 @@ export default function BuddyCard({ buddyStage, totalXp }: BuddyCardProps) {
   const line = data.lines[lineIndex];
 
   return (
-    <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-3xl shadow-sm border border-pink-100">
-      <div className="w-28 h-28 rounded-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center text-6xl shadow-inner buddy-float">
-        {data.emoji}
+    <div className="flex flex-col items-center gap-4">
+      <div className="relative">
+        <div
+          className={`w-28 h-28 rounded-full bg-gradient-to-br ${data.ring} flex items-center justify-center text-6xl shadow-sm buddy-float`}
+        >
+          {data.emoji}
+        </div>
+        {data.decoration && (
+          <span className="absolute -top-1 -right-1 text-xl select-none" aria-hidden>
+            {data.decoration}
+          </span>
+        )}
       </div>
-      <p className="text-center text-gray-500 text-sm leading-relaxed px-4">{line}</p>
+
+      {/* 小さな吹き出し */}
+      <div className="relative bg-white/85 rounded-2xl px-4 py-2.5 max-w-[240px] shadow-sm">
+        <span className="absolute left-1/2 -top-1.5 -translate-x-1/2 w-3 h-3 bg-white/85 rotate-45" />
+        <p className="relative text-center text-gray-500 text-sm leading-relaxed">{line}</p>
+      </div>
+
       <p className="text-xs text-gray-300">相棒 Lv.{buddyStage}</p>
     </div>
   );
