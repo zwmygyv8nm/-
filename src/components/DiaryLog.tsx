@@ -111,10 +111,12 @@ function DiaryDetail({ record, onClose }: { record: SpeechRecord; onClose: () =>
         </div>
 
         <div className="flex bg-white border-2 border-sky-200 rounded-xl overflow-hidden h-40">
-          <div
-            className={`flex-1 hanasu-vertical-lines hanasu-vertical-text overflow-auto py-3 pr-2 text-stone-800 font-bold text-[15px] leading-8 ${popFont.className}`}
-          >
-            {record.memo || ''}
+          <div className="relative flex-1 hanasu-vertical-lines overflow-hidden">
+            <div
+              className={`hanasu-vertical-text absolute inset-0 translate-x-1.5 overflow-auto py-3 pr-2 text-stone-800 font-bold text-[15px] leading-8 ${popFont.className}`}
+            >
+              {record.memo || ''}
+            </div>
           </div>
           <div
             className={`w-12 border-l border-sky-100 bg-sky-50/60 hanasu-vertical-text flex items-center justify-center text-stone-500 text-xs ${popFont.className}`}

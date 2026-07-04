@@ -103,9 +103,9 @@ body {
     rgba(56, 132, 200, 0.15) 31px,
     rgba(56, 132, 200, 0.15) 32px
   );
-  /* 罫線がすべて各マスの左端に寄って見えたため、グリッド全体を右へ
-     少しずらし、文字がマスの中央寄りに収まるように調整する。 */
-  background-position: right -8px top;
+  /* 罫線は列の境界（32pxごと）に固定。文字側の位置は
+     .hanasu-vertical-text-offset で調整し、線自体は動かさない。 */
+  background-position: right top;
   background-attachment: local;
 }
 

@@ -117,15 +117,19 @@ export default function ResultCard({ record, progress, onHome, onMemoChange }: R
         </p>
       </div>
 
-      {/* 下の部分：縦書きの日記欄（自由に書ける・年月日と天気は右端に） */}
+      {/* 下の部分：縦書きの日記欄（自由に書ける・年月日と天気は右端に）
+          罫線は外側の枠（hanasu-vertical-lines）に固定し、
+          文字は内側で translate-x により右へ少しずらして重なりを避ける。 */}
       <div className="flex bg-white border-2 border-sky-200 rounded-xl overflow-hidden h-40">
-        <textarea
-          value={diaryText}
-          onChange={(e) => handleDiaryTextChange(e.target.value)}
-          maxLength={DIARY_TEXT_MAX_LENGTH}
-          placeholder={reaction}
-          className={`flex-1 hanasu-vertical-lines hanasu-vertical-text resize-none overflow-auto py-3 pr-2 text-stone-800 font-bold text-[15px] leading-8 bg-transparent border-none outline-none placeholder:text-stone-300 placeholder:font-normal ${popFont.className}`}
-        />
+        <div className="relative flex-1 hanasu-vertical-lines overflow-hidden">
+          <textarea
+            value={diaryText}
+            onChange={(e) => handleDiaryTextChange(e.target.value)}
+            maxLength={DIARY_TEXT_MAX_LENGTH}
+            placeholder={reaction}
+            className={`hanasu-vertical-text absolute inset-0 translate-x-1.5 resize-none overflow-auto py-3 pr-2 text-stone-800 font-bold text-[15px] leading-8 bg-transparent border-none outline-none placeholder:text-stone-300 placeholder:font-normal ${popFont.className}`}
+          />
+        </div>
         <div
           className={`w-12 border-l border-sky-100 bg-sky-50/60 hanasu-vertical-text flex items-center justify-center text-stone-500 text-xs ${popFont.className}`}
         >
