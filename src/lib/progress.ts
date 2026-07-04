@@ -127,3 +127,17 @@ export function addRecord(record: SpeechRecord): UserProgress {
   saveProgress(progress);
   return progress;
 }
+
+/**
+ * 絵日記ページの「ひとこと」欄を、あとから自由に書き直せるようにする。
+ * XP・連続記録・バッジには一切影響しない（メモ本文のみを差し替える）。
+ */
+export function updateRecordMemo(recordId: string, memo: string): UserProgress {
+  const progress = loadProgress();
+  const trimmed = memo.trim();
+  progress.records = progress.records.map((r) =>
+    r.id === recordId ? { ...r, memo: trimmed ? trimmed.slice(0, 200) : undefined } : r
+  );
+  saveProgress(progress);
+  return progress;
+}

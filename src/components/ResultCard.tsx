@@ -11,7 +11,10 @@ type ResultCardProps = {
   record: SpeechRecord;
   progress: UserProgress;
   onHome: () => void;
+  onMemoChange: (recordId: string, memo: string) => void;
 };
+
+const DIARY_TEXT_MAX_LENGTH = 200;
 
 // 状況を判定して相棒のセリフを返す
 function getBuddyReaction(record: SpeechRecord, progress: UserProgress): string {
@@ -83,12 +86,18 @@ const RATINGS: { id: SelfRating; label: string }[] = [
   { id: 'retry', label: 'もう一回やりたい' },
 ];
 
-export default function ResultCard({ record, progress, onHome }: ResultCardProps) {
+export default function ResultCard({ record, progress, onHome, onMemoChange }: ResultCardProps) {
   const [selectedRating, setSelectedRating] = useState<SelfRating | null>(null);
+  const [diaryText, setDiaryText] = useState(record.memo ?? '');
   const reaction = getBuddyReaction(record, progress);
   const weather = getDiaryWeather(record.date);
   const { year, month, day } = getYearMonthDay(record.date);
-  const diaryText = record.memo || reaction;
+
+  const handleDiaryTextChange = (value: string) => {
+    const next = value.slice(0, DIARY_TEXT_MAX_LENGTH);
+    setDiaryText(next);
+    onMemoChange(record.id, next);
+  };
 
   return (
     <div className="flex flex-col gap-4 p-6 hanasu-paper border border-stone-200/70 rounded-2xl result-pop">
@@ -108,13 +117,15 @@ export default function ResultCard({ record, progress, onHome }: ResultCardProps
         </p>
       </div>
 
-      {/* 下の部分：縦書きの日記欄（年月日と天気は右端に） */}
+      {/* 下の部分：縦書きの日記欄（自由に書ける・年月日と天気は右端に） */}
       <div className="flex bg-white border-2 border-sky-200 rounded-xl overflow-hidden h-40">
-        <div
-          className={`flex-1 hanasu-vertical-lines hanasu-vertical-text overflow-hidden py-3 pr-2 text-stone-800 font-bold text-[15px] leading-8 ${popFont.className}`}
-        >
-          {diaryText}
-        </div>
+        <textarea
+          value={diaryText}
+          onChange={(e) => handleDiaryTextChange(e.target.value)}
+          maxLength={DIARY_TEXT_MAX_LENGTH}
+          placeholder={reaction}
+          className={`flex-1 hanasu-vertical-lines hanasu-vertical-text resize-none overflow-auto py-3 pr-2 text-stone-800 font-bold text-[15px] leading-8 bg-transparent border-none outline-none placeholder:text-stone-300 placeholder:font-normal ${popFont.className}`}
+        />
         <div
           className={`w-12 border-l border-sky-100 bg-sky-50/60 hanasu-vertical-text flex items-center justify-center text-stone-500 text-xs ${popFont.className}`}
         >

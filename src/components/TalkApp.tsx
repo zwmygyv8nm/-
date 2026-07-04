@@ -13,7 +13,7 @@ import CategorySelector from './CategorySelector';
 import WeeklyRecap from './WeeklyRecap';
 import { getTodayPrompt, getTodayFixedPrompt, rerollTodayPrompt } from '../lib/prompts';
 import type { Prompt } from '../lib/prompts';
-import { loadProgress, addRecord } from '../lib/progress';
+import { loadProgress, addRecord, updateRecordMemo } from '../lib/progress';
 import type { UserProgress, SpeechRecord } from '../types';
 
 type View = 'home' | 'record' | 'result';
@@ -84,6 +84,11 @@ export default function TalkApp() {
     setProgress(updated);
     setLastRecord(record);
     setView('result');
+  }, []);
+
+  const handleMemoChange = useCallback((recordId: string, memo: string) => {
+    const updated = updateRecordMemo(recordId, memo);
+    setProgress(updated);
   }, []);
 
   const handleHome = useCallback(() => {
@@ -210,7 +215,12 @@ export default function TalkApp() {
           )}
 
           {view === 'result' && lastRecord && (
-            <ResultCard record={lastRecord} progress={progress} onHome={handleHome} />
+            <ResultCard
+              record={lastRecord}
+              progress={progress}
+              onHome={handleHome}
+              onMemoChange={handleMemoChange}
+            />
           )}
 
         </div>
