@@ -88,7 +88,13 @@ body {
 /* 絵日記の原稿用紙のような、縦書き用の罫線（マス目の縦線）
    文字は右端から leading-8（2rem=32px）ごとの列に流れるため、
    罫線もその列幅に合わせ、右端基準（to left）で1マスごとの境界に引く。
-   これにより線が文字の真ん中を突っ切らず、マスの区切りに収まる。 */
+   これにより線が文字の真ん中を突っ切らず、マスの区切りに収まる。
+
+   さらに、この要素は文字量が増えると内部スクロールする（overflow-auto）。
+   background-attachment のデフォルト（scroll）は「要素の内部スクロール」には
+   追従せず背景がその場に固定されたままになるため、スクロールした分だけ
+   罫線と文字がどんどんズレていく。local を指定して、内部スクロールにも
+   背景が追従するようにする。 */
 .hanasu-vertical-lines {
   background-image: repeating-linear-gradient(
     to left,
@@ -98,6 +104,7 @@ body {
     rgba(56, 132, 200, 0.15) 32px
   );
   background-position: right top;
+  background-attachment: local;
 }
 
 .hanasu-vertical-text {
