@@ -85,15 +85,19 @@ body {
   background-size: 14px 14px;
 }
 
-/* 絵日記の原稿用紙のような、縦書き用の罫線（マス目の縦線） */
+/* 絵日記の原稿用紙のような、縦書き用の罫線（マス目の縦線）
+   文字は右端から leading-8（2rem=32px）ごとの列に流れるため、
+   罫線もその列幅に合わせ、右端基準（to left）で1マスごとの境界に引く。
+   これにより線が文字の真ん中を突っ切らず、マスの区切りに収まる。 */
 .hanasu-vertical-lines {
   background-image: repeating-linear-gradient(
-    to right,
+    to left,
     transparent 0,
-    transparent 27px,
-    rgba(56, 132, 200, 0.2) 27px,
-    rgba(56, 132, 200, 0.2) 28px
+    transparent 31px,
+    rgba(56, 132, 200, 0.15) 31px,
+    rgba(56, 132, 200, 0.15) 32px
   );
+  background-position: right top;
 }
 
 .hanasu-vertical-text {
