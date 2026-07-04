@@ -11,6 +11,7 @@ import HistoryCalendar from './HistoryCalendar';
 import WelcomeCard from './WelcomeCard';
 import CategorySelector from './CategorySelector';
 import WeeklyRecap from './WeeklyRecap';
+import DiaryLog from './DiaryLog';
 import { getTodayPrompt, getTodayFixedPrompt, rerollTodayPrompt } from '../lib/prompts';
 import type { Prompt } from '../lib/prompts';
 import { loadProgress, addRecord, updateRecordMemo } from '../lib/progress';
@@ -194,6 +195,7 @@ export default function TalkApp() {
                   <WeeklyRecap records={progress.records} />
                   <BadgeList badges={progress.badges} />
                   <HistoryCalendar records={progress.records} />
+                  <DiaryLog records={progress.records} />
                 </>
               )}
             </>
