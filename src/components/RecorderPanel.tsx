@@ -17,6 +17,7 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
   const { state, durationSec, volumeLevel, maxVolume, avgVolume, error, start, stop, reset } =
     useRecorder();
   const [memo, setMemo] = useState('');
+  const [showTips, setShowTips] = useState(false);
 
   const cleared = durationSec >= 5;
   const xp = calcXp(durationSec);
@@ -115,6 +116,36 @@ export default function RecorderPanel({ prompt, onComplete }: RecorderPanelProps
           >
             ⏹
           </button>
+        )}
+
+        {/* 話し方のヒント（お題の話し出しサポート） */}
+        {(state === 'idle' || state === 'recording') && prompt.starter && (
+          <div className="w-full">
+            {!showTips ? (
+              <button
+                onClick={() => setShowTips(true)}
+                className="w-full text-sm text-rose-500 text-center py-1 active:scale-95 transition-transform"
+              >
+                話し方のヒントを見る
+              </button>
+            ) : (
+              <div className="hanasu-fade-in bg-stone-50 border border-stone-100 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-xs text-stone-400">話し出しサポート</p>
+                  <button
+                    onClick={() => setShowTips(false)}
+                    className="text-xs text-stone-300 active:scale-95 transition-transform"
+                  >
+                    閉じる
+                  </button>
+                </div>
+                <p className="text-sm text-stone-600 leading-relaxed">{prompt.starter}</p>
+                <p className="text-xs text-stone-400 mt-2 leading-relaxed">
+                  迷ったら、この形をそのまま読んでも大丈夫です。
+                </p>
+              </div>
+            )}
+          </div>
         )}
 
         {/* 停止後 */}
