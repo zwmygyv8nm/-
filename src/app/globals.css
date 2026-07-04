@@ -103,7 +103,9 @@ body {
     rgba(56, 132, 200, 0.15) 31px,
     rgba(56, 132, 200, 0.15) 32px
   );
-  background-position: right top;
+  /* 罫線がすべて各マスの左端に寄って見えたため、グリッド全体を右へ
+     少しずらし、文字がマスの中央寄りに収まるように調整する。 */
+  background-position: right -8px top;
   background-attachment: local;
 }
 
