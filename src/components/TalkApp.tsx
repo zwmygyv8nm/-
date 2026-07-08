@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import BuddyCard from './BuddyCard';
 import DailyPromptCard from './DailyPromptCard';
 import RecorderPanel from './RecorderPanel';
@@ -117,8 +118,16 @@ export default function TalkApp() {
       <main className="min-h-screen bg-stone-50 py-6 px-4">
         <div className="max-w-md mx-auto flex flex-col gap-4">
 
-          {/* 小さなワードマーク */}
-          <p className="text-center text-xs text-stone-400 tracking-widest">はなす日記</p>
+          {/* 小さなワードマーク + ポータルへの戻り導線 */}
+          <div className="relative">
+            <Link
+              href="/"
+              className="absolute left-0 top-1/2 -translate-y-1/2 text-xs text-stone-300 transition-colors hover:text-stone-500"
+            >
+              ← ポータル
+            </Link>
+            <p className="text-center text-xs text-stone-400 tracking-widest">はなす日記</p>
+          </div>
 
           {view === 'home' && (
             <>

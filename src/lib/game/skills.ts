@@ -1,4 +1,4 @@
-import type { CastResult, GameState, SkillId, Unit } from "@/types/game";
+import type { CastResult, GameState, SkillId, Unit, Vec2 } from "@/types/game";
 import {
   addEffect,
   applyDamage,
@@ -16,6 +16,8 @@ interface CastOpts {
   powerScale: number;
   /** シャドーイング経由の再実行かどうか。コピーは記録・CDを触らない。 */
   isCopy: boolean;
+  /** 一次関数の方向指定(プレイヤーのエイム)。未指定ならターゲット方向。 */
+  aimDir?: Vec2;
 }
 
 /**
@@ -23,7 +25,11 @@ interface CastOpts {
  * クールダウン設定と「直前スキル」の記録(シャドーイング以外)を行う。
  * 失敗時はクールダウンを消費しない。
  */
-export function castSkill(state: GameState, caster: Unit): CastResult {
+export function castSkill(
+  state: GameState,
+  caster: Unit,
+  aimDir?: Vec2,
+): CastResult {
   if (state.phase !== "playing") return { ok: false, reason: "戦闘終了" };
   if (!isAlive(caster)) return { ok: false, reason: "ダウン中" };
   if (caster.skillCooldown > 0) return { ok: false, reason: "クールダウン中" };
@@ -31,6 +37,7 @@ export function castSkill(state: GameState, caster: Unit): CastResult {
   const result = executeSkill(state, caster, caster.skillId, {
     powerScale: 1,
     isCopy: false,
+    aimDir,
   });
 
   if (result.ok) {
@@ -87,16 +94,23 @@ function copySuffix(opts: CastOpts): string {
   return opts.isCopy ? "(コピー・弱)" : "";
 }
 
-/** 数学「一次関数」: ターゲット方向へ直線ビーム。遮蔽物で止まり、線上の敵を貫通ヒット。 */
+/**
+ * 数学「一次関数」: 直線ビーム。遮蔽物で止まり、線上の敵を貫通ヒット。
+ * プレイヤーが方向指定(aimDir)した場合はその方向へ、未指定ならターゲット方向へ撃つ。
+ */
 function castLinearFunction(
   state: GameState,
   caster: Unit,
   opts: CastOpts,
 ): CastResult {
-  const target = resolveTarget(state, caster);
-  if (!target) return { ok: false, reason: "ターゲットなし" };
-
-  const dir = normalize(sub(target.pos, caster.pos));
+  let dir: Vec2;
+  if (opts.aimDir && Math.hypot(opts.aimDir.x, opts.aimDir.z) > 1e-6) {
+    dir = normalize(opts.aimDir);
+  } else {
+    const target = resolveTarget(state, caster);
+    if (!target) return { ok: false, reason: "ターゲットなし" };
+    dir = normalize(sub(target.pos, caster.pos));
+  }
   caster.facing = yawFromDir(dir);
   const end = traceBeam(state.grid, caster.pos, dir, SKILL_PARAMS.beamMaxLength);
   const damage = SKILL_PARAMS.beamDamage * opts.powerScale;

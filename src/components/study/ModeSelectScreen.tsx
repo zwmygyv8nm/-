@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AppMode } from "@/lib/study/storage";
 
 interface Props {
@@ -47,6 +48,14 @@ export default function ModeSelectScreen({ onSelect }: Props) {
     <div className="fixed inset-0 z-50 overflow-y-auto flex flex-col items-center justify-center px-5 py-10 gap-8"
       style={{ background: "linear-gradient(160deg, #0f0c29, #1a1040 40%, #0d1b2a)" }}
     >
+      {/* ポータルへの戻り導線 */}
+      <Link
+        href="/"
+        className="absolute left-4 top-4 text-xs text-white/30 transition-colors hover:text-white/60"
+      >
+        ← ポータル
+      </Link>
+
       {/* App title */}
       <div className="text-center">
         <div className="text-5xl mb-3 drop-shadow-lg">🏫</div>

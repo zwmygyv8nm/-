@@ -7,7 +7,7 @@ import { getAllies, getSim, useGameStore } from "@/lib/game/store";
 
 const SKILL_DESC: Record<SkillId, string> = {
   shadowing: "直前に味方が使ったスキルを弱体コピー",
-  linearFunction: "ターゲット方向へ貫通ビーム",
+  linearFunction: "押してから撃ちたい方向をクリック",
   dokkai: "敵の狙いを数秒間見抜く",
   knockback: "近くの敵を押し出す",
 };
@@ -21,6 +21,8 @@ export function SkillPanel() {
   const phase = useGameStore((s) => s.phase);
   const allyStatusKey = useGameStore((s) => s.allyStatusKey);
   const enqueueSkill = useGameStore((s) => s.enqueueSkill);
+  const aimingUnitId = useGameStore((s) => s.aimingUnitId);
+  const setAiming = useGameStore((s) => s.setAiming);
 
   const allies = useMemo(() => {
     // リセット(epoch変化)時に最新のユニット参照へ取り直す。
@@ -69,22 +71,37 @@ export function SkillPanel() {
           const status = statuses[i] ?? "cooldown";
           const ready = status === "ready" && phase === "playing";
           const down = status === "down";
+          const aiming = aimingUnitId === u.id;
+          const handleClick = () => {
+            if (u.skillId === "linearFunction") {
+              // 一次関数は方向指定: 1回目でエイム開始、もう一度押すとキャンセル。
+              setAiming(aiming ? null : u.id);
+            } else {
+              enqueueSkill(u.id);
+            }
+          };
           return (
             <button
               key={u.id}
               type="button"
               disabled={!ready}
-              onClick={() => enqueueSkill(u.id)}
+              onClick={handleClick}
               className={`pointer-events-auto flex-1 rounded-2xl border-2 bg-slate-900/85 p-2.5 text-left backdrop-blur transition sm:p-3 ${
                 ready
                   ? "cursor-pointer hover:bg-slate-800/90 active:scale-[0.98]"
                   : "cursor-not-allowed opacity-70"
-              } ${down ? "grayscale" : ""}`}
+              } ${down ? "grayscale" : ""} ${aiming ? "animate-pulse" : ""}`}
               style={{
-                borderColor: ready ? SUBJECT_COLOR[u.subject] : "#334155",
-                boxShadow: ready
-                  ? `0 0 14px ${SUBJECT_COLOR[u.subject]}55`
-                  : "none",
+                borderColor: aiming
+                  ? "#ffffff"
+                  : ready
+                    ? SUBJECT_COLOR[u.subject]
+                    : "#334155",
+                boxShadow: aiming
+                  ? `0 0 20px ${SUBJECT_COLOR[u.subject]}`
+                  : ready
+                    ? `0 0 14px ${SUBJECT_COLOR[u.subject]}55`
+                    : "none",
               }}
             >
               <div className="flex items-center justify-between gap-1">

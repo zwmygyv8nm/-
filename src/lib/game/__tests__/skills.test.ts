@@ -50,6 +50,20 @@ describe("一次関数(数学)", () => {
     expect(res.ok).toBe(true); // 発動自体はする(手前で止まる)
     expect(enemyTarget.hp).toBe(before);
   });
+
+  it("方向指定(エイム)するとターゲット方向ではなく指定方向へ撃つ", () => {
+    // 指定方向(+z)上に別の敵を置き、現在のターゲットは線から外れた位置に置く。
+    const aimVictim = state.units.find((u) => u.id === "enemy-physics")!;
+    aimVictim.pos = { x: -3.5, z: 3.5 }; // math(-3.5,-0.5) の真下(+z)
+    const targetBefore = enemyTarget.hp; // ターゲットは (3.5,-0.5) = +x 方向
+    const victimBefore = aimVictim.hp;
+
+    const res = castSkill(state, math, { x: 0, z: 1 });
+    expect(res.ok).toBe(true);
+    expect(aimVictim.hp).toBe(victimBefore - SKILL_PARAMS.beamDamage);
+    expect(enemyTarget.hp).toBe(targetBefore); // ターゲットには当たらない
+    expect(state.lastSkillByTeam.ally?.skillId).toBe("linearFunction");
+  });
 });
 
 describe("シャドーイング(英語)", () => {
