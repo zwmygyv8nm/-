@@ -9,6 +9,7 @@ export function BattleHud() {
   const aliveAllies = useGameStore((s) => s.aliveAllies);
   const aliveEnemies = useGameStore((s) => s.aliveEnemies);
   const notice = useGameStore((s) => s.notice);
+  const aiming = useGameStore((s) => s.aimingUnitId !== null);
   const reset = useGameStore((s) => s.reset);
 
   return (
@@ -50,6 +51,13 @@ export function BattleHud() {
       {notice && (
         <div className="mx-auto mt-1 max-w-[90%] rounded-full bg-slate-900/80 px-4 py-1.5 text-xs text-amber-200 backdrop-blur sm:text-sm">
           {notice}
+        </div>
+      )}
+
+      {/* 一次関数の方向指定ガイド */}
+      {aiming && (
+        <div className="mx-auto mt-2 animate-pulse rounded-full bg-emerald-500/90 px-4 py-1.5 text-xs font-bold text-slate-900 sm:text-sm">
+          一次関数: 撃ちたい方向をクリック(カードをもう一度押すとキャンセル)
         </div>
       )}
 

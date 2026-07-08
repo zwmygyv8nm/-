@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GamePhase, GameState, Unit } from "@/types/game";
+import type { GamePhase, GameState, Unit, Vec2 } from "@/types/game";
 import { aliveCount, isAlive } from "./combat";
 import { createInitialState } from "./defs";
 
@@ -33,7 +33,10 @@ interface ReactiveSnapshot {
 }
 
 interface GameUiStore extends ReactiveSnapshot {
-  enqueueSkill: (unitId: string) => void;
+  /** 一次関数の方向指定モード中のユニットid。null = 非エイム。 */
+  aimingUnitId: string | null;
+  enqueueSkill: (unitId: string, dir?: Vec2) => void;
+  setAiming: (unitId: string | null) => void;
   reset: () => void;
 }
 
@@ -58,15 +61,20 @@ function computeSnapshot(epoch: number): ReactiveSnapshot {
 
 export const useGameStore = create<GameUiStore>((set, get) => ({
   ...computeSnapshot(0),
+  aimingUnitId: null,
 
-  enqueueSkill: (unitId: string) => {
+  enqueueSkill: (unitId: string, dir?: Vec2) => {
     // 実処理は次のtickの先頭で行う(入力とロジックの合流点を1箇所にする)。
-    sim.inputQueue.push(unitId);
+    sim.inputQueue.push({ unitId, dir });
+  },
+
+  setAiming: (unitId: string | null) => {
+    set({ aimingUnitId: unitId });
   },
 
   reset: () => {
     sim = createInitialState();
-    set(computeSnapshot(get().epoch + 1));
+    set({ ...computeSnapshot(get().epoch + 1), aimingUnitId: null });
   },
 }));
 
@@ -77,13 +85,24 @@ export const useGameStore = create<GameUiStore>((set, get) => ({
 export function syncReactiveState(): void {
   const prev = useGameStore.getState();
   const next = computeSnapshot(prev.epoch);
+
+  // エイム中のユニットが撃った(CDが入った)・ダウンした・戦闘が終わったら自動解除。
+  let aimingUnitId = prev.aimingUnitId;
+  if (aimingUnitId !== null) {
+    const u = sim.units.find((x) => x.id === aimingUnitId);
+    if (!u || !isAlive(u) || sim.phase !== "playing" || u.skillCooldown > 0) {
+      aimingUnitId = null;
+    }
+  }
+
   if (
     next.phase !== prev.phase ||
     next.aliveAllies !== prev.aliveAllies ||
     next.aliveEnemies !== prev.aliveEnemies ||
     next.allyStatusKey !== prev.allyStatusKey ||
-    next.notice !== prev.notice
+    next.notice !== prev.notice ||
+    aimingUnitId !== prev.aimingUnitId
   ) {
-    useGameStore.setState(next);
+    useGameStore.setState({ ...next, aimingUnitId });
   }
 }

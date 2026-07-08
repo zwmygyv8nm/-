@@ -24,9 +24,9 @@ export function tick(state: GameState, dt: number): void {
   // 2. プレイヤー入力(スキル発動指示)の消化
   if (state.inputQueue.length > 0) {
     const queue = state.inputQueue.splice(0, state.inputQueue.length);
-    for (const id of queue) {
-      const u = getUnit(state, id);
-      if (u && u.team === "ally") castSkill(state, u);
+    for (const order of queue) {
+      const u = getUnit(state, order.unitId);
+      if (u && u.team === "ally") castSkill(state, u, order.dir);
     }
   }
 

@@ -99,6 +99,12 @@ export interface SkillEvent {
   at: number;
 }
 
+/** プレイヤーのスキル発動指示。dir は一次関数の方向指定(未指定ならターゲット方向)。 */
+export interface SkillOrder {
+  unitId: string;
+  dir?: Vec2;
+}
+
 export type VisualEffectKind = "beam" | "shot";
 
 /** ロジックに影響しない短命の描画物。描画側がプールに割り当てる。 */
@@ -128,8 +134,8 @@ export interface GameState {
   obstacles: Obstacle[];
   /** チームごとの「直前に使われたスキル」。シャドーイング自身は記録しない。 */
   lastSkillByTeam: Record<Team, SkillEvent | null>;
-  /** プレイヤー入力キュー(スキル発動したい味方ユニットid)。tick先頭で消化。 */
-  inputQueue: string[];
+  /** プレイヤー入力キュー(スキル発動指示)。tick先頭で消化。 */
+  inputQueue: SkillOrder[];
   effects: VisualEffect[];
   /** effects の id 採番用。 */
   nextEffectId: number;

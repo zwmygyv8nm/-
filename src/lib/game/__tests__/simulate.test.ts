@@ -63,7 +63,7 @@ describe("tick", () => {
     const state = createInitialState();
     const math = state.units.find((u) => u.id === "ally-math")!;
     math.skillCooldown = 0;
-    state.inputQueue.push(math.id);
+    state.inputQueue.push({ unitId: math.id });
     tick(state, DT);
     expect(state.inputQueue).toEqual([]);
     expect(math.skillCooldown).toBeGreaterThan(0); // 発動してCDが入った
@@ -75,7 +75,7 @@ describe("tick", () => {
     // 敵AI自身が同tickで発動しないよう、射線の通らない位置に置く。
     enemy.pos = { x: 1.5, z: 1.5 };
     enemy.skillCooldown = 0;
-    state.inputQueue.push(enemy.id);
+    state.inputQueue.push({ unitId: enemy.id });
     tick(state, DT);
     // 敵はプレイヤー入力では発動しない(直前スキル記録もされない)。
     expect(state.lastSkillByTeam.enemy).toBeNull();
